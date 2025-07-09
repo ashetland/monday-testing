@@ -1,8 +1,7 @@
 name: Update Due Date
 on:
-  milestone:
-    types: [created, edited]
-
+  issues:
+    types: [edited]
 jobs:
   update-monday-date:
     runs-on: ubuntu-latest
