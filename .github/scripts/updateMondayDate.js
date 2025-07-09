@@ -6,8 +6,11 @@
 module.exports = async ({ github, context }) => {
   const { repo, owner } = context.repo;
   const payload = /** @type {import('@octokit/webhooks-types').IssuesLabeledEvent} */ (context.payload);
+  const issue = payload.issue;
 
-  if (milestone) {
+  if (issue && issue.milestone) {
+    const milestone = issue.milestone;
+    
     console.log("A milestone was created/updated");
     console.log("Milestone Title:", milestone.title);
     console.log("Milestone Description:", milestone.description);
