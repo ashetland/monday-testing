@@ -5,8 +5,7 @@
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
   const { repo, owner } = context.repo;
-  const payload = /** @type {import('@octokit/webhooks-types').IssuesLabeledEvent} */ (context.payload);
-  const issue = payload.issue;
+  const issue = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload?.issue);
 
   if (issue && issue.milestone) {
     const milestone = issue.milestone;
