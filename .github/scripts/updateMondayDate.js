@@ -41,7 +41,6 @@ module.exports = async ({ github, context }) => {
     })
       .then(res => res.json())
       .then(res => console.log(JSON.stringify(res, null, 2)));
-      }
   }
 
   if (issue && issue.milestone) {
