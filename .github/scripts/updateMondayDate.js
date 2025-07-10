@@ -8,8 +8,14 @@ module.exports = async ({ github, context }) => {
   const { MONDAY_KEY } = process.env;
   const issue = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload?.issue);
 
+  /**
+   * Queries the Monday.com API to find the task created for this issue.
+   * Matches on the GitHub Issue ID column.
+   * @param githubID string
+   * @returns string
+   */
   function findMondayID(githubID) {
-    const query = `query ($boardID: Number!, $columnID: String!, $githubID: String!) {
+    const query = `query ($boardID: ID!, $columnID: String!, $githubID: String!) {
       items_page_by_column_values(
         board_id: $boardID,
         columns: {
@@ -25,7 +31,7 @@ module.exports = async ({ github, context }) => {
     const vars = {
       "boardID": "8780429793",
       "columnID": "numeric_mknk2xhh",
-      "githubID": String(githubID)
+      "githubID": githubID,
     };
 
     fetch ("https://api.monday.com/v2", {
