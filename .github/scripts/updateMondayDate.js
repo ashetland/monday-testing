@@ -32,7 +32,7 @@ module.exports = async ({ github, context }) => {
     const vars = {
       "boardID": "8780429793",
       "columnID": "numeric_mknk2xhh",
-      "githubID": JSON.stringify([githubID])
+      "githubID": '["66"]'
     };
 
     console.log(`["${githubID}"]`, JSON.stringify([githubID]));
@@ -44,12 +44,12 @@ module.exports = async ({ github, context }) => {
         'Authorization' : MONDAY_KEY,
       },
       body: JSON.stringify({
-        'query' : '{ boards (limit:5) {name id} }',
+        'query' : query,
+        'variables' : vars
       })
     })
       .then(res => res.json())
       .then(res => console.log(JSON.stringify(res, null, 2)));
-    // 'variables' : vars
   }
 
   if (issue && issue.milestone) {
