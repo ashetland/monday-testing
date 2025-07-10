@@ -32,10 +32,10 @@ module.exports = async ({ github, context }) => {
     const vars = {
       "boardID": "8780429793",
       "columnID": "numeric_mknk2xhh",
-      "githubID": JSON.stringify(["githubID"])
+      "githubID": JSON.stringify([githubID])
     };
 
-    console.log(`["${githubID}"]`, JSON.stringify(["githubID"]));
+    console.log(`["${githubID}"]`, JSON.stringify([githubID]));
 
     fetch ("https://api.monday.com/v2", {
       method: 'post',
@@ -45,7 +45,7 @@ module.exports = async ({ github, context }) => {
       },
       body: JSON.stringify({
         'query' : query,
-        'variables' : JSON.stringify(vars)
+        'variables' : vars
       })
     })
       .then(res => res.json())
