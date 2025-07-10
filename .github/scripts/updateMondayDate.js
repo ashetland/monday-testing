@@ -44,12 +44,12 @@ module.exports = async ({ github, context }) => {
         'Authorization' : MONDAY_KEY,
       },
       body: JSON.stringify({
-        'query' : query,
-        'variables' : vars
+        'query' : '{ boards (limit:5) {name id} }',
       })
     })
       .then(res => res.json())
       .then(res => console.log(JSON.stringify(res, null, 2)));
+    // 'variables' : vars
   }
 
   if (issue && issue.milestone) {
