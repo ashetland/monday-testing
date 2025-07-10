@@ -50,7 +50,8 @@ module.exports = async ({ github, context }) => {
     console.log(`A milestone was created/updated on issue #${issue.number}`);
     console.log(`Milestone Due Date: ${milestone.due_on}`);
 
-    console.log(`Monday ID: ${findMondayID(issue.number)});
+    const mondayID = findMondayID(issue.number);
+    console.log(`Monday ID: ${mondayID}`);
   } else {
     console.log(`No milestone found for issue #${issue.number}.`);
   }
