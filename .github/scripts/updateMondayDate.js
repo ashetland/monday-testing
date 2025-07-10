@@ -25,7 +25,7 @@ module.exports = async ({ github, context }) => {
     const vars = {
       "boardID": "8780429793",
       "columnID": "numeric_mknk2xhh",
-      "githubID": githubID,
+      "githubID": String(githubID)
     };
 
     fetch ("https://api.monday.com/v2", {
