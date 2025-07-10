@@ -85,9 +85,9 @@ module.exports = async ({ github, context }) => {
    */
   function updateDueDate(ID, dateString) {
     const value = JSON.stringify({
-      date: dateString.split('T')[0]
+      "date": dateString.split('T')[0]
     });
-    const valueEscaped = value.replace(/"/g, '\\"');
+    const valueEscaped = JSON.stringify(value);
 
     console.log(`Date JSON String: ${valueEscaped}`);
 
@@ -96,7 +96,7 @@ module.exports = async ({ github, context }) => {
         board_id: "${BOARD}",
         item_id: "${ID}",
         column_id: "${COLUMN_DATE}",
-        value: "${valueEscaped}"
+        value: ${valueEscaped}
       ) {
         id
       }
