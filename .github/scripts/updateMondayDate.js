@@ -15,12 +15,12 @@ module.exports = async ({ github, context }) => {
    * @returns string
    */
   function findMondayID(githubID) {
-    const query = `query ($boardID: ID!, $columnID: String!, $githubID: String!) {
+    const query = `query {
       items_page_by_column_values(
-        board_id: $boardID,
+        board_id: "8780429793",
         columns: {
-          column_id: $columnID,
-          column_values: $githubID
+          column_id: "numeric_mknk2xhh",
+          column_values: ["${githubID}"]
         },
       ) {
         items {
@@ -32,7 +32,7 @@ module.exports = async ({ github, context }) => {
     const vars = {
       "boardID": "8780429793",
       "columnID": "numeric_mknk2xhh",
-      "githubID": `"${githubID}"`
+      "githubID": [`"${githubID}"`]
     };
 
     fetch ("https://api.monday.com/v2", {
