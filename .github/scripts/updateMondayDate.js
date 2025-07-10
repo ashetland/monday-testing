@@ -29,12 +29,6 @@ module.exports = async ({ github, context }) => {
       }
     }`;
 
-    const vars = {
-      "boardID": "8780429793",
-      "columnID": "numeric_mknk2xhh",
-      "githubID": [`"${githubID}"`]
-    };
-
     fetch ("https://api.monday.com/v2", {
       method: 'post',
       headers: {
@@ -43,11 +37,15 @@ module.exports = async ({ github, context }) => {
       },
       body: JSON.stringify({
         'query' : query,
-        'variables' : vars
       })
     })
       .then(res => res.json())
-      .then(res => console.log(JSON.stringify(res, null, 2)));
+      .then(res => {
+        const body = JSON.stringify(res, null, 2);
+        const id = JSON.parse(body);
+        console.log(id);
+        return id;
+      });
   }
 
   if (issue && issue.milestone) {
