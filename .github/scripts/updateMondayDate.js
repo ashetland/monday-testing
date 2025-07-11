@@ -99,8 +99,6 @@ module.exports = async ({ context }) => {
     const value = JSON.stringify({ "date": date });
     const valueEscaped = JSON.stringify(value);
 
-    console.log(`Date JSON String: ${valueEscaped}`);
-
     const query = `mutation {
       change_column_value(
         board_id: "${BOARD}",
@@ -118,9 +116,7 @@ module.exports = async ({ context }) => {
   const dateArgument = dueDate ? dueDate : "";
 
   const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
-  console.log(body, mondayRegex);
   const mondayRegexMatch = body.match(mondayRegex);
-  console.log(mondayRegexMatch);
   let foundMondayID = mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
 
   if (foundMondayID) {
