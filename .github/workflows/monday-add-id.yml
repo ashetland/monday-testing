@@ -18,5 +18,5 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }} 
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/addMondayIDtoSummary.js')
+            const action = require('${{ github.workspace }}/.github/scripts/addMondayIDtoBody.js')
             await action({github, context})
