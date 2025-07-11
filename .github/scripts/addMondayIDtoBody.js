@@ -86,7 +86,7 @@ module.exports = async ({ github, context }) => {
   const updatedBody = syncMarkdown + issue.body;
 
   // Update the issue with the new body
-  await github.issues.update({
+  await github.rest.issues.update({
     owner: context.repo.owner,
     repo: context.repo.repo,
     issue_number: issue.number,
