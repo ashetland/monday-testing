@@ -11,7 +11,6 @@ module.exports = async ({ context }) => {
 
   const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
   const {
-    action,
     issue: { 
       body,
       number: issueNumber,
