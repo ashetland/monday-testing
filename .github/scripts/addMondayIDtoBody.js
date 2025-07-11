@@ -78,7 +78,7 @@ module.exports = async ({ github, context }) => {
   }
 
   const mondayID = await getMondayID(issueNumber);
-  const syncMarkdown = `**monday.com sync:** #${mondayID}\n`;
+  const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
   let updatedBody = syncMarkdown;
 
   if (issue.body) {
