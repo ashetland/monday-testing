@@ -118,7 +118,9 @@ module.exports = async ({ context }) => {
   const dateArgument = dueDate ? dueDate : "";
 
   const mondayRegex = new RegExp("(?<=\*\*monday\.com sync:\*\* #)(\d+)");
+  console.log(body, mondayRegex);
   const mondayRegexMatch = body.match(mondayRegex);
+  console.log(mondayRegexMatch);
   let foundMondayID = mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
 
   if (foundMondayID) {
