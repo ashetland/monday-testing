@@ -77,14 +77,13 @@ module.exports = async ({ github, context }) => {
     return items[0]["id"];
   }
 
-  if (!issue.body) {
-    console.log("No issue body was found.");
-    return;
-  }
-
   const mondayID = await getMondayID(issueNumber);
   const syncMarkdown = `**monday.com sync:** #${mondayID}\n`;
-  const updatedBody = syncMarkdown + issue.body;
+  let updatedBody = syncMarkdown;
+
+  if (issue.body) {
+    updatedBody += issue.body;
+  }
 
   // Update the issue with the new body
   await github.rest.issues.update({
