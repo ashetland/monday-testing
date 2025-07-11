@@ -1,7 +1,7 @@
 // @ts-check
 // When a Milestone is added or updated:
-// 1. Find ID of task in Monday
-// 2. Update Due Date column value in Monday Task to Due Date of Milestone
+// 1. Find ID of task in Issue Body, if not found, find in Monday
+// 2. Update Due Date column value in Monday to Due Date of Milestone, or clear it if not found.
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
   const BOARD = "8780429793";
