@@ -8,7 +8,18 @@ module.exports = async ({ context }) => {
   const COLUMN_ID = "numeric_mknk2xhh";
   const COLUMN_DATE = "date6";
   const { MONDAY_KEY } = process.env;
-  const issue = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload?.issue);
+
+  const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
+  const {
+    action,
+    issue: { 
+      body,
+      number: issueNumber,
+      milestone: {
+        due_on: dueDate
+      }
+    },
+  } = payload;
 
 
   /**
@@ -84,9 +95,8 @@ module.exports = async ({ context }) => {
    * @param {string} dateString
    */
   function updateDueDate(ID, dateString) {
-    const value = JSON.stringify({
-      "date": dateString.split('T')[0]
-    });
+    const date = dateString.length ? dateString.split('T')[0] : "";
+    const value = JSON.stringify({ "date": date });
     const valueEscaped = JSON.stringify(value);
 
     console.log(`Date JSON String: ${valueEscaped}`);
@@ -105,21 +115,19 @@ module.exports = async ({ context }) => {
     callMonday(query);
   }
 
-  if (issue?.milestone?.due_on) {
-    const issueNumber = issue.number;
-    const dueDate = issue.milestone.due_on;
+  const dateArgument = dueDate ? dueDate : "";
 
-    console.log(`A milestone was created/updated on issue #${issueNumber}`);
-    console.log(`Milestone Due Date: ${dueDate}`);
+  const mondayRegex = new RegExp("(?<=\*\*monday\.com sync:\*\* #)(\d+)");
+  const mondayRegexMatch = body.match(mondayRegex);
+  let foundMondayID = mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
 
-    getMondayID(issueNumber).then(mondayID => {
-      console.log(`Monday ID: ${mondayID}`);
-
-      updateDueDate(mondayID, dueDate);
-      console.log("Due Date Updated");
-    });
-    
+  if (foundMondayID) {
+    updateDueDate(foundMondayID, dateArgument);
   } else {
-    console.log(`No milestone found for issue #${issue.number}.`);
+    getMondayID(issueNumber).then(mondayID => {
+      updateDueDate(mondayID, dateArgument);
+    });
   }
+
+  console.log(`Issue #${issueNumber}'s date updated to: ${dateArgument}`);
 };
