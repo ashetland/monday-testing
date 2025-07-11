@@ -8,6 +8,7 @@ module.exports = async ({ github, context }) => {
   const COLUMN_ID = "numeric_mknk2xhh";
   const { MONDAY_KEY } = process.env;
   const issue = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload?.issue);
+  const issueNumber = issue.number;
 
   /**
    * Calls the Monday.com API with a provided query
@@ -81,7 +82,7 @@ module.exports = async ({ github, context }) => {
     return;
   }
 
-  const mondayID = await getMondayID(issue.number);
+  const mondayID = await getMondayID(issueNumber);
   const syncMarkdown = `**monday.com sync:** #${mondayID}\n`;
   const updatedBody = syncMarkdown + issue.body;
 
@@ -89,7 +90,7 @@ module.exports = async ({ github, context }) => {
   await github.rest.issues.update({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    issue_number: issue.number,
+    issue_number: issueNumber,
     body: updatedBody,
   }); 
 
