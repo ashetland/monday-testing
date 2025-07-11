@@ -1,9 +1,9 @@
 // @ts-check
 // When a Milestone is added or updated:
-// 1. Leaves a comment on all the issues listed as blocked in body,
-
+// 1. Find ID of task in Monday
+// 2. Update Due Date column value in Monday Task to Due Date of Milestone
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
-module.exports = async ({ github, context }) => {
+module.exports = async ({ context }) => {
   const BOARD = "8780429793";
   const COLUMN_ID = "numeric_mknk2xhh";
   const COLUMN_DATE = "date6";
