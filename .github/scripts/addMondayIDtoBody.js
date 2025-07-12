@@ -7,8 +7,14 @@ module.exports = async ({ github, context }) => {
   const BOARD = "8780429793";
   const COLUMN_ID = "numeric_mknk2xhh";
   const { MONDAY_KEY } = process.env;
-  const issue = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload?.issue);
-  const issueNumber = issue.number;
+  const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
+  const {
+    issue: { 
+      body,
+      number: issueNumber,
+      labels
+    },
+  } = payload;
 
   /**
    * Calls the Monday.com API with a provided query
@@ -32,7 +38,7 @@ module.exports = async ({ github, context }) => {
 
       if (!response.ok) {
         console.log(body);
-        throw new Error(`HTTP error when callid the Monday API: ${body}`);
+        throw new Error(`HTTP error when calling the Monday API: ${body}`);
       }
 
       return body;
@@ -81,8 +87,8 @@ module.exports = async ({ github, context }) => {
   const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
   let updatedBody = syncMarkdown;
 
-  if (issue.body) {
-    updatedBody += issue.body;
+  if (body) {
+    updatedBody += body;
   }
 
   // Update the issue with the new body
@@ -92,6 +98,8 @@ module.exports = async ({ github, context }) => {
     issue_number: issueNumber,
     body: updatedBody,
   }); 
+
+  console.log(labels);
 
   console.log(`Adding ${syncMarkdown} to Issue #${issueNumber}`);
 }
