@@ -118,8 +118,9 @@ module.exports = async ({ context }) => {
     callMonday(query);
   }
 
-  const dueDate = milestone.trim().split(' ')[0];
-  const dateArgument = dueDate ? dueDate : "";
+  const dateRegex = /\d{4}-\d{2}-\d{2}/;
+  const dueDate = milestone.match(dateRegex);
+  const dateArgument = dueDate ? dueDate[0] : "";
 
   const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
   const mondayRegexMatch = body.match(mondayRegex);
