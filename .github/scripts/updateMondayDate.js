@@ -10,16 +10,23 @@ module.exports = async ({ context }) => {
   const { MONDAY_KEY } = process.env;
 
   const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
-  const {
-    issue: { 
-      body,
-      number: issueNumber,
-      milestone: {
-        due_on: dueDate
-      }
-    },
-  } = payload;
 
+  /**
+   * @typedef {object} Issue
+   * @property {string} body
+   * @property {string} number
+   * @property {object} milestone
+   * @property {string} milestone.title
+   */
+
+  /** @type {Issue} */
+  const {
+    body,
+    number: issueNumber,
+    milestone: {
+      title: milestone
+    }
+  } = payload.issue;
 
   /**
    * Calls the Monday.com API with a provided query
@@ -91,10 +98,9 @@ module.exports = async ({ context }) => {
   /**
    * Update the Due Date column value for a Monday.com task.
    * @param {string} ID 
-   * @param {string} dateString
+   * @param {string} date 
    */
-  function updateDueDate(ID, dateString) {
-    const date = dateString.length ? dateString.split('T')[0] : "";
+  function updateDueDate(ID, date) {
     const value = JSON.stringify({ "date": date });
     const valueEscaped = JSON.stringify(value);
 
@@ -112,6 +118,7 @@ module.exports = async ({ context }) => {
     callMonday(query);
   }
 
+  const dueDate = milestone.trim().split(' ')[0];
   const dateArgument = dueDate ? dueDate : "";
 
   const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
