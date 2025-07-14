@@ -137,6 +137,6 @@ module.exports = async ({ context }) => {
   if (dateArgument) {
     console.log(`Issue #${issueNumber}'s date updated to: ${dateArgument}`);
   } else {
-    console.log(`Issue #${issueNumber}'s date cleared.`);
+    console.log(`Issue #${issueNumber}'s date has been cleared.`);
   }
 };
