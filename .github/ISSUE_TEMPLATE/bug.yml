@@ -2,6 +2,14 @@ name: Bug
 description: Report a bug in a component
 labels: ["monday.com sync", "bug", "0 - new", "needs triage"]
 body:
+  - type: input
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue is this?
+      value: Bug
+      disabled: true
+      hidden: true
   - type: checkboxes
     id: existing-issues
     attributes:
