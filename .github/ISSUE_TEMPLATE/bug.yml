@@ -9,7 +9,6 @@ body:
       description: What type of issue is this?
       value: Bug
       disabled: true
-      hidden: true
   - type: checkboxes
     id: existing-issues
     attributes:
