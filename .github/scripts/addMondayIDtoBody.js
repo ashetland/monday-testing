@@ -100,25 +100,25 @@ module.exports = async ({ github, context }) => {
   }); 
 
   /** @type {Array<string>} */ 
-  let labelNames = [];
-
-  for (const label of labels) {
-    await github.rest.issues.removeLabel({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: issueNumber,
-      name: label.name,
-    });
-    
-    labelNames.push(label.name);
-  }
-  
-  await github.rest.issues.addLabels({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: issueNumber,
-    labels: labelNames,
-  });
+  // let labelNames = [];
+  //
+  // for (const label of labels) {
+  //   await github.rest.issues.removeLabel({
+  //     owner: context.repo.owner,
+  //     repo: context.repo.repo,
+  //     issue_number: issueNumber,
+  //     name: label.name,
+  //   });
+  //   
+  //   labelNames.push(label.name);
+  // }
+  // 
+  // await github.rest.issues.addLabels({
+  //   owner: context.repo.owner,
+  //   repo: context.repo.repo,
+  //   issue_number: issueNumber,
+  //   labels: labelNames,
+  // });
 
   console.log(`Adding ${syncMarkdown} to Issue #${issueNumber}`);
 }
