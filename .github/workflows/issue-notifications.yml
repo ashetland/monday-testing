@@ -1,0 +1,31 @@
+name: Issue Notifications
+on:
+  issues:
+    types: [labeled]
+jobs:
+  determine-action:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Assign for verification"
+        if: github.event.label.name == '3 - installed'
+        run: echo "Assign for verification fired"
+
+      - name: "Spike complete notification"
+        if: github.event.label.name == 'spike complete'
+        run: echo "Spike complete notification fired"
+
+      - name: "Ready for dev notification"
+        if: github.event.label.name == 'ready for dev'
+        run: echo "Ready for dev notification fired"
+
+      - name: "New component notification"
+        if: github.event.label.name == 'new component'
+        run: echo "New component notification fired"
+
+      - name: "Icon request notification"
+        if: github.event.label.name == 'calcite-ui-icons'
+        run: echo "Icon request notification fired"
