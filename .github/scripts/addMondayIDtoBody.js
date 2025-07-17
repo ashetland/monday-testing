@@ -7,6 +7,9 @@ module.exports = async ({ github, context }) => {
   const BOARD = "8780429793";
   const COLUMN_ID = "numeric_mknk2xhh";
   const { MONDAY_KEY } = process.env;
+  if (!MONDAY_KEY) {
+    throw new Error('MONDAY_KEY environment variable is not set.');
+  }
   const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
   const {
     issue: { 
@@ -42,8 +45,9 @@ module.exports = async ({ github, context }) => {
       }
 
       return body;
-    } catch (error) {
-      console.log(error);
+     } catch (error) {
+       console.log(error);
+       throw error;
     }
   }
 
@@ -83,13 +87,24 @@ module.exports = async ({ github, context }) => {
     return items[0]["id"];
   }
 
-  const mondayID = await getMondayID(issueNumber);
-  const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
-  let updatedBody = syncMarkdown;
-
-  if (body) {
-    updatedBody += body;
+  /**
+   * Inserts or replaces the Monday sync line in the issue body string
+   * @param {string} body - The current issue body
+   * @param {string} mondayID - The Monday.com item ID
+   * @returns {string} - The updated issue body
+   */
+  function addSyncLine(body, mondayID) {
+    const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
+    const syncLineRegex = /^\*\*monday\.com sync:\*\* #\d+\n\n?/m;
+    if (body && syncLineRegex.test(body)) {
+      return body.replace(syncLineRegex, syncMarkdown);
+    } else {
+      return syncMarkdown + (body || '');
+    }
   }
+
+  const mondayID = await getMondayID(issueNumber);
+  const updatedBody = addSyncLine(body, mondayID);
 
   // Update the issue with the new body
   await github.rest.issues.update({
@@ -120,5 +135,4 @@ module.exports = async ({ github, context }) => {
   //   labels: labelNames,
   // });
 
-  console.log(`Adding ${syncMarkdown} to Issue #${issueNumber}`);
 }
