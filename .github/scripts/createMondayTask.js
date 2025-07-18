@@ -97,10 +97,6 @@ module.exports = async ({ context }) => {
 
   let issueType, status, priority = "";
 
-  const people = assignees.map((assignee) => {
-    return `{"id": "${assignee.id}"}`;
-  }).join(", ");
-
   for (const label of labels) {
     if (issueTypeLabels.includes(label.name)) {
       issueType = label.name;
@@ -116,20 +112,24 @@ module.exports = async ({ context }) => {
     }
   }
 
-  const columnValues = JSON.stringify(`{
-    "${columns.issue_id}": ${number},
-    "${columns.link}": "${url}",
-    "${columns.people}": [${people}],
-    "${columns.status}": "${status || "needs triage"}",
-    "${columns.issue_type}": "${issueType}",
-    "${columns.priority}": "${priority}",
-  }`);
+  const columnValuesObj = {
+    [columns.issue_id]: number,
+    [columns.link]: url,
+    [columns.people]: assignees.length ? assignees.map(a => ({ id: a.id })) : [],
+    [columns.status]: status || "needs triage",
+    [columns.issue_type]: issueType,
+    [columns.priority]: priority,
+  };
+
+  let columnValues = JSON.stringify(columnValuesObj);
+  // Escape double quotes for GraphQL
+  columnValues = columnValues.replace(/"/g, '\\"');
 
   const query = `mutation { 
     create_item (
       board_id: ${BOARD},
-      item_name: \"${title}\",
-      column_values: ${columnValues}
+      item_name: "${title}",
+      column_values: "${columnValues}"
     ) {
       id
     }
