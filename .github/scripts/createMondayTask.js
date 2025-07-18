@@ -120,7 +120,7 @@ module.exports = async ({ context }) => {
   }
 
   const columnValues = JSON.stringify(`{
-    "${columns.id}": ${number},
+    "${columns.issue_id}": ${number},
     "${columns.link}": "${url}",
     "${columns.people}": [${people}],
     "${columns.status}": "${status || "needs triage"}",
@@ -139,5 +139,6 @@ module.exports = async ({ context }) => {
   }`;
 
   const id = callMonday(query);
+  console.log(query);
   console.log(`Created Monday.com task with ID: ${id}`);
 };
