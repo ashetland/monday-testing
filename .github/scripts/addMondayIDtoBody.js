@@ -115,24 +115,30 @@ module.exports = async ({ github, context }) => {
   }); 
 
   /** @type {Array<string>} */ 
-  // let labelNames = [];
-  //
-  // for (const label of labels) {
-  //   await github.rest.issues.removeLabel({
-  //     owner: context.repo.owner,
-  //     repo: context.repo.repo,
-  //     issue_number: issueNumber,
-  //     name: label.name,
-  //   });
-  //   
-  //   labelNames.push(label.name);
-  // }
-  // 
-  // await github.rest.issues.addLabels({
-  //   owner: context.repo.owner,
-  //   repo: context.repo.repo,
-  //   issue_number: issueNumber,
-  //   labels: labelNames,
-  // });
+  let labelsToReset = [];
+  /** @type {Array<string>} */ 
+  const resetLabelNames = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
+  // "new component" is the other issue type, but it triggers notifications
 
+  for (const label of labels) {
+    if (!resetLabelNames.includes(label.name)) {
+      continue;
+    }
+
+    await github.rest.issues.removeLabel({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: issueNumber,
+      name: label.name,
+    });
+
+    labelsToReset.push(label.name);
+  }
+
+  await github.rest.issues.addLabels({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    issue_number: issueNumber,
+    name: labelsToReset,
+  });
 }
