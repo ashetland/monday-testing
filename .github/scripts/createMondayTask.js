@@ -134,8 +134,10 @@ module.exports = async ({ context }) => {
       id
     }
   }`;
-
-  const id = callMonday(query);
   console.log(query);
-  console.log(`Created Monday.com task with ID: ${id}`);
+
+  const response = await callMonday(query);
+  console.log(response);
+
+  // console.log(`Created Monday.com task with ID: ${id}`);
 };
