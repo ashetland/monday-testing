@@ -139,6 +139,6 @@ module.exports = async ({ github, context }) => {
     owner: context.repo.owner,
     repo: context.repo.repo,
     issue_number: issueNumber,
-    name: labelsToReset,
+    labels: labelsToReset,
   });
 }
