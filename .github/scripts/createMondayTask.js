@@ -58,9 +58,6 @@ module.exports = async ({ context }) => {
     number,
     labels,
     assignees,
-    milestone: {
-      title: milestone
-    }
   } = payload.issue;
 
   /**
