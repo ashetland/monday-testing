@@ -91,7 +91,11 @@ module.exports = async ({ context }) => {
     }
   }
 
-  const issueTypeLabels = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
+  // const issueTypeLabels = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
+  const issueTypeLabels = new Map([
+    ["bug", "Bug"],
+    ["enhancement", "Enhancement"],
+  ]);
   // const statusLabels = ["needs triage", "needs milestone", "ready for dev", "1 - assigned", "2 - in development", "3 - installed", "4 - verified"];
   const statusLabels = new Map([
     ["1 - assigned", "Assigned 🤖"],
@@ -106,7 +110,12 @@ module.exports = async ({ context }) => {
     // [, "In Review"],
     // [, "Adding to Kit 🤖"]
   ]);
-  const priorityLabels = ["p - high", "p - medium", "p - low"];
+  // const priorityLabels = ["p - high", "p - medium", "p - low"];
+  const priorityLabelsMap = new Map([
+    ["p - high", "High"],
+    ["p - medium", "Medium"],
+    ["p - low", "Low"],
+  ]);
 
   let issueType, status, priority = "";
 
