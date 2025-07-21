@@ -111,16 +111,18 @@ module.exports = async ({ context }) => {
     // [, "Adding to Kit 🤖"]
   ]);
   // const priorityLabels = ["p - high", "p - medium", "p - low"];
-  const priorityLabelsMap = new Map([
+  const priorityLabels = new Map([
     ["p - high", "High"],
     ["p - medium", "Medium"],
     ["p - low", "Low"],
   ]);
 
-  let issueType, status, priority = "";
+  let issueType = "";
+  let status = "";
+  let priority = "";
 
   for (const label of labels) {
-    if (issueTypeLabels.includes(label.name)) {
+    if (issueTypeLabels.has(label.name)) {
       issueType = label.name;
       break;
     }
@@ -128,7 +130,7 @@ module.exports = async ({ context }) => {
       status = label.name;
       break;
     }
-    if (priorityLabels.includes(label.name)) {
+    if (priorityLabels.has(label.name)) {
       priority = label.name;
       break;
     }
@@ -143,8 +145,8 @@ module.exports = async ({ context }) => {
     // [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
     // myColumnValue: "123456, 654321" - requres people IDs. I assume Monday mapped GitHub emails to IDs
     [columns.status]: statusLabels.get(status || "needs triage"),
-    [columns.issue_type]: issueType,
-    [columns.priority]: priority,
+    [columns.issue_type]: issueTypeLabels.get(issueType),
+    [columns.priority]: priorityLabels.get(priority),
   };
 
   let columnValues = JSON.stringify(columnValuesObj);
