@@ -91,12 +91,12 @@ module.exports = async ({ context }) => {
     }
   }
 
-  // const issueTypeLabels = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
+  // ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
   const issueTypeLabels = new Map([
     ["bug", "Bug"],
     ["enhancement", "Enhancement"],
   ]);
-  // const statusLabels = ["needs triage", "needs milestone", "ready for dev", "1 - assigned", "2 - in development", "3 - installed", "4 - verified"];
+  // ["needs triage", "needs milestone", "ready for dev", "1 - assigned", "2 - in development", "3 - installed", "4 - verified"];
   const statusLabels = new Map([
     ["1 - assigned", "Assigned 🤖"],
     // [, "Done"],
@@ -110,7 +110,6 @@ module.exports = async ({ context }) => {
     // [, "In Review"],
     // [, "Adding to Kit 🤖"]
   ]);
-  // const priorityLabels = ["p - high", "p - medium", "p - low"];
   const priorityLabels = new Map([
     ["p - high", "High"],
     ["p - medium", "Medium"],
@@ -122,10 +121,6 @@ module.exports = async ({ context }) => {
   let priority = "";
 
   for (const label of labels) {
-    console.warn(label, label.name);
-    console.log(issueTypeLabels.has(label.name));
-    console.log(statusLabels.has(label.name));
-    console.log(priorityLabels.has(label.name));
     if (issueTypeLabels.has(label.name)) {
       issueType = label.name;
       continue;
@@ -146,7 +141,7 @@ module.exports = async ({ context }) => {
       "url": url,
       "text": title
     },
-    // [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
+    [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
     // myColumnValue: "123456, 654321" - requres people IDs. I assume Monday mapped GitHub emails to IDs
     [columns.status]: statusLabels.get(status || "needs triage"),
     [columns.issue_type]: issueTypeLabels.get(issueType),
