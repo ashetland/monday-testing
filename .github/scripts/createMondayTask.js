@@ -122,6 +122,10 @@ module.exports = async ({ context }) => {
   let priority = "";
 
   for (const label of labels) {
+    console.warn(label, label.name);
+    console.log(issueTypeLabels.has(label.name));
+    console.log(statusLabels.has(label.name));
+    console.log(priorityLabels.has(label.name));
     if (issueTypeLabels.has(label.name)) {
       issueType = label.name;
       break;
