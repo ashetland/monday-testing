@@ -120,9 +120,9 @@ module.exports = async ({ context }) => {
     },
     // [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
     // myColumnValue: "123456, 654321" - requres people IDs. I assume Monday mapped GitHub emails to IDs
-    // [columns.status]: status || "needs triage",
-    // [columns.issue_type]: issueType,
-    // [columns.priority]: priority,
+    [columns.status]: status || "needs triage",
+    [columns.issue_type]: issueType,
+    [columns.priority]: priority,
   };
 
   let columnValues = JSON.stringify(columnValuesObj);
@@ -141,7 +141,11 @@ module.exports = async ({ context }) => {
   console.log(query);
 
   const response = await callMonday(query);
-  console.log(response.data, response.errors[0].message, response.errors[0].locations);
+  console.log(response.data);
+  if (response?.errors) {
+    console.error(`Error creating Monday.com task: ${response.errors[0].message}, locations: ${response.errors[0].locations}`);
+    throw new Error(`Error creating Monday.com task: ${response.errors[0].message}`);
+  }
 
   // console.log(`Created Monday.com task with ID: ${id}`);
 };
