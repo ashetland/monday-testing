@@ -128,15 +128,15 @@ module.exports = async ({ context }) => {
     console.log(priorityLabels.has(label.name));
     if (issueTypeLabels.has(label.name)) {
       issueType = label.name;
-      break;
+      continue;
     }
     if (statusLabels.has(label.name)) {
       status = label.name;
-      break;
+      continue;
     }
     if (priorityLabels.has(label.name)) {
       priority = label.name;
-      break;
+      continue;
     }
   }
 
