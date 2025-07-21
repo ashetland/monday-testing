@@ -115,10 +115,11 @@ module.exports = async ({ context }) => {
   const columnValuesObj = {
     [columns.issue_id]: number,
     [columns.link]: url,
-    [columns.people]: assignees.length ? assignees.map(a => ({ id: a.id })) : [],
-    [columns.status]: status || "needs triage",
-    [columns.issue_type]: issueType,
-    [columns.priority]: priority,
+    // [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
+    // myColumnValue: "123456, 654321" - requres people IDs. I assume Monday mapped GitHub emails to IDs
+    // [columns.status]: status || "needs triage",
+    // [columns.issue_type]: issueType,
+    // [columns.priority]: priority,
   };
 
   let columnValues = JSON.stringify(columnValuesObj);
