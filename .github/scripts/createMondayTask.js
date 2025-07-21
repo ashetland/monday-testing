@@ -92,7 +92,20 @@ module.exports = async ({ context }) => {
   }
 
   const issueTypeLabels = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
-  const statusLabels = ["needs triage", "needs milestone", "ready for dev", "1 - assigned", "2 - in development", "3 - installed", "4 - verified"];
+  // const statusLabels = ["needs triage", "needs milestone", "ready for dev", "1 - assigned", "2 - in development", "3 - installed", "4 - verified"];
+  const statusLabels = new Map([
+    ["1 - assigned", "Assigned 🤖"],
+    // [, "Done"],
+    ["needs triage", "Needs Triage 🤖"],
+    ["ready for dev", "Ready for dev 🤖"],
+    ["2 - in development", "In Dev 🤖"],
+    ["needs milestone", "Needs Milestone 🤖"],
+    // [, "In Design 🤖"],
+    ["0 - new", "Unassigned"],
+    // [, "Stalled"],
+    // [, "In Review"],
+    // [, "Adding to Kit 🤖"]
+  ]);
   const priorityLabels = ["p - high", "p - medium", "p - low"];
 
   let issueType, status, priority = "";
@@ -102,7 +115,7 @@ module.exports = async ({ context }) => {
       issueType = label.name;
       break;
     }
-    if (statusLabels.includes(label.name)) {
+    if (statusLabels.has(label.name)) {
       status = label.name;
       break;
     }
@@ -120,7 +133,7 @@ module.exports = async ({ context }) => {
     },
     // [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
     // myColumnValue: "123456, 654321" - requres people IDs. I assume Monday mapped GitHub emails to IDs
-    [columns.status]: status || "needs triage",
+    [columns.status]: statusLabels.get(status || "needs triage"),
     [columns.issue_type]: issueType,
     [columns.priority]: priority,
   };
