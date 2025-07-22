@@ -5,15 +5,11 @@ const { monday } = require("./support/resources");
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
   const { MONDAY_KEY } = process.env;
-  const payload = /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent} */ (context.payload);
-  const {
-    title,
-    url,
-    body,
-    number,
-    labels,
-    assignees,
-  } = payload.issue;
+  const payload =
+    /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent} */ (
+      context.payload
+    );
+  const { title, url, body, number, labels, assignees } = payload.issue;
 
   /**
    * Assigns a person to the Monday.com task object based on their GitHub username/role
@@ -52,7 +48,6 @@ module.exports = async ({ github, context }) => {
     if (!values[info.role]) {
       values[info.role] = `${info.id}`;
     } else {
-      // If the role already has a value, append the new person
       values[info.role] += `, ${info.id}`;
     }
 
@@ -85,25 +80,29 @@ module.exports = async ({ github, context }) => {
       }
     }
 
-    if (!issueTypes.length) {
+    if (issueTypes.length) {
       values[monday.columns.issue_type] = issueTypes.join(", ");
     }
-    if (!statuses.length) {
+    if (statuses.length) {
       values[monday.columns.status] = statuses.join(", ");
     }
-    if (!priorities.length) {
+    if (priorities.length) {
       values[monday.columns.priority] = priorities.join(", ");
     }
 
     return values;
   }
 
-  function createColumnValues() {
+  /**
+   * Creates the GraphQL query to create a new item in Monday.com
+   * @returns {string} - The GraphQL query string
+   */
+  function createTaskQuery() {
     let values = {
       [monday.columns.issue_id]: number,
       [monday.columns.link]: {
-        "url": url,
-        "text": title
+        url: url,
+        text: title,
       },
     };
 
@@ -117,59 +116,39 @@ module.exports = async ({ github, context }) => {
       values = assignLabels(labels, values);
     }
 
-    return values;
+    // Escape double quotes for GraphQL
+    const valuesString = JSON.stringify(values).replace(/"/g, '\\"');
+
+    const query = `mutation { 
+      create_item (
+        board_id: ${monday.board},
+        item_name: "${title}",
+        column_values: "${valuesString}"
+      ) {
+        id
+      }
+    }`;
+    console.log(query);
+
+    return query;
   }
 
-  const columnValues = createColumnValues();
   
-  if (!columnValues) {
-    throw new Error(`Error creating column values for Github Issue #${number}`);
+  const response = await callMonday(MONDAY_KEY, createTaskQuery());
+
+  if (!response || !response["data"] || !response["data"]["create_item"]["id"]) {
+    throw new Error(`Missing or bad response for Github Issue #${number}`);
   }
 
-  // Escape double quotes for GraphQL
-  const columnValuesString = JSON.stringify(columnValues).replace(/"/g, '\\"');
+  const mondayID = response["data"]["create_item"]["id"];
 
-  const query = `mutation { 
-    create_item (
-      board_id: ${monday.board},
-      item_name: "${title}",
-      column_values: "${columnValuesString}"
-    ) {
-      id
-    }
-  }`;
-  console.log(query);
+  const updatedBody = addSyncLine(body, mondayID);
 
-  const response = await callMonday(MONDAY_KEY, query);
-
-  if (!response) {
-    throw new Error(`No response for Github Issue #${number}`);
-  }
-
-  if (response && response["errors"]) {
-    console.error(`Error creating Monday.com task: ${response["errors"][0]["message"]}, locations: ${response["errors"][0]["locations"]}`);
-    throw new Error(`Error creating Monday.com task: ${response["errors"][0]["message"]}`);
-  }
-
-  console.log(response["data"]);
-  try {
-    const mondayID = response["data"]["create_item"]["id"];
-
-    if (!mondayID) {
-      throw new Error(`No items found for Github Issue #${number}`);
-    }
-
-    const updatedBody = addSyncLine(body, mondayID);
-
-    // Update the issue with the new body
-    await github.rest.issues.update({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: number,
-      body: updatedBody,
-    });
-  } catch (error) {
-    console.error(`Error accessing items in response: ${error.message}`);
-    throw new Error(`Error accessing items in response for Github Issue #${number}: ${error}`);
-  }
+  // Update the issue with the new body
+  await github.rest.issues.update({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    issue_number: number,
+    body: updatedBody,
+  });
 };
