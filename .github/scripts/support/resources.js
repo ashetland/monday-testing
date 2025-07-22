@@ -8,7 +8,6 @@ const resources = {
       regression: "regression",
     },
     handoff: {
-      readyForDev: "ready for dev",
       figmaChanges: "figma changes",
     },
     issueType: {
@@ -20,13 +19,18 @@ const resources = {
       refactor: "refactor",
       test: "testing",
       tooling: "tooling",
+      a11y: "a11y",
+      newComponent: "new component",
+      design: "design",
     },
     issueWorkflow: {
-      new: "0 - new",
-      assigned: "1 - assigned",
-      inDevelopment: "2 - in development",
-      installed: "3 - installed",
-      verified: "4 - verified",
+      new: "_0 - new",
+      assigned: "_1 - assigned",
+      inDesign: "1 - in design",
+      readyForDev: "2 - ready for dev",
+      inDevelopment: "3 - in development",
+      installed: "4 - installed",
+      verified: "5 - verified",
     },
     planning: {
       needsTriage: "needs triage",
@@ -78,7 +82,7 @@ const monday = {
   issueTypes: new Map([
     [resources.labels.issueType.bug, "Bug"],
     [resources.labels.issueType.enhancement, "Enhancement"],
-    // [resources.labels, "A11y"],
+    // [resources.labels.issueType.a11y, "A11y"],
     // [resources.labels.issueType.docs, "Docs"],
     // [resources.labels.issueType.refactor, "Refactor"],
     // [resources.labels.planning.spike, "Spike"],
@@ -87,16 +91,18 @@ const monday = {
   ]),
   /** @type {Map<string, string>} */
   statuses: new Map([
+    [resources.labels.planning.needsTriage, "Needs Triage"],
+    [resources.labels.planning.needsMilestone, "Needs Milestone"],
+    // These might go away
     [resources.labels.issueWorkflow.new, "Unassigned"],
-    [resources.labels.issueWorkflow.assigned, "Assigned 🤖"],
-    [resources.labels.issueWorkflow.inDevelopment, "In Dev 🤖"],
-    // [resources.labels.issueWorkflow.installed, "Installed 🤖"],
-    // [resources.labels.issueWorkflow.verified, "Verified 🤖"],
-    [resources.labels.planning.needsTriage, "Needs Triage 🤖"],
-    [resources.labels.planning.needsMilestone, "Needs Milestone 🤖"],
-    [resources.labels.handoff.readyForDev, "Ready for dev 🤖"],
-    // NEEDS LABEL
-    ["design", "In Design 🤖"],
+    [resources.labels.issueWorkflow.assigned, "Assigned"],
+    // 
+    [resources.labels.issueWorkflow.inDesign, "In Design"],
+    [resources.labels.issueWorkflow.inDevelopment, "In Development"],
+    [resources.labels.issueWorkflow.installed, "Installed"],
+    [resources.labels.issueWorkflow.verified, "Verified"],
+    [resources.labels.handoff.readyForDev, "Ready for dev"],
+    [resources.labels.issueType.design, "In Design"],
     // [, "Done"],
     // [, "Stalled"],
     // [, "In Review"],
