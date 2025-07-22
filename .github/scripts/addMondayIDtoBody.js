@@ -64,12 +64,13 @@ module.exports = async ({ github, context }) => {
     body: updatedBody,
   }); 
 
-  if (labels) {
+  // "new component" is the other issue type, but it triggers notifications
+  /** @type {Array<string>} */ 
+  const resetLabelNames = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
+
+  if (labels && labels.some(label => resetLabelNames.includes(label.name))) {
     /** @type {Array<string>} */ 
     let labelsToReset = [];
-    /** @type {Array<string>} */ 
-    const resetLabelNames = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
-    // "new component" is the other issue type, but it triggers notifications
 
     for (const label of labels) {
       if (!resetLabelNames.includes(label.name)) {
