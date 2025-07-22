@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: "Create Monday.com Task"
-        if: github.event.label.name == 'monday test'
+        if: github.event.label.name == 'monday.com sync'
         uses: actions/github-script@v7
         env:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }} 
