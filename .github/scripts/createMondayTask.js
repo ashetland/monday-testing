@@ -146,28 +146,32 @@ module.exports = async ({ github, context }) => {
     throw new Error(`No response for Github Issue #${number}`);
   }
 
-  console.log(response["data"]);
-
   if (response && response["errors"]) {
     console.error(`Error creating Monday.com task: ${response["errors"][0]["message"]}, locations: ${response["errors"][0]["locations"]}`);
     throw new Error(`Error creating Monday.com task: ${response["errors"][0]["message"]}`);
   }
 
-  const items = response["data"]["items_page_by_column_values"]["items"];
+  console.log(response["data"]);
+  try {
+    const items = response["data"]["create_item"]["items"];
 
-  if (!items?.length) {
-    throw new Error(`No items found for Github Issue #${number}`);
+    if (!items?.length) {
+      throw new Error(`No items found for Github Issue #${number}`);
+    }
+
+    const mondayID = items[0]["id"];
+
+    const updatedBody = addSyncLine(body, mondayID);
+
+    // Update the issue with the new body
+    await github.rest.issues.update({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: number,
+      body: updatedBody,
+    });
+  } catch (error) {
+    console.error(`Error accessing items in response: ${error.message}`);
+    throw new Error(`Error accessing items in response for Github Issue #${number}: ${error}`);
   }
-
-  const mondayID = items[0]["id"];
-
-  const updatedBody = addSyncLine(body, mondayID);
-
-  // Update the issue with the new body
-  await github.rest.issues.update({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: number,
-    body: updatedBody,
-  });
 };
