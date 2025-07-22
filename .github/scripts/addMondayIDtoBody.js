@@ -1,6 +1,6 @@
 // @ts-check
-const { callMonday, addSyncLine } = require('./support/utils.js');
-const { mondayBoard, mondayColumns } = require("./support/resources.js");
+const { callMonday, addSyncLine } = require("./support/utils");
+const { mondayBoard, mondayColumns } = require("./support/resources");
 // const { mondayBoard, mondayColumns } = require("./support/resources.js");
 
 // When the `monday.com sync` label is added to an issue:
