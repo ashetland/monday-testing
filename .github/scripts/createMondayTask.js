@@ -7,6 +7,9 @@ module.exports = async ({ context }) => {
     date: "date6",
     link: "link",
     people: "people",
+    designers: "multiple_person_mkt2rtfv",
+    developers: "multiple_person_mkt2q89j",
+    product_engineers: "multiple_person_mkt2hhzm",
     status: "dup__of_overall_status__1",
     issue_type: "color_mksw3bdr",
     priority: "priority",
@@ -91,6 +94,35 @@ module.exports = async ({ context }) => {
     }
   }
 
+  /**
+   * @typedef {object} Person
+   * @property {string} role - The role of the person (e.g., developers, designers, product_engineers)
+   * @property {number} id - The Monday.com user ID
+   */
+
+  /** @type {Map<string, Person>} */
+  const peopleMap = new Map([
+    ["anveshmekala", { role: columns.developers, id: 48387134 }],
+    ["aPreciado88", { role: columns.developers, id: 6079524 }],
+    ["ashetland", { role: columns.designers, id: 45851619 }],
+    ["benelan", { role: columns.developers, id: 49704471 }],
+    ["chezHarper", { role: columns.designers, id: 71157966 }],
+    ["DitwanP", { role: columns.product_engineers, id: 53683093 }],
+    ["driskull", { role: columns.developers, id: 45944985 }],
+    ["Elijbet", { role: columns.developers, id: 55852207 }],
+    ["eriklharper", { role: columns.developers, id: 49699973 }],
+    // Kitty set to dev temporarily
+    ["geospatialem", { role: columns.developers, id: 45853373 }],
+    ["isaacbraun", { role: columns.product_engineers, id: 76547859 }],
+    ["jcfranco", { role: columns.developers, id: 45854945 }],
+    ["josercarcamo", { role: columns.developers, id: 56555749 }],
+    ["macandcheese", { role: columns.developers, id: 45854918 }],
+    ["matgalla",  { role: columns.designers, id: 69473378 }],
+    ["rmstinson", { role: columns.designers, id: 47277636 }],
+    ["SkyeSeitz", { role: columns.designers, id: 45854937 }],
+    ["Amretasre002762670", { role: columns.developers, id: 77031889 }],
+  ]);
+
   // ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
   const issueTypeLabels = new Map([
     ["bug", "Bug"],
@@ -141,12 +173,22 @@ module.exports = async ({ context }) => {
       "url": url,
       "text": title
     },
-    [columns.people]: assignees.length ? assignees.map(a => (`${a.login}@esri.com`)) : [],
-    // myColumnValue: "123456, 654321" - requres people IDs. I assume Monday mapped GitHub emails to IDs
     [columns.status]: statusLabels.get(status || "needs triage"),
     [columns.issue_type]: issueTypeLabels.get(issueType),
     [columns.priority]: priorityLabels.get(priority),
   };
+
+  if (assignees) {
+    for (const person of assignees) {
+      const info = peopleMap.get(person.login);
+
+      if (info) {
+        columnValuesObj[info.role] = `${info.id}`;
+      } else {
+        console.warn(`Assignee ${person.login} not found in peopleMap`);
+      }
+    }
+  }
 
   let columnValues = JSON.stringify(columnValuesObj);
   // Escape double quotes for GraphQL
