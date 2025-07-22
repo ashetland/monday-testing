@@ -30,21 +30,6 @@ module.exports = async ({ github, context }) => {
       return;
     }
 
-    // const currentValue = await callMonday(MONDAY_KEY, `query {
-    //   items (ids: [${number}]) {
-    //     column_values(ids: "${info.role}") {
-    //       ... on PeopleValue {
-    //          persons_and_teams {
-    //           id
-    //         }
-    //       }
-    //     }
-    //   }
-    // }`);
-    //
-    // // const columnValues = currentValue.data.boards[0].items[0].column_values;
-    // console.log(`Current value for ${info.role}:`, currentValue);
-
     if (!values[info.role]) {
       values[info.role] = `${info.id}`;
     } else {
