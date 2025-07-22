@@ -94,9 +94,11 @@ module.exports = async ({ github, context }) => {
     if (!priorities.length) {
       values[monday.columns.priority] = priorities.join(", ");
     }
+
+    return values;
   }
 
-  async function createColumnValues() {
+  function createColumnValues() {
     let values = {
       [monday.columns.issue_id]: number,
       [monday.columns.link]: {
@@ -107,7 +109,7 @@ module.exports = async ({ github, context }) => {
 
     if (assignees) {
       for (const person of assignees) {
-        values = await assignPerson(person, values);
+        values = assignPerson(person, values);
       }
     }
 
@@ -118,11 +120,12 @@ module.exports = async ({ github, context }) => {
     return values;
   }
 
-  const columnValues = await createColumnValues();
+  const columnValues = createColumnValues();
   
   if (!columnValues) {
     throw new Error(`Error creating column values for Github Issue #${number}`);
   }
+
   // Escape double quotes for GraphQL
   const columnValuesString = JSON.stringify(columnValues).replace(/"/g, '\\"');
 
