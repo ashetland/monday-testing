@@ -1,68 +1,36 @@
 // @ts-check
+import './support/types.js';
+import { callMonday, addSyncLine } from './support/utils.js';
+import { mondayBoard, mondayColumns } from "./support/resources.js";
+// const { mondayBoard, mondayColumns } = require("./support/resources.js");
+
 // When the `monday.com sync` label is added to an issue:
 // 1. Get the ID of the task in Monday.com
 // 2. Add ID to the Issue Summary
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
-  const BOARD = "8780429793";
-  const COLUMN_ID = "numeric_mknk2xhh";
   const { MONDAY_KEY } = process.env;
-  if (!MONDAY_KEY) {
-    throw new Error('MONDAY_KEY environment variable is not set.');
-  }
   const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
   const {
     issue: { 
       body,
-      number: issueNumber,
+      number,
       labels
     },
   } = payload;
 
   /**
-   * Calls the Monday.com API with a provided query
-   * @param {string} query
-   * @returns {Promise<string | undefined>}
-   */
-  async function callMonday(query) {
-    try {
-      const response = await fetch("https://api.monday.com/v2", {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: MONDAY_KEY,
-        },
-        body: JSON.stringify({
-          query: query,
-        }),
-      });
-
-      const body = await response.json();
-
-      if (!response.ok) {
-        console.log(body);
-        throw new Error(`HTTP error when calling the Monday API: ${body}`);
-      }
-
-      return body;
-     } catch (error) {
-       console.log(error);
-       throw error;
-    }
-  }
-
-  /**
    * Returns the Monday.com task ID for the passed GitHub Issue ID.
    * Matches based on the GitHub Issue ID column.
-   * @param {string} githubID 
+   * @param {number} githubID 
    * @returns {Promise<string>} 
    */
   async function getMondayID(githubID) {
     const query = `query {
       items_page_by_column_values(
-        board_id: "${BOARD}",
+        board_id: "${mondayBoard}",
         columns: {
-          column_id: "${COLUMN_ID}",
+          column_id: "${mondayColumns.issue_id}",
           column_values: ["${githubID}"]
         },
       ) {
@@ -72,7 +40,7 @@ module.exports = async ({ github, context }) => {
       }
     }`;
 
-    const response = await callMonday(query);
+    const response = await callMonday(MONDAY_KEY, query);
 
     if (!response) {
       throw new Error(`No response for Github Issue #${githubID}`);
@@ -87,58 +55,44 @@ module.exports = async ({ github, context }) => {
     return items[0]["id"];
   }
 
-  /**
-   * Inserts or replaces the Monday sync line in the issue body string
-   * @param {string} body - The current issue body
-   * @param {string} mondayID - The Monday.com item ID
-   * @returns {string} - The updated issue body
-   */
-  function addSyncLine(body, mondayID) {
-    const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
-    const syncLineRegex = /^\*\*monday\.com sync:\*\* #\d+\n\n?/m;
-    if (body && syncLineRegex.test(body)) {
-      return body.replace(syncLineRegex, syncMarkdown);
-    } else {
-      return syncMarkdown + (body || '');
-    }
-  }
-
-  const mondayID = await getMondayID(issueNumber);
+  const mondayID = await getMondayID(number);
   const updatedBody = addSyncLine(body, mondayID);
 
   // Update the issue with the new body
   await github.rest.issues.update({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    issue_number: issueNumber,
+    issue_number: number,
     body: updatedBody,
   }); 
 
-  /** @type {Array<string>} */ 
-  let labelsToReset = [];
-  /** @type {Array<string>} */ 
-  const resetLabelNames = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
-  // "new component" is the other issue type, but it triggers notifications
+  if (labels) {
+    /** @type {Array<string>} */ 
+    let labelsToReset = [];
+    /** @type {Array<string>} */ 
+    const resetLabelNames = ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
+    // "new component" is the other issue type, but it triggers notifications
 
-  for (const label of labels) {
-    if (!resetLabelNames.includes(label.name)) {
-      continue;
+    for (const label of labels) {
+      if (!resetLabelNames.includes(label.name)) {
+        continue;
+      }
+
+      await github.rest.issues.removeLabel({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: number,
+        name: label.name,
+      });
+
+      labelsToReset.push(label.name);
     }
 
-    await github.rest.issues.removeLabel({
+    await github.rest.issues.addLabels({
       owner: context.repo.owner,
       repo: context.repo.repo,
-      issue_number: issueNumber,
-      name: label.name,
+      issue_number: number,
+      labels: labelsToReset,
     });
-
-    labelsToReset.push(label.name);
   }
-
-  await github.rest.issues.addLabels({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: issueNumber,
-    labels: labelsToReset,
-  });
 }

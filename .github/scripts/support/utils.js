@@ -56,4 +56,55 @@ module.exports = {
       });
     }
   },
+
+  /**
+   * Calls the Monday.com API with a provided query
+   * @param {string | undefined} key - The Monday.com API key
+   * @param {string} query - The GraphQL query to execute
+   * @returns {Promise<string | undefined>}
+   */
+  callMonday: async (key, query) => {
+    try {
+      if (!key) {
+        throw new Error("Monday.com API key is not set.");
+      }
+
+      const response = await fetch("https://api.monday.com/v2", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: key,
+        },
+        body: JSON.stringify({
+          query: query,
+        }),
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        console.log(body);
+        throw new Error(`HTTP error when callid the Monday API: ${body}`);
+      }
+
+      return body;
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  /**
+   * Inserts or replaces the Monday sync line in the issue body string
+   * @param {string | null} body - The current issue body
+   * @param {string} mondayID - The Monday.com item ID
+   * @returns {string} - The updated issue body
+   */
+  addSyncLine: (body, mondayID) => {
+    const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
+    const syncLineRegex = /^\*\*monday\.com sync:\*\* #\d+\n\n?/m;
+    if (body && syncLineRegex.test(body)) {
+      return body.replace(syncLineRegex, syncMarkdown);
+    } else {
+      return syncMarkdown + (body || '');
+    }
+  },
 };

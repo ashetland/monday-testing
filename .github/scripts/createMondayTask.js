@@ -1,59 +1,13 @@
 // @ts-check
+import { callMonday, addSyncLine } from './support/utils.js';;
+import { mondayBoard, mondayColumns, mondayIssueTypes, mondayStatuses, mondayPriorities, mondayPeople } from './support/resources.js';
+import { create } from 'domain';
+// import  from "./support/resources.js";
+
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
-module.exports = async ({ context }) => {
-  const BOARD = "8780429793";
-  const columns = {
-    issue_id: "numeric_mknk2xhh",
-    date: "date6",
-    link: "link",
-    people: "people",
-    designers: "multiple_person_mkt2rtfv",
-    developers: "multiple_person_mkt2q89j",
-    product_engineers: "multiple_person_mkt2hhzm",
-    status: "dup__of_overall_status__1",
-    issue_type: "color_mksw3bdr",
-    priority: "priority",
-  };
+module.exports = async ({ github, context }) => {
   const { MONDAY_KEY } = process.env;
-
-  const payload = /** @type {import('@octokit/webhooks-types').IssuesCreatedEvent} */ (context.payload);
-
-  /**
-   * @typedef {object} Issue
-   * @property {string} title
-   * @property {string} url
-   * @property {string} body
-   * @property {string} number
-   * @property {object} milestone
-   * @property {string} milestone.title
-   * @property {People[]} assignees
-   * @property {Label[]} labels
-   */
-
-  /**
-   * @typedef {object} People
-   * @property {string} login
-   * @property {string} id
-   * @property {string} node_id
-   * @property {string} avatar_url
-   * @property {string} url
-   * @property {string} html_url
-   * @property {string} type
-   * @property {boolean} site_admin
-   */
-
-  /**
-   * @typedef {object} Label
-   * @property {string} name
-   * @property {string} color
-   * @property {string} description
-   * @property {string} url
-   * @property {string} id
-   * @property {string} node_id
-   * @property {boolean} default
-   */
-
-  /** @type {Issue} */
+  const payload = /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent} */ (context.payload);
   const {
     title,
     url,
@@ -64,139 +18,108 @@ module.exports = async ({ context }) => {
   } = payload.issue;
 
   /**
-   * Calls the Monday.com API with a provided query
-   * @param {string} query
-   * @returns {Promise<string | undefined>}
+   * Assigns a person to the Monday.com task object based on their GitHub username/role
+   * @param {import('@octokit/webhooks-types').User} person
+   * @param {object} values - The current column values object to update
+   * @returns {Promise<object>} - The updated column values object
    */
-  async function callMonday(query) {
-    try {
-      const response = await fetch("https://api.monday.com/v2", {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: MONDAY_KEY,
-        },
-        body: JSON.stringify({
-          query: query,
-        }),
-      });
-
-      const body = await response.json();
-
-      if (!response.ok) {
-        console.log(body);
-        throw new Error(`HTTP error when callid the Monday API: ${body}`);
-      }
-
-      return body;
-    } catch (error) {
-      console.log(error);
+  async function assignPerson(person, values) {
+    if (!person?.login) {
+      console.warn("No person or login provided for assignment");
+      return;
     }
+
+    const info = mondayPeople.get(person.login);
+
+    if (!info) {
+      console.warn(`Assignee ${person.login} not found in peopleMap`);
+      return;
+    }
+
+    const currentValue = await callMonday(MONDAY_KEY, `query {
+      boards(ids: ${mondayBoard}) {
+        items(ids: ${number}) {
+          column_values(ids: "${info.role}") {
+            text
+          }
+        }
+      }
+    }`);
+
+    // const columnValues = currentValue.data.boards[0].items[0].column_values;
+    console.log(`Current value for ${info.role}:`, currentValue);
+
+    // values[info.role] = `${info.id}`;
+
+    return values;
   }
 
   /**
-   * @typedef {object} Person
-   * @property {string} role - The role of the person (e.g., developers, designers, product_engineers)
-   * @property {number} id - The Monday.com user ID
+   * Assigns labels to the Monday.com task object based on the issue labels
+   * @param {import('@octokit/webhooks-types').Label[]} labels - The labels from the issue
+   * @param {object} values - The current column values object to update
+   * @returns {object} - The updated column values object
    */
+  function assignLabels(labels, values) {
+    const issueTypes = [];
+    const statuses = [];
+    const priorities = [];
 
-  /** @type {Map<string, Person>} */
-  const peopleMap = new Map([
-    ["anveshmekala", { role: columns.developers, id: 48387134 }],
-    ["aPreciado88", { role: columns.developers, id: 6079524 }],
-    ["ashetland", { role: columns.designers, id: 45851619 }],
-    ["benelan", { role: columns.developers, id: 49704471 }],
-    ["chezHarper", { role: columns.designers, id: 71157966 }],
-    ["DitwanP", { role: columns.product_engineers, id: 53683093 }],
-    ["driskull", { role: columns.developers, id: 45944985 }],
-    ["Elijbet", { role: columns.developers, id: 55852207 }],
-    ["eriklharper", { role: columns.developers, id: 49699973 }],
-    // Kitty set to dev temporarily
-    ["geospatialem", { role: columns.developers, id: 45853373 }],
-    ["isaacbraun", { role: columns.product_engineers, id: 76547859 }],
-    ["jcfranco", { role: columns.developers, id: 45854945 }],
-    ["josercarcamo", { role: columns.developers, id: 56555749 }],
-    ["macandcheese", { role: columns.developers, id: 45854918 }],
-    ["matgalla",  { role: columns.designers, id: 69473378 }],
-    ["rmstinson", { role: columns.designers, id: 47277636 }],
-    ["SkyeSeitz", { role: columns.designers, id: 45854937 }],
-    ["Amretasre002762670", { role: columns.developers, id: 77031889 }],
-  ]);
-
-  // ["bug", "enhancement", "a11y", "docs", "refactor", "spike", "testing", "tooling"];
-  const issueTypeLabels = new Map([
-    ["bug", "Bug"],
-    ["enhancement", "Enhancement"],
-  ]);
-  // ["needs triage", "needs milestone", "ready for dev", "1 - assigned", "2 - in development", "3 - installed", "4 - verified"];
-  const statusLabels = new Map([
-    ["1 - assigned", "Assigned 🤖"],
-    // [, "Done"],
-    ["needs triage", "Needs Triage 🤖"],
-    ["ready for dev", "Ready for dev 🤖"],
-    ["2 - in development", "In Dev 🤖"],
-    ["needs milestone", "Needs Milestone 🤖"],
-    // [, "In Design 🤖"],
-    ["0 - new", "Unassigned"],
-    // [, "Stalled"],
-    // [, "In Review"],
-    // [, "Adding to Kit 🤖"]
-  ]);
-  const priorityLabels = new Map([
-    ["p - high", "High"],
-    ["p - medium", "Medium"],
-    ["p - low", "Low"],
-  ]);
-
-  let issueType = "";
-  let status = "";
-  let priority = "";
-
-  for (const label of labels) {
-    if (issueTypeLabels.has(label.name)) {
-      issueType = label.name;
-      continue;
-    }
-    if (statusLabels.has(label.name)) {
-      status = label.name;
-      continue;
-    }
-    if (priorityLabels.has(label.name)) {
-      priority = label.name;
-      continue;
-    }
-  }
-
-  const columnValuesObj = {
-    [columns.issue_id]: number,
-    [columns.link]: {
-      "url": url,
-      "text": title
-    },
-    [columns.status]: statusLabels.get(status || "needs triage"),
-    [columns.issue_type]: issueTypeLabels.get(issueType),
-    [columns.priority]: priorityLabels.get(priority),
-  };
-
-  if (assignees) {
-    for (const person of assignees) {
-      const info = peopleMap.get(person.login);
-
-      if (info) {
-        columnValuesObj[info.role] = `${info.id}`;
-      } else {
-        console.warn(`Assignee ${person.login} not found in peopleMap`);
+    for (const label of labels) {
+      if (mondayIssueTypes.has(label.name)) {
+        issueTypes.push(mondayIssueTypes.get(label.name));
+        continue;
+      }
+      if (mondayStatuses.has(label.name)) {
+        statuses.push(mondayStatuses.get(label.name));
+        continue;
+      }
+      if (mondayPriorities.has(label.name)) {
+        priorities.push(mondayPriorities.get(label.name));
+        continue;
       }
     }
+
+    if (!issueTypes.length) {
+      values[mondayColumns.issue_type] = issueTypes.join(", ");
+    }
+    if (!statuses.length) {
+      values[mondayColumns.status] = statuses.join(", ");
+    }
+    if (!priorities.length) {
+      values[mondayColumns.priority] = priorities.join(", ");
+    }
   }
 
-  let columnValues = JSON.stringify(columnValuesObj);
+  async function createColumnValues() {
+    let values = {
+      [mondayColumns.issue_id]: number,
+      [mondayColumns.link]: {
+        "url": url,
+        "text": title
+      },
+    };
+
+    if (assignees) {
+      for (const person of assignees) {
+        values = await assignPerson(person, values);
+      }
+    }
+
+    if (labels) {
+      values = assignLabels(labels, values);
+    }
+
+    return values;
+  }
+
+  let columnValues = JSON.stringify(await createColumnValues());
   // Escape double quotes for GraphQL
   columnValues = columnValues.replace(/"/g, '\\"');
 
   const query = `mutation { 
     create_item (
-      board_id: ${BOARD},
+      board_id: ${mondayBoard},
       item_name: "${title}",
       column_values: "${columnValues}"
     ) {
@@ -205,12 +128,34 @@ module.exports = async ({ context }) => {
   }`;
   console.log(query);
 
-  const response = await callMonday(query);
-  console.log(response.data);
-  if (response?.errors) {
-    console.error(`Error creating Monday.com task: ${response.errors[0].message}, locations: ${response.errors[0].locations}`);
-    throw new Error(`Error creating Monday.com task: ${response.errors[0].message}`);
+  const response = await callMonday(MONDAY_KEY, query);
+
+  if (!response) {
+    throw new Error(`No response for Github Issue #${number}`);
   }
 
-  // console.log(`Created Monday.com task with ID: ${id}`);
+  console.log(response["data"]);
+
+  if (response && response["errors"]) {
+    console.error(`Error creating Monday.com task: ${response["errors"][0]["message"]}, locations: ${response["errors"][0]["locations"]}`);
+    throw new Error(`Error creating Monday.com task: ${response["errors"][0]["message"]}`);
+  }
+
+  const items = response["data"]["items_page_by_column_values"]["items"];
+
+  if (!items?.length) {
+    throw new Error(`No items found for Github Issue #${number}`);
+  }
+
+  const mondayID = items[0]["id"];
+
+  const updatedBody = addSyncLine(body, mondayID);
+
+  // Update the issue with the new body
+  await github.rest.issues.update({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    issue_number: number,
+    body: updatedBody,
+  });
 };
