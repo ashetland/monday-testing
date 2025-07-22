@@ -9,7 +9,7 @@ module.exports = async ({ github, context }) => {
     /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent} */ (
       context.payload
     );
-  const { title, url, body, number, labels, assignees } = payload.issue;
+  const { title, body, number, labels, assignees, html_url } = payload.issue;
 
   /**
    * Assigns a person to the Monday.com task object based on their GitHub username/role
@@ -86,7 +86,7 @@ module.exports = async ({ github, context }) => {
     let values = {
       [monday.columns.issue_id]: number,
       [monday.columns.link]: {
-        url: url,
+        url: html_url,
         text: title,
       },
     };
@@ -118,7 +118,6 @@ module.exports = async ({ github, context }) => {
     return query;
   }
 
-  
   const response = await callMonday(MONDAY_KEY, createTaskQuery());
 
   if (!response || !response["data"] || !response["data"]["create_item"]["id"]) {
