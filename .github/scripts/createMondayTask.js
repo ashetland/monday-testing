@@ -1,6 +1,6 @@
 // @ts-check
 const { callMonday, addSyncLine } = require("./support/utils");
-const { monday } = require("./support/resources");
+const { monday, resources } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
@@ -55,10 +55,14 @@ module.exports = async ({ github, context }) => {
         issueTypes.push(monday.issueTypes.get(label.name));
         continue;
       }
+
       if (monday.statuses.has(label.name)) {
         statuses.push(monday.statuses.get(label.name));
         continue;
+      } else {
+        statuses.push(monday.statuses.get(resources.labels.planning.needsTriage));
       }
+
       if (monday.priorities.has(label.name)) {
         priorities.push(monday.priorities.get(label.name));
         continue;
