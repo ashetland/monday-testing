@@ -1,3 +1,7 @@
+const MONDAY_DEVELOPERS = "multiple_person_mkt2q89j";
+const MONDAY_DESIGNERS = "multiple_person_mkt2rtfv";
+const MONDAY_PRODUCT_ENGINEERS = "multiple_person_mkt2hhzm";
+
 const resources = {
   labels: {
     bug: {
@@ -63,9 +67,9 @@ const monday = {
     date: "date6",
     link: "link",
     people: "people",
-    designers: "multiple_person_mkt2rtfv",
-    developers: "multiple_person_mkt2q89j",
-    product_engineers: "multiple_person_mkt2hhzm",
+    designers: MONDAY_DESIGNERS,
+    developers: MONDAY_DEVELOPERS,
+    product_engineers: MONDAY_PRODUCT_ENGINEERS,
     status: "dup__of_overall_status__1",
     issue_type: "color_mksw3bdr",
     priority: "priority",
@@ -105,35 +109,34 @@ const monday = {
     [resources.labels.priority.low, "Low"],
     [resources.labels.priority.critical, "Critical"],
   ]),
+  /**
+   * @typedef {object} MondayPerson
+   * @property {string} role - The role of the person (e.g., developers, designers, product_engineers)
+   * @property {number} id - The Monday.com user ID
+   */
+  /** @type {Map<string, MondayPerson>} */
+  people: new Map([
+    ["anveshmekala", { role: MONDAY_DEVELOPERS, id: 48387134 }],
+    ["aPreciado88", { role: MONDAY_DEVELOPERS, id: 6079524 }],
+    ["ashetland", { role: MONDAY_DESIGNERS, id: 45851619 }],
+    ["benelan", { role: MONDAY_DEVELOPERS, id: 49704471 }],
+    ["chezHarper", { role: MONDAY_DESIGNERS, id: 71157966 }],
+    ["DitwanP", { role: MONDAY_PRODUCT_ENGINEERS, id: 53683093 }],
+    ["driskull", { role: MONDAY_DEVELOPERS, id: 45944985 }],
+    ["Elijbet", { role: MONDAY_DEVELOPERS, id: 55852207 }],
+    ["eriklharper", { role: MONDAY_DEVELOPERS, id: 49699973 }],
+    // Kitty set to dev temporarily
+    ["geospatialem", { role: MONDAY_DEVELOPERS, id: 45853373 }],
+    ["isaacbraun", { role: MONDAY_PRODUCT_ENGINEERS, id: 76547859 }],
+    ["jcfranco", { role: MONDAY_DEVELOPERS, id: 45854945 }],
+    ["josercarcamo", { role: MONDAY_DEVELOPERS, id: 56555749 }],
+    ["macandcheese", { role: MONDAY_DEVELOPERS, id: 45854918 }],
+    ["matgalla", { role: MONDAY_DESIGNERS, id: 69473378 }],
+    ["rmstinson", { role: MONDAY_DESIGNERS, id: 47277636 }],
+    ["SkyeSeitz", { role: MONDAY_DESIGNERS, id: 45854937 }],
+    ["Amretasre002762670", { role: MONDAY_DEVELOPERS, id: 77031889 }],
+  ]),
 };
-
-/**
- * @typedef {object} MondayPerson
- * @property {string} role - The role of the person (e.g., developers, designers, product_engineers)
- * @property {number} id - The Monday.com user ID
- */
-/** @type {Map<string, MondayPerson>} */
-monday.people = new Map([
-  ["anveshmekala", { role: monday.columns.developers, id: 48387134 }],
-  ["aPreciado88", { role: monday.columns.developers, id: 6079524 }],
-  ["ashetland", { role: monday.columns.designers, id: 45851619 }],
-  ["benelan", { role: monday.columns.developers, id: 49704471 }],
-  ["chezHarper", { role: monday.columns.designers, id: 71157966 }],
-  ["DitwanP", { role: monday.columns.product_engineers, id: 53683093 }],
-  ["driskull", { role: monday.columns.developers, id: 45944985 }],
-  ["Elijbet", { role: monday.columns.developers, id: 55852207 }],
-  ["eriklharper", { role: monday.columns.developers, id: 49699973 }],
-  // Kitty set to dev temporarily
-  ["geospatialem", { role: monday.columns.developers, id: 45853373 }],
-  ["isaacbraun", { role: monday.columns.product_engineers, id: 76547859 }],
-  ["jcfranco", { role: monday.columns.developers, id: 45854945 }],
-  ["josercarcamo", { role: monday.columns.developers, id: 56555749 }],
-  ["macandcheese", { role: monday.columns.developers, id: 45854918 }],
-  ["matgalla", { role: monday.columns.designers, id: 69473378 }],
-  ["rmstinson", { role: monday.columns.designers, id: 47277636 }],
-  ["SkyeSeitz", { role: monday.columns.designers, id: 45854937 }],
-  ["Amretasre002762670", { role: monday.columns.developers, id: 77031889 }],
-]);
 
 module.exports = {
   resources,
