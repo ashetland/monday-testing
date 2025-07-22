@@ -35,10 +35,12 @@ module.exports = async ({ github, context }) => {
     }
 
     const currentValue = await callMonday(MONDAY_KEY, `query {
-      boards(ids: ${monday.board}) {
-        items(ids: ${number}) {
-          column_values(ids: "${info.role}") {
-            text
+      items (ids: [${number}]) {
+        column_values(ids: "${info.role}") {
+          ... on PeopleValue {
+             persons_and_teams {
+              id
+            }
           }
         }
       }
@@ -47,7 +49,7 @@ module.exports = async ({ github, context }) => {
     // const columnValues = currentValue.data.boards[0].items[0].column_values;
     console.log(`Current value for ${info.role}:`, currentValue);
 
-    // values[info.role] = `${info.id}`;
+    values[info.role] = `${info.id}`;
 
     return values;
   }
@@ -111,15 +113,19 @@ module.exports = async ({ github, context }) => {
     return values;
   }
 
-  let columnValues = JSON.stringify(await createColumnValues());
+  const columnValues = await createColumnValues();
+  
+  if (!columnValues) {
+    throw new Error(`Erorr creating column values for Github Issue #${number}`);
+  }
   // Escape double quotes for GraphQL
-  columnValues = columnValues.replace(/"/g, '\\"');
+  const columnValuesString = JSON.stringify(columnValues).replace(/"/g, '\\"');
 
   const query = `mutation { 
     create_item (
       board_id: ${monday.board},
       item_name: "${title}",
-      column_values: "${columnValues}"
+      column_values: "${columnValuesString}"
     ) {
       id
     }
