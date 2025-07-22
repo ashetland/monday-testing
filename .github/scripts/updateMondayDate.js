@@ -1,6 +1,6 @@
 // @ts-check
-import { callMonday } from "./support/utils.js";
-import { mondayBoard, mondayColumns } from "./support/resources.js";
+const { callMonday } = require("./support/utils.js");
+const { mondayBoard, mondayColumns } = require("./support/resources.js");
 
 // When a Milestone is added or updated:
 // 1. Find ID of task in Issue Body, if not found, find in Monday

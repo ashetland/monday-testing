@@ -1,6 +1,6 @@
 // @ts-check
-import { callMonday, addSyncLine } from './support/utils.js';;
-import { mondayBoard, mondayColumns, mondayIssueTypes, mondayStatuses, mondayPriorities, mondayPeople } from './support/resources.js';
+const { callMonday, addSyncLine } = require('./support/utils.js');
+const { mondayBoard, mondayColumns, mondayIssueTypes, mondayStatuses, mondayPriorities, mondayPeople } = require('./support/resources.js');
 import { create } from 'domain';
 // import  from "./support/resources.js";
 
