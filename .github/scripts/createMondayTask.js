@@ -19,9 +19,9 @@ module.exports = async ({ github, context }) => {
    * Assigns a person to the Monday.com task object based on their GitHub username/role
    * @param {import('@octokit/webhooks-types').User} person
    * @param {object} values - The current column values object to update
-   * @returns {Promise<object>} - The updated column values object
+   * @returns {object} - The updated column values object
    */
-  async function assignPerson(person, values) {
+  function assignPerson(person, values) {
     if (!person?.login) {
       console.warn("No person or login provided for assignment");
       return;
@@ -34,22 +34,27 @@ module.exports = async ({ github, context }) => {
       return;
     }
 
-    const currentValue = await callMonday(MONDAY_KEY, `query {
-      items (ids: [${number}]) {
-        column_values(ids: "${info.role}") {
-          ... on PeopleValue {
-             persons_and_teams {
-              id
-            }
-          }
-        }
-      }
-    }`);
+    // const currentValue = await callMonday(MONDAY_KEY, `query {
+    //   items (ids: [${number}]) {
+    //     column_values(ids: "${info.role}") {
+    //       ... on PeopleValue {
+    //          persons_and_teams {
+    //           id
+    //         }
+    //       }
+    //     }
+    //   }
+    // }`);
+    //
+    // // const columnValues = currentValue.data.boards[0].items[0].column_values;
+    // console.log(`Current value for ${info.role}:`, currentValue);
 
-    // const columnValues = currentValue.data.boards[0].items[0].column_values;
-    console.log(`Current value for ${info.role}:`, currentValue);
-
-    values[info.role] = `${info.id}`;
+    if (!values[info.role]) {
+      values[info.role] = `${info.id}`;
+    } else {
+      // If the role already has a value, append the new person
+      values[info.role] += `, ${info.id}`;
+    }
 
     return values;
   }
@@ -116,7 +121,7 @@ module.exports = async ({ github, context }) => {
   const columnValues = await createColumnValues();
   
   if (!columnValues) {
-    throw new Error(`Erorr creating column values for Github Issue #${number}`);
+    throw new Error(`Error creating column values for Github Issue #${number}`);
   }
   // Escape double quotes for GraphQL
   const columnValuesString = JSON.stringify(columnValues).replace(/"/g, '\\"');
