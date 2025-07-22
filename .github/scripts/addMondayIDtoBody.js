@@ -1,7 +1,6 @@
 // @ts-check
 const { callMonday, addSyncLine } = require("./support/utils");
-const { mondayBoard, mondayColumns } = require("./support/resources");
-// const { mondayBoard, mondayColumns } = require("./support/resources.js");
+const { monday } = require("./support/resources");
 
 // When the `monday.com sync` label is added to an issue:
 // 1. Get the ID of the task in Monday.com
@@ -27,9 +26,9 @@ module.exports = async ({ github, context }) => {
   async function getMondayID(githubID) {
     const query = `query {
       items_page_by_column_values(
-        board_id: "${mondayBoard}",
+        board_id: "${monday.board}",
         columns: {
-          column_id: "${mondayColumns.issue_id}",
+          column_id: "${monday.columns.issue_id}",
           column_values: ["${githubID}"]
         },
       ) {

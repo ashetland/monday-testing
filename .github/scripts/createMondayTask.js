@@ -1,8 +1,6 @@
 // @ts-check
 const { callMonday, addSyncLine } = require("./support/utils");
-const { mondayBoard, mondayColumns, mondayIssueTypes, mondayStatuses, mondayPriorities, mondayPeople } = require('./support/resources');
-import { create } from 'domain';
-// import  from "./support/resources.js";
+const { monday } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
@@ -29,7 +27,7 @@ module.exports = async ({ github, context }) => {
       return;
     }
 
-    const info = mondayPeople.get(person.login);
+    const info = monday.people.get(person.login);
 
     if (!info) {
       console.warn(`Assignee ${person.login} not found in peopleMap`);
@@ -37,7 +35,7 @@ module.exports = async ({ github, context }) => {
     }
 
     const currentValue = await callMonday(MONDAY_KEY, `query {
-      boards(ids: ${mondayBoard}) {
+      boards(ids: ${monday.board}) {
         items(ids: ${number}) {
           column_values(ids: "${info.role}") {
             text
@@ -66,35 +64,35 @@ module.exports = async ({ github, context }) => {
     const priorities = [];
 
     for (const label of labels) {
-      if (mondayIssueTypes.has(label.name)) {
-        issueTypes.push(mondayIssueTypes.get(label.name));
+      if (monday.issueTypes.has(label.name)) {
+        issueTypes.push(monday.issueTypes.get(label.name));
         continue;
       }
-      if (mondayStatuses.has(label.name)) {
-        statuses.push(mondayStatuses.get(label.name));
+      if (monday.statuses.has(label.name)) {
+        statuses.push(monday.statuses.get(label.name));
         continue;
       }
-      if (mondayPriorities.has(label.name)) {
-        priorities.push(mondayPriorities.get(label.name));
+      if (monday.priorities.has(label.name)) {
+        priorities.push(monday.priorities.get(label.name));
         continue;
       }
     }
 
     if (!issueTypes.length) {
-      values[mondayColumns.issue_type] = issueTypes.join(", ");
+      values[monday.columns.issue_type] = issueTypes.join(", ");
     }
     if (!statuses.length) {
-      values[mondayColumns.status] = statuses.join(", ");
+      values[monday.columns.status] = statuses.join(", ");
     }
     if (!priorities.length) {
-      values[mondayColumns.priority] = priorities.join(", ");
+      values[monday.columns.priority] = priorities.join(", ");
     }
   }
 
   async function createColumnValues() {
     let values = {
-      [mondayColumns.issue_id]: number,
-      [mondayColumns.link]: {
+      [monday.columns.issue_id]: number,
+      [monday.columns.link]: {
         "url": url,
         "text": title
       },
@@ -119,7 +117,7 @@ module.exports = async ({ github, context }) => {
 
   const query = `mutation { 
     create_item (
-      board_id: ${mondayBoard},
+      board_id: ${monday.board},
       item_name: "${title}",
       column_values: "${columnValues}"
     ) {

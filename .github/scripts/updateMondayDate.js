@@ -1,6 +1,6 @@
 // @ts-check
 const { callMonday } = require("./support/utils");
-const { mondayBoard, mondayColumns } = require("./support/resources");
+const { monday } = require("./support/resources");
 
 // When a Milestone is added or updated:
 // 1. Find ID of task in Issue Body, if not found, find in Monday
@@ -26,9 +26,9 @@ module.exports = async ({ context }) => {
   async function getMondayID(githubID) {
     const query = `query {
       items_page_by_column_values(
-        board_id: "${mondayBoard}",
+        board_id: "${monday.board}",
         columns: {
-          column_id: "${mondayColumns.issue_id}",
+          column_id: "${monday.columns.issue_id}",
           column_values: ["${githubID}"]
         },
       ) {
@@ -64,9 +64,9 @@ module.exports = async ({ context }) => {
 
     const query = `mutation {
       change_column_value(
-        board_id: "${mondayBoard}",
+        board_id: "${monday.board}",
         item_id: "${ID}",
-        column_id: "${mondayColumns.date}",
+        column_id: "${monday.columns.date}",
         value: ${valueEscaped}
       ) {
         id
