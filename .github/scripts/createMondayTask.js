@@ -153,13 +153,11 @@ module.exports = async ({ github, context }) => {
 
   console.log(response["data"]);
   try {
-    const items = response["data"]["create_item"]["items"];
+    const mondayID = response["data"]["create_item"]["id"];
 
-    if (!items?.length) {
+    if (!mondayID) {
       throw new Error(`No items found for Github Issue #${number}`);
     }
-
-    const mondayID = items[0]["id"];
 
     const updatedBody = addSyncLine(body, mondayID);
 
