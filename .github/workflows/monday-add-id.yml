@@ -1,7 +1,7 @@
 name: Add Monday.com ID to Issue Summary
 on:
-  # issues:
-  #   types: [labeled]
+  issues:
+    types: [labeled]
 jobs:
   add-monday-id:
     runs-on: ubuntu-latest
