@@ -256,7 +256,7 @@ function handleMilestone(milestone) {
   if (statusMilestones.includes(milestone)) {
     return {
       column: mondayColumns.status,
-      value: `${milestone}`,
+      value: `"${milestone}"`,
     };
   }
 
