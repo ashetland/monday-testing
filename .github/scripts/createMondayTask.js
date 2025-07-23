@@ -1,5 +1,5 @@
 // @ts-check
-const { callMonday, addSyncLine, assignLabels, assignPerson } = require("./support/utils");
+const { callMonday, addSyncLine, assignLabels, assignPerson, handleMilestone } = require("./support/utils");
 const { mondayBoard, mondayColumns } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
@@ -17,6 +17,7 @@ module.exports = async ({ github, context }) => {
    */
   function createTaskQuery() {
     let values = {
+      [mondayColumns.issueNumber]: `${number}`,
       [mondayColumns.link]: {
         url: html_url,
         text: `${number}`,
@@ -31,6 +32,11 @@ module.exports = async ({ github, context }) => {
 
     if (labels) {
       values = assignLabels(labels, values);
+    }
+
+    if (milestone) {
+      const { column, value } = handleMilestone(milestone.title);
+      values[column] = value;
     }
 
     // Escape double quotes for GraphQL
