@@ -82,7 +82,7 @@ module.exports = async ({ github, context }) => {
     let values = {
       [mondayColumns.link]: {
         url: html_url,
-        text: number,
+        text: `${number}`,
       },
     };
 
