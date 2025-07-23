@@ -1,6 +1,6 @@
 // @ts-check
 const { callMonday, addSyncLine } = require("./support/utils");
-const { monday, resources } = require("./support/resources");
+const { mondayBoard, mondayColumns, mondayLabels, mondayPeople } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
@@ -23,7 +23,7 @@ module.exports = async ({ github, context }) => {
       return;
     }
 
-    const info = monday.people.get(person.login);
+    const info = mondayPeople.get(person.login);
 
     if (!info) {
       console.warn(`Assignee ${person.login} not found in peopleMap`);
@@ -46,37 +46,23 @@ module.exports = async ({ github, context }) => {
    * @returns {object} - The updated column values object
    */
   function assignLabels(labels, values) {
-    const issueTypes = [];
-    const statuses = [];
-    const priorities = [];
-
     for (const label of labels) {
-      if (monday.issueTypes.has(label.name)) {
-        issueTypes.push(monday.issueTypes.get(label.name));
+      if (!mondayLabels.has(label.name)) {
+        console.warn(`Label ${label.name} not found in Monday Labels map`);
         continue;
       }
 
-      if (monday.statuses.has(label.name)) {
-        statuses.push(monday.statuses.get(label.name));
+      const info = mondayLabels.get(label.name);
+      if (!info?.column || !info?.title) {
+        console.warn(`Label ${label.name} is missing column or title information`);
         continue;
+      }
+
+      if (!values[info.column]) {
+        values[info.column] = info.title;
       } else {
-        statuses.push(monday.statuses.get(resources.labels.planning.needsTriage));
+        values[info.column] += `, ${info.title}`;
       }
-
-      if (monday.priorities.has(label.name)) {
-        priorities.push(monday.priorities.get(label.name));
-        continue;
-      }
-    }
-
-    if (issueTypes.length) {
-      values[monday.columns.issue_type] = issueTypes.join(", ");
-    }
-    if (statuses.length) {
-      values[monday.columns.status] = statuses.join(", ");
-    }
-    if (priorities.length) {
-      values[monday.columns.priority] = priorities.join(", ");
     }
 
     return values;
@@ -88,8 +74,8 @@ module.exports = async ({ github, context }) => {
    */
   function createTaskQuery() {
     let values = {
-      [monday.columns.issue_id]: number,
-      [monday.columns.link]: {
+      [mondayColumns.issueNumber]: number,
+      [mondayColumns.link]: {
         url: html_url,
         text: title,
       },
@@ -110,7 +96,7 @@ module.exports = async ({ github, context }) => {
 
     const query = `mutation { 
       create_item (
-        board_id: ${monday.board},
+        board_id: ${mondayBoard},
         item_name: "${title}",
         column_values: "${valuesString}"
       ) {
