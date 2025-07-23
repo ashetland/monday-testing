@@ -251,8 +251,7 @@ function handleMilestone(milestone) {
     };
   }
 
-  // resources.milestone.backlog, resources.milestone.freezer
-  const statusMilestones = [resources.milestone.stalled];
+  const statusMilestones = [resources.milestone.stalled, resources.milestone.backlog, resources.milestone.freezer];
   if (statusMilestones.includes(milestone)) {
     return {
       column: mondayColumns.status,
