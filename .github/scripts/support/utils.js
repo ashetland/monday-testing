@@ -112,6 +112,7 @@ async function callMonday(key, query) {
 /**
  * Returns the Monday.com task ID for the passed GitHub Issue ID.
  * Matches based on the GitHub Issue ID column.
+ * @param {string} key - The Monday.com API key
  * @param {number} githubID
  * @returns {Promise<string>}
  */
@@ -255,7 +256,7 @@ function handleMilestone(milestone) {
   if (statusMilestones.includes(milestone)) {
     return {
       column: mondayColumns.status,
-      value: milestone,
+      value: `${milestone}`,
     };
   }
 
