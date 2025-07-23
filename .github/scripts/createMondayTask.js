@@ -51,7 +51,6 @@ module.exports = async ({ github, context }) => {
         id
       }
     }`;
-    console.log(query);
 
     return query;
   }
