@@ -61,6 +61,11 @@ const resources = {
       large: "estimate - design - lg",
     },
   },
+  milestone: {
+    backlog: "Dev Backlog",
+    stalled: "Stalled",
+    freezer: "Freezer",
+  },
   teams: {
     admins: "calcite-design-system-admins",
     iconDesigners: "calcite-icon-designers",
