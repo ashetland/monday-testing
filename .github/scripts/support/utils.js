@@ -112,7 +112,7 @@ async function callMonday(key, query) {
 /**
  * Returns the Monday.com task ID for the passed GitHub Issue ID.
  * Matches based on the GitHub Issue ID column.
- * @param {string} key - The Monday.com API key
+ * @param {string | undefined} key - The Monday.com API key
  * @param {number} githubID
  * @returns {Promise<string>}
  */
@@ -239,7 +239,7 @@ function handleMilestone(milestone) {
    * @param {string} date - The date string to format
    * @returns { string } - The formatted date string
    */
-  const formatDate = (date) => JSON.stringify(JSON.stringify({ date: date }));
+  const formatDate = (date) => JSON.stringify({ date: date });
 
   // Attempt to extract the date from the milestone title
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
@@ -256,7 +256,7 @@ function handleMilestone(milestone) {
   if (statusMilestones.includes(milestone)) {
     return {
       column: mondayColumns.status,
-      value: `"${milestone}"`,
+      value: `${milestone}`,
     };
   }
 

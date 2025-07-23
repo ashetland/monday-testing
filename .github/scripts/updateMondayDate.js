@@ -29,7 +29,7 @@ module.exports = async ({ context }) => {
         board_id: "${mondayBoard}",
         item_id: "${ID}",
         column_id: "${column}",
-        value: ${value}
+        value: ${JSON.stringify(value)}
       ) {
         id
       }
@@ -53,5 +53,10 @@ module.exports = async ({ context }) => {
 
   const { column, value } = handleMilestone(milestone);
 
-  updateColumnValue(mondayID, column, value);
+  try {
+    updateColumnValue(mondayID, column, value);
+  }
+  catch (error) {
+    console.error(`Failed to update Monday.com task for issue #${number}: ${error.message}`);
+  }
 };
