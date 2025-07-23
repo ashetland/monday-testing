@@ -49,6 +49,17 @@ const resources = {
       skip: "skip visual snapshots",
       run: "pr ready for visual snapshots",
     },
+    devEstimate: {
+      one: "estimate - 1",
+      two: "estimate - 2",
+      three: "estimate - 3",
+      five: "estimate - 5",
+    },
+    designEstimate: {
+      small: "estimate - design - sm",
+      medium: "estimate - design - md",
+      large: "estimate - design - lg",
+    },
   },
   teams: {
     admins: "calcite-design-system-admins",
@@ -84,142 +95,188 @@ const mondayLabels = new Map([
     resources.labels.planning.needsTriage,
     {
       column: mondayColumns.status,
-      title: "Needs Triage",
+      value: "Needs Triage",
     },
   ],
   [
     resources.labels.planning.needsMilestone,
     {
       column: mondayColumns.status,
-      title: "Needs Milestone",
+      value: "Needs Milestone",
     },
   ],
+  // [resources.labels.planning.spike, {
+  //   column: mondayColumns.spike,
+  //   value: "Spike"
+  // }],
+  // [resources.labels.planning.spikeComplete, {
+  //   column: mondayColumns.spike,
+  //   value: "Spike Complete"
+  // }],
   [
     resources.labels.issueWorkflow.new,
     {
       column: mondayColumns.status,
-      title: "Unassigned",
+      value: "Unassigned",
     },
   ],
   [
     resources.labels.issueWorkflow.assigned,
     {
       column: mondayColumns.status,
-      title: "Assigned",
+      value: "Assigned",
     },
   ],
   [
     resources.labels.issueWorkflow.inDesign,
     {
       column: mondayColumns.status,
-      title: "In Design",
+      value: "In Design",
     },
   ],
   [
     resources.labels.issueWorkflow.inDevelopment,
     {
       column: mondayColumns.status,
-      title: "In Development",
+      value: "In Development",
     },
   ],
   [
     resources.labels.issueWorkflow.installed,
     {
       column: mondayColumns.status,
-      title: "Installed",
+      value: "Installed",
     },
   ],
   [
     resources.labels.issueWorkflow.verified,
     {
       column: mondayColumns.status,
-      title: "Verified",
+      value: "Verified",
     },
   ],
   [
     resources.labels.handoff.readyForDev,
     {
       column: mondayColumns.status,
-      title: "Ready for dev",
-    },
-  ],
-  [
-    resources.labels.issueType.design,
-    {
-      column: mondayColumns.issueType,
-      title: "In Design",
+      value: "Ready for dev",
     },
   ],
   [
     resources.labels.issueType.bug,
     {
       column: mondayColumns.issueType,
-      title: "Bug",
+      value: "Bug",
     },
   ],
   [
     resources.labels.issueType.enhancement,
     {
       column: mondayColumns.issueType,
-      title: "Enhancement",
+      value: "Enhancement",
     },
   ],
   [
     resources.labels.issueType.design,
     {
       column: mondayColumns.designIssue,
-      title: "Design",
+      value: "Design",
     },
   ],
-  // [resources.labels.planning.spike, {
-  //   column: mondayColumns.issueType,
-  //   title: "Spike"
-  // }],
   // [resources.labels.issueType.docs, {
   //   column: mondayColumns.issueType,
-  //   title: "Docs"
+  //   value: "Docs"
   // }],
   // [resources.labels.issueType.refactor, {
   //   column: mondayColumns.issueType,
-  //   title: "Refactor"
+  //   value: "Refactor"
   // }],
   // [resources.labels.issueType.test, {
   //   column: mondayColumns.issueType,
-  //   title: "Testing"
+  //   value: "Testing"
   // }],
   // [resources.labels.issueType.tooling, {
   //   column: mondayColumns.issueType,
-  //   title: "Tooling"
+  //   value: "Tooling"
   // }],
   // [resources.labels.issueType.a11y, {
   //   column: mondayColumns.issueType,
-  //   title: "A11y"
+  //   value: "A11y"
   // }],
   [
     resources.labels.priority.low,
     {
       column: mondayColumns.priority,
-      title: "Low",
+      value: "Low",
     },
   ],
   [
     resources.labels.priority.medium,
     {
       column: mondayColumns.priority,
-      title: "Medium",
+      value: "Medium",
     },
   ],
   [
     resources.labels.priority.high,
     {
       column: mondayColumns.priority,
-      title: "High",
+      value: "High",
     },
   ],
   // [resources.labels.priority.critical, {
   //   column: mondayColumns.priority,
-  //   title: "Critical"
+  //   value: "Critical"
   // }],
+  [
+    resources.labels.devEstimate.one,
+    {
+      column: mondayColumns.devPoints,
+      value: 1,
+    },
+  ],
+  [
+    resources.labels.devEstimate.two,
+    {
+      column: mondayColumns.devPoints,
+      value: 2,
+    },
+  ],
+  [
+    resources.labels.devEstimate.three,
+    {
+      column: mondayColumns.devPoints,
+      value: 3,
+    },
+  ],
+  [
+    resources.labels.devEstimate.five,
+    {
+      column: mondayColumns.devPoints,
+      value: 5,
+    },
+  ],
+  [
+    resources.labels.designEstimate.small,
+    {
+      column: mondayColumns.designEstimate,
+      value: "small",
+    },
+  ],
+  [
+    resources.labels.designEstimate.medium,
+    {
+      column: mondayColumns.designEstimate,
+      value: "medium",
+    },
+  ],
+  [
+    resources.labels.designEstimate.large,
+    {
+      column: mondayColumns.designEstimate,
+      value: "large",
+    },
+  ],
 ]);
 
 /**

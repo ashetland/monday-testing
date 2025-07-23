@@ -53,15 +53,15 @@ module.exports = async ({ github, context }) => {
       }
 
       const info = mondayLabels.get(label.name);
-      if (!info?.column || !info?.title) {
+      if (!info?.column || !info?.value) {
         console.warn(`Label ${label.name} is missing column or title information`);
         continue;
       }
 
       if (!values[info.column]) {
-        values[info.column] = info.title;
+        values[info.column] = info.value;
       } else {
-        values[info.column] += `, ${info.title}`;
+        values[info.column] += `, ${info.value}`;
       }
     }
 
