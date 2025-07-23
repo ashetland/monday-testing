@@ -47,6 +47,12 @@ module.exports = async ({ github, context }) => {
    */
   function assignLabels(labels, values) {
     for (const label of labels) {
+      // TEMP
+      if (label.name === "monday.com sync") {
+        // Skip the sync label, as it is not needed in Monday.com
+        continue;
+      }
+
       if (!mondayLabels.has(label.name)) {
         console.warn(`Label ${label.name} not found in Monday Labels map`);
         continue;
