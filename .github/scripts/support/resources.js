@@ -1,7 +1,3 @@
-const MONDAY_DEVELOPERS = "multiple_person_mkt2q89j";
-const MONDAY_DESIGNERS = "multiple_person_mkt2rtfv";
-const MONDAY_PRODUCT_ENGINEERS = "multiple_person_mkt2hhzm";
-
 const resources = {
   labels: {
     bug: {
@@ -64,87 +60,200 @@ const resources = {
   },
 };
 
-const monday = {
-  board: "8780429793",
-  columns: {
-    issue_id: "numeric_mknk2xhh",
-    date: "date6",
-    link: "link",
-    people: "people",
-    designers: MONDAY_DESIGNERS,
-    developers: MONDAY_DEVELOPERS,
-    product_engineers: MONDAY_PRODUCT_ENGINEERS,
-    status: "dup__of_overall_status__1",
-    issue_type: "color_mksw3bdr",
-    priority: "priority",
-  },
-  /** @type {Map<string, string>} */
-  issueTypes: new Map([
-    [resources.labels.issueType.bug, "Bug"],
-    [resources.labels.issueType.enhancement, "Enhancement"],
-    // [resources.labels.issueType.a11y, "A11y"],
-    // [resources.labels.issueType.docs, "Docs"],
-    // [resources.labels.issueType.refactor, "Refactor"],
-    // [resources.labels.planning.spike, "Spike"],
-    // [resources.labels.issueType.test, "Testing"],
-    // [resources.labels.issueType.tooling, "Tooling"],
-  ]),
-  /** @type {Map<string, string>} */
-  statuses: new Map([
-    [resources.labels.planning.needsTriage, "Needs Triage"],
-    [resources.labels.planning.needsMilestone, "Needs Milestone"],
-    // These might go away
-    [resources.labels.issueWorkflow.new, "Unassigned"],
-    [resources.labels.issueWorkflow.assigned, "Assigned"],
-    // 
-    [resources.labels.issueWorkflow.inDesign, "In Design"],
-    [resources.labels.issueWorkflow.inDevelopment, "In Development"],
-    [resources.labels.issueWorkflow.installed, "Installed"],
-    [resources.labels.issueWorkflow.verified, "Verified"],
-    [resources.labels.handoff.readyForDev, "Ready for dev"],
-    [resources.labels.issueType.design, "In Design"],
-    // [, "Done"],
-    // [, "Stalled"],
-    // [, "In Review"],
-    // [, "Adding to Kit"]
-  ]),
-  /** @type {Map<string, string>} */
-  priorities: new Map([
-    [resources.labels.priority.high, "High"],
-    [resources.labels.priority.medium, "Medium"],
-    [resources.labels.priority.low, "Low"],
-    [resources.labels.priority.critical, "Critical"],
-  ]),
-  /**
-   * @typedef {object} MondayPerson
-   * @property {string} role - The role of the person (e.g., developers, designers, product_engineers)
-   * @property {number} id - The Monday.com user ID
-   */
-  /** @type {Map<string, MondayPerson>} */
-  people: new Map([
-    ["anveshmekala", { role: MONDAY_DEVELOPERS, id: 48387134 }],
-    ["aPreciado88", { role: MONDAY_DEVELOPERS, id: 6079524 }],
-    ["ashetland", { role: MONDAY_DESIGNERS, id: 45851619 }],
-    ["benelan", { role: MONDAY_DEVELOPERS, id: 49704471 }],
-    ["chezHarper", { role: MONDAY_DESIGNERS, id: 71157966 }],
-    ["DitwanP", { role: MONDAY_PRODUCT_ENGINEERS, id: 53683093 }],
-    ["driskull", { role: MONDAY_DEVELOPERS, id: 45944985 }],
-    ["Elijbet", { role: MONDAY_DEVELOPERS, id: 55852207 }],
-    ["eriklharper", { role: MONDAY_DEVELOPERS, id: 49699973 }],
-    // Kitty set to dev temporarily
-    ["geospatialem", { role: MONDAY_DEVELOPERS, id: 45853373 }],
-    ["isaacbraun", { role: MONDAY_PRODUCT_ENGINEERS, id: 76547859 }],
-    ["jcfranco", { role: MONDAY_DEVELOPERS, id: 45854945 }],
-    ["josercarcamo", { role: MONDAY_DEVELOPERS, id: 56555749 }],
-    ["macandcheese", { role: MONDAY_DEVELOPERS, id: 45854918 }],
-    ["matgalla", { role: MONDAY_DESIGNERS, id: 69473378 }],
-    ["rmstinson", { role: MONDAY_DESIGNERS, id: 47277636 }],
-    ["SkyeSeitz", { role: MONDAY_DESIGNERS, id: 45854937 }],
-    ["Amretasre002762670", { role: MONDAY_DEVELOPERS, id: 77031889 }],
-  ]),
+const mondayBoard = "8780429793";
+
+const mondayColumns = {
+  issueNumber: "numeric_mknk2xhh",
+  link: "link",
+  people: "people",
+  designers: "multiple_person_mkt2rtfv",
+  developers: "multiple_person_mkt2q89j",
+  productEngineers: "multiple_person_mkt2hhzm",
+  status: "dup__of_overall_status__1",
+  date: "date6",
+  priority: "priority",
+  issueType: "color_mksw3bdr",
+  designEstimate: "color_mkqr3y8a",
+  devPoints: "numeric_mksvm3v7",
+  designIssue: "color_mkrdhk8",
+  open: "color_mknkrb2n",
 };
+
+const mondayLabels = new Map([
+  [
+    resources.labels.planning.needsTriage,
+    {
+      column: mondayColumns.status,
+      title: "Needs Triage",
+    },
+  ],
+  [
+    resources.labels.planning.needsMilestone,
+    {
+      column: mondayColumns.status,
+      title: "Needs Milestone",
+    },
+  ],
+  [
+    resources.labels.issueWorkflow.new,
+    {
+      column: mondayColumns.status,
+      title: "Unassigned",
+    },
+  ],
+  [
+    resources.labels.issueWorkflow.assigned,
+    {
+      column: mondayColumns.status,
+      title: "Assigned",
+    },
+  ],
+  [
+    resources.labels.issueWorkflow.inDesign,
+    {
+      column: mondayColumns.status,
+      title: "In Design",
+    },
+  ],
+  [
+    resources.labels.issueWorkflow.inDevelopment,
+    {
+      column: mondayColumns.status,
+      title: "In Development",
+    },
+  ],
+  [
+    resources.labels.issueWorkflow.installed,
+    {
+      column: mondayColumns.status,
+      title: "Installed",
+    },
+  ],
+  [
+    resources.labels.issueWorkflow.verified,
+    {
+      column: mondayColumns.status,
+      title: "Verified",
+    },
+  ],
+  [
+    resources.labels.handoff.readyForDev,
+    {
+      column: mondayColumns.status,
+      title: "Ready for dev",
+    },
+  ],
+  [
+    resources.labels.issueType.design,
+    {
+      column: mondayColumns.issueType,
+      title: "In Design",
+    },
+  ],
+  [
+    resources.labels.issueType.bug,
+    {
+      column: mondayColumns.issueType,
+      title: "Bug",
+    },
+  ],
+  [
+    resources.labels.issueType.enhancement,
+    {
+      column: mondayColumns.issueType,
+      title: "Enhancement",
+    },
+  ],
+  [
+    resources.labels.issueType.design,
+    {
+      column: mondayColumns.designIssue,
+      title: "Design",
+    },
+  ],
+  // [resources.labels.planning.spike, {
+  //   column: mondayColumns.issueType,
+  //   title: "Spike"
+  // }],
+  // [resources.labels.issueType.docs, {
+  //   column: mondayColumns.issueType,
+  //   title: "Docs"
+  // }],
+  // [resources.labels.issueType.refactor, {
+  //   column: mondayColumns.issueType,
+  //   title: "Refactor"
+  // }],
+  // [resources.labels.issueType.test, {
+  //   column: mondayColumns.issueType,
+  //   title: "Testing"
+  // }],
+  // [resources.labels.issueType.tooling, {
+  //   column: mondayColumns.issueType,
+  //   title: "Tooling"
+  // }],
+  // [resources.labels.issueType.a11y, {
+  //   column: mondayColumns.issueType,
+  //   title: "A11y"
+  // }],
+  [
+    resources.labels.priority.low,
+    {
+      column: mondayColumns.priority,
+      title: "Low",
+    },
+  ],
+  [
+    resources.labels.priority.medium,
+    {
+      column: mondayColumns.priority,
+      title: "Medium",
+    },
+  ],
+  [
+    resources.labels.priority.high,
+    {
+      column: mondayColumns.priority,
+      title: "High",
+    },
+  ],
+  // [resources.labels.priority.critical, {
+  //   column: mondayColumns.priority,
+  //   title: "Critical"
+  // }],
+]);
+
+/**
+ * @typedef {object} MondayPerson
+ * @property {string} role - The role of the person (e.g., developers, designers, productEngineers)
+ * @property {number} id - The Monday.com user ID
+ */
+/** @type {Map<string, MondayPerson>} */
+const mondayPeople = new Map([
+  ["anveshmekala", { role: mondayColumns.developers, id: 48387134 }],
+  ["aPreciado88", { role: mondayColumns.developers, id: 6079524 }],
+  ["ashetland", { role: mondayColumns.designers, id: 45851619 }],
+  ["benelan", { role: mondayColumns.developers, id: 49704471 }],
+  ["chezHarper", { role: mondayColumns.designers, id: 71157966 }],
+  ["DitwanP", { role: mondayColumns.productEngineers, id: 53683093 }],
+  ["driskull", { role: mondayColumns.developers, id: 45944985 }],
+  ["Elijbet", { role: mondayColumns.developers, id: 55852207 }],
+  ["eriklharper", { role: mondayColumns.developers, id: 49699973 }],
+  // Kitty set to dev temporarily
+  ["geospatialem", { role: mondayColumns.developers, id: 45853373 }],
+  ["isaacbraun", { role: mondayColumns.productEngineers, id: 76547859 }],
+  ["jcfranco", { role: mondayColumns.developers, id: 45854945 }],
+  ["josercarcamo", { role: mondayColumns.developers, id: 56555749 }],
+  ["macandcheese", { role: mondayColumns.developers, id: 45854918 }],
+  ["matgalla", { role: mondayColumns.designers, id: 69473378 }],
+  ["rmstinson", { role: mondayColumns.designers, id: 47277636 }],
+  ["SkyeSeitz", { role: mondayColumns.designers, id: 45854937 }],
+  ["Amretasre002762670", { role: mondayColumns.developers, id: 77031889 }],
+]);
 
 module.exports = {
   resources,
-  monday,
+  mondayBoard,
+  mondayColumns,
+  mondayLabels,
+  mondayPeople,
 };
