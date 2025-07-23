@@ -74,10 +74,9 @@ module.exports = async ({ github, context }) => {
    */
   function createTaskQuery() {
     let values = {
-      [mondayColumns.issueNumber]: number,
       [mondayColumns.link]: {
         url: html_url,
-        text: title,
+        text: number,
       },
     };
 
