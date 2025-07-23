@@ -9,7 +9,7 @@ module.exports = async ({ github, context }) => {
     /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent} */ (
       context.payload
     );
-  const { title, body, number, labels, assignees, html_url } = payload.issue;
+  const { title, body, number, labels, assignees, html_url, milestone } = payload.issue;
 
   /**
    * Creates the GraphQL query to create a new item in Monday.com
@@ -50,26 +50,20 @@ module.exports = async ({ github, context }) => {
     return query;
   }
 
-  try {
-    await callMonday(MONDAY_KEY, createTaskQuery());
-  } catch (error) {
-    console.error(`Error creating Monday.com task for GitHub Issue #${number}:`, error);
-    throw error;
+  const response = await callMonday(MONDAY_KEY, createTaskQuery());
+  if (!response || !response["data"] || !response["data"]["create_item"]["id"]) {
+    throw new Error(`Missing or bad response for Github Issue #${number}`);
   }
 
-  // if (!response || !response["data"] || !response["data"]["create_item"]["id"]) {
-  //   throw new Error(`Missing or bad response for Github Issue #${number}`);
-  // }
-  //
-  // const mondayID = response["data"]["create_item"]["id"];
-  //
-  // const updatedBody = addSyncLine(body, mondayID);
-  //
-  // // Update the issue with the new body
-  // await github.rest.issues.update({
-  //   owner: context.repo.owner,
-  //   repo: context.repo.repo,
-  //   issue_number: number,
-  //   body: updatedBody,
-  // });
+  const mondayID = response["data"]["create_item"]["id"];
+
+  const updatedBody = addSyncLine(body, mondayID);
+
+  // Update the issue with the new body
+  await github.rest.issues.update({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    issue_number: number,
+    body: updatedBody,
+  });
 };
