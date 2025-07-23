@@ -1,7 +1,7 @@
 name: Create Monday.com Task
 on:
   issues:
-    types: [labeled]
+    types: [opened]
 jobs:
   add-monday-id:
     runs-on: ubuntu-latest
