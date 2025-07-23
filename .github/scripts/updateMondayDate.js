@@ -35,7 +35,12 @@ module.exports = async ({ context }) => {
       }
     }`
 
-    callMonday(MONDAY_KEY, query);
+    try {
+      callMonday(MONDAY_KEY, query);
+    }
+    catch (error) {
+      throw new Error(`Error updating column value in Monday.com: ${error}`);
+    }
   }
 
   const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;

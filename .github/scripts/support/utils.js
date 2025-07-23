@@ -99,13 +99,12 @@ async function callMonday(key, query) {
     const body = await response.json();
 
     if (!response.ok) {
-      console.log(body);
-      throw new Error(`HTTP error when callid the Monday API: ${body}`);
+      throw new Error(`HTTP error when callid the Monday API: ${JSON.stringify(body)}`);
     }
 
     return body;
   } catch (error) {
-    console.log(error);
+    throw new Error(`Error calling Monday.com API: ${error}`);
   }
 }
 
