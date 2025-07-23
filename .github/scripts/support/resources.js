@@ -135,6 +135,13 @@ const mondayLabels = new Map([
     },
   ],
   [
+    resources.labels.issueWorkflow.readyForDev,
+    {
+      column: mondayColumns.status,
+      value: "Ready for dev",
+    },
+  ],
+  [
     resources.labels.issueWorkflow.inDevelopment,
     {
       column: mondayColumns.status,
@@ -153,13 +160,6 @@ const mondayLabels = new Map([
     {
       column: mondayColumns.status,
       value: "Verified",
-    },
-  ],
-  [
-    resources.labels.handoff.readyForDev,
-    {
-      column: mondayColumns.status,
-      value: "Ready for dev",
     },
   ],
   [
