@@ -95,11 +95,12 @@ async function callMonday(key, query) {
         query: query,
       }),
     });
+    console.log(`Query: ${query}`);
 
     const body = await response.json();
 
     if (!response.ok) {
-      throw new Error(`HTTP error when callid the Monday API: ${JSON.stringify(body)}`);
+      throw new Error(`HTTP error when calling the Monday API: ${JSON.stringify(body)}`);
     }
 
     return body;
