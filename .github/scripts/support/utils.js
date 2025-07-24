@@ -230,7 +230,7 @@ function assignPerson(person, values) {
 /**
  * Returns column and value to update from a milestone title
  * @param {string} milestone - The title of the milestone
- * @returns {{ column: string, value: string }} - The column ID and value to update in Monday.com
+ * @returns {{ column: string, value: string }[]} - The column ID and value to update in Monday.com
  */
 function handleMilestone(milestone) {
   //
@@ -239,31 +239,43 @@ function handleMilestone(milestone) {
    * @param {string} date - The date string to format
    * @returns { string } - The formatted date string
    */
-  const formatDate = (date) => JSON.stringify({ date: date });
+  // const formatDate = (date) => JSON.stringify({ date: date });
 
   // Attempt to extract the date from the milestone title
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
   const dueDate = milestone.match(dateRegex);
 
   if (dueDate) {
-    return {
+    return [{
       column: mondayColumns.date,
-      value: formatDate(dueDate[0]),
-    };
+      value: dueDate[0],
+    }];
   }
 
   const statusMilestones = [resources.milestone.stalled, resources.milestone.backlog, resources.milestone.freezer];
   if (statusMilestones.includes(milestone)) {
-    return {
-      column: mondayColumns.status,
-      value: `${milestone}`,
-    };
+    return [
+      {
+        column: mondayColumns.status,
+        value: milestone,
+      },
+      {
+        column: mondayColumns.date,
+        value: "",
+      },
+    ];
   }
 
-  return {
-    column: mondayColumns.date,
-    value: formatDate(""),
-  };
+  return [
+    {
+      column: mondayColumns.date,
+      value: "",
+    },
+    {
+      column: mondayColumns.status,
+      value: resources.labels.planning.needsMilestone,
+    },
+  ];
 }
 
 module.exports = {
