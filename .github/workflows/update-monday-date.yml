@@ -1,14 +1,14 @@
-name: Update Due Date
+name: Update Monday.com Milestone 
 on:
   issues:
-    types: [milestoned]
+    types: [milestoned, demilestoned]
 jobs:
   update-monday-date:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Update Monday.com Due Date"
+      - name: "Update Monday.com Milestone"
         uses: actions/github-script@v7
         env:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }} 

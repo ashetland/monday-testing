@@ -12,9 +12,7 @@ module.exports = async ({ context }) => {
   const {
     body,
     number,
-    milestone: {
-      title: milestone
-    }
+    milestone,
   } = payload.issue;
 
   /**
@@ -56,7 +54,7 @@ module.exports = async ({ context }) => {
     mondayID = await getMondayID(MONDAY_KEY, number);
   }
 
-  const columnValues = handleMilestone(milestone);
+  const columnValues = handleMilestone(milestone ? milestone.title : "");
 
   try {
     updateColumnValues(mondayID, columnValues);
