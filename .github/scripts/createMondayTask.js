@@ -35,8 +35,9 @@ module.exports = async ({ github, context }) => {
     }
 
     if (milestone) {
-      const { column, value } = handleMilestone(milestone.title);
-      values[column] = value;
+      handleMilestone(milestone.title).forEach(({ column, value }) => {
+        values[column] = value;
+      });
     }
 
     // Escape double quotes for GraphQL
