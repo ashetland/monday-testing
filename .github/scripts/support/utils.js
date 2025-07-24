@@ -118,7 +118,7 @@ async function callMonday(key, query) {
  * @param {number} githubID
  * @returns {Promise<string>}
  */
-async function getMondayID(key, githubID) {
+async function fetchMondayID(key, githubID) {
   const query = `query {
       items_page_by_column_values(
         board_id: "${mondayBoard}",
@@ -184,9 +184,7 @@ function assignLabel(label, values) {
 
   const info = mondayLabels.get(label.name);
   if (!info?.column || !info?.value) {
-    console.warn(
-      `Label ${label.name} is missing column or title information`,
-    );
+    console.warn(`Label ${label.name} is missing column or title information`);
     return values;
   }
 
@@ -236,7 +234,9 @@ function handleMilestone(milestone) {
     },
     {
       column: mondayColumns.status,
-      value: String(mondayLabels.get(resources.labels.planning.needsMilestone)?.value),
+      value: String(
+        mondayLabels.get(resources.labels.planning.needsMilestone)?.value,
+      ),
     },
   ];
 
@@ -257,7 +257,9 @@ function handleMilestone(milestone) {
       },
       {
         column: mondayColumns.status,
-        value: String(mondayLabels.get(resources.labels.issueWorkflow.assigned)?.value),
+        value: String(
+          mondayLabels.get(resources.labels.issueWorkflow.assigned)?.value,
+        ),
       },
     ];
   }
@@ -283,11 +285,32 @@ function handleMilestone(milestone) {
   return resetValues;
 }
 
+/**
+ * Returns the Monday.com item ID from the issue body or fetches it based on the issue number
+ * @param {string | undefined} key - The Monday.com API key
+ * @param {string | null} body - The issue body containing the sync line
+ * @param {number} number - The GitHub issue number
+ * @return {Promise<string>} - The Monday.com item ID
+ */
+async function getMondayID(key, body, number) {
+  const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
+  const mondayRegexMatch = body?.match(mondayRegex);
+  let mondayID =
+    mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
+
+  if (!mondayID) {
+    mondayID = await fetchMondayID(key, number);
+  }
+
+  return mondayID;
+}
+
 module.exports = {
   removeLabel,
   createLabelIfMissing,
   callMonday,
   getMondayID,
+  fetchMondayID,
   addSyncLine,
   assignLabel,
   assignPerson,

@@ -1,5 +1,5 @@
 // @ts-check
-const { callMonday, assignLabel } = require("./support/utils");
+const { callMonday, assignLabel, getMondayID } = require("./support/utils");
 const { mondayBoard } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
@@ -18,10 +18,12 @@ module.exports = async ({ context }) => {
   const values = assignLabel(label, {});
   const valuesString = JSON.stringify(values).replace(/"/g, '\\"');
 
+  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
+
   const query = `mutation {
     change_multiple_column_values(
       board_id: ${mondayBoard},
-      item_id: ${issue.number},
+      item_id: ${mondayID},
       column_values: "${valuesString}"
     ) {
       id

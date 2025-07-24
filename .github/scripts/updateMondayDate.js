@@ -1,6 +1,6 @@
 // @ts-check
 const { callMonday, getMondayID, handleMilestone } = require("./support/utils");
-const { mondayBoard, mondayColumns } = require("./support/resources");
+const { mondayBoard } = require("./support/resources");
 
 // When a Milestone is added or updated:
 // 1. Find ID of task in Issue Body, if not found, find in Monday
@@ -46,13 +46,7 @@ module.exports = async ({ context }) => {
     }
   }
 
-  const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
-  const mondayRegexMatch = body?.match(mondayRegex);
-  let mondayID = mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
-
-  if (!mondayID) {
-    mondayID = await getMondayID(MONDAY_KEY, number);
-  }
+  const mondayID = await getMondayID(MONDAY_KEY, body, number);
 
   const columnValues = handleMilestone(milestone ? milestone.title : "");
 
