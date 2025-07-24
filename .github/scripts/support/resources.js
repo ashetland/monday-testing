@@ -11,7 +11,6 @@ const resources = {
       chore: "chore",
       docs: "docs",
       enhancement: "enhancement",
-      perf: "perf",
       refactor: "refactor",
       test: "testing",
       tooling: "tooling",
@@ -81,7 +80,6 @@ const mondayBoard = "8780429793";
 const mondayColumns = {
   issueNumber: "numeric_mknk2xhh",
   link: "link",
-  people: "people",
   designers: "multiple_person_mkt2rtfv",
   developers: "multiple_person_mkt2q89j",
   productEngineers: "multiple_person_mkt2hhzm",
@@ -90,8 +88,10 @@ const mondayColumns = {
   priority: "priority",
   issueType: "color_mksw3bdr",
   designEstimate: "color_mkqr3y8a",
-  devPoints: "numeric_mksvm3v7",
+  devEstimate: "numeric_mksvm3v7",
   designIssue: "color_mkrdhk8",
+  a11y: "color_mkt5c4q6",
+  spike: "color_mkt5vd8a",
   open: "color_mknkrb2n",
 };
 
@@ -110,14 +110,14 @@ const mondayLabels = new Map([
       value: "Needs Milestone",
     },
   ],
-  // [resources.labels.planning.spike, {
-  //   column: mondayColumns.spike,
-  //   value: "Spike"
-  // }],
-  // [resources.labels.planning.spikeComplete, {
-  //   column: mondayColumns.spike,
-  //   value: "Spike Complete"
-  // }],
+  [resources.labels.planning.spike, {
+    column: mondayColumns.spike,
+    value: "Spike"
+  }],
+  [resources.labels.planning.spikeComplete, {
+    column: mondayColumns.spike,
+    value: "Spike Complete"
+  }],
   [
     resources.labels.issueWorkflow.new,
     {
@@ -168,10 +168,24 @@ const mondayLabels = new Map([
     },
   ],
   [
+    resources.labels.issueType.design,
+    {
+      column: mondayColumns.designIssue,
+      value: "Design",
+    },
+  ],
+  [
     resources.labels.issueType.bug,
     {
       column: mondayColumns.issueType,
       value: "Bug",
+    },
+  ],
+  [
+    resources.labels.issueType.chore,
+    {
+      column: mondayColumns.issueType,
+      value: "Chore",
     },
   ],
   [
@@ -182,32 +196,47 @@ const mondayLabels = new Map([
     },
   ],
   [
-    resources.labels.issueType.design,
+    resources.labels.issueType.newComponent,
     {
-      column: mondayColumns.designIssue,
-      value: "Design",
+      column: mondayColumns.issueType,
+      value: "New Component",
     },
   ],
-  // [resources.labels.issueType.docs, {
-  //   column: mondayColumns.issueType,
-  //   value: "Docs"
-  // }],
-  // [resources.labels.issueType.refactor, {
-  //   column: mondayColumns.issueType,
-  //   value: "Refactor"
-  // }],
-  // [resources.labels.issueType.test, {
-  //   column: mondayColumns.issueType,
-  //   value: "Testing"
-  // }],
-  // [resources.labels.issueType.tooling, {
-  //   column: mondayColumns.issueType,
-  //   value: "Tooling"
-  // }],
-  // [resources.labels.issueType.a11y, {
-  //   column: mondayColumns.issueType,
-  //   value: "A11y"
-  // }],
+  [
+    resources.labels.issueType.refactor,
+    {
+      column: mondayColumns.issueType,
+      value: "Refactor",
+    },
+  ],
+  [
+    resources.labels.issueType.docs,
+    {
+      column: mondayColumns.issueType,
+      value: "Docs",
+    },
+  ],
+  [
+    resources.labels.issueType.test,
+    {
+      column: mondayColumns.issueType,
+      value: "Testing",
+    },
+  ],
+  [
+    resources.labels.issueType.tooling,
+    {
+      column: mondayColumns.issueType,
+      value: "Tooling",
+    },
+  ],
+  [
+    resources.labels.issueType.a11y,
+    {
+      column: mondayColumns.a11y,
+      value: "a11y",
+    },
+  ],
   [
     resources.labels.priority.low,
     {
@@ -229,35 +258,31 @@ const mondayLabels = new Map([
       value: "High",
     },
   ],
-  // [resources.labels.priority.critical, {
-  //   column: mondayColumns.priority,
-  //   value: "Critical"
-  // }],
   [
     resources.labels.devEstimate.one,
     {
-      column: mondayColumns.devPoints,
+      column: mondayColumns.devEstimate,
       value: 1,
     },
   ],
   [
     resources.labels.devEstimate.two,
     {
-      column: mondayColumns.devPoints,
+      column: mondayColumns.devEstimate,
       value: 2,
     },
   ],
   [
     resources.labels.devEstimate.three,
     {
-      column: mondayColumns.devPoints,
+      column: mondayColumns.devEstimate,
       value: 3,
     },
   ],
   [
     resources.labels.devEstimate.five,
     {
-      column: mondayColumns.devPoints,
+      column: mondayColumns.devEstimate,
       value: 5,
     },
   ],
@@ -265,21 +290,21 @@ const mondayLabels = new Map([
     resources.labels.designEstimate.small,
     {
       column: mondayColumns.designEstimate,
-      value: "small",
+      value: "Small",
     },
   ],
   [
     resources.labels.designEstimate.medium,
     {
       column: mondayColumns.designEstimate,
-      value: "medium",
+      value: "Medium",
     },
   ],
   [
     resources.labels.designEstimate.large,
     {
       column: mondayColumns.designEstimate,
-      value: "large",
+      value: "Large",
     },
   ],
 ]);
