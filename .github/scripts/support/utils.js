@@ -100,7 +100,9 @@ async function callMonday(key, query) {
     const body = await response.json();
 
     if (!response.ok) {
-      throw new Error(`HTTP error when calling the Monday API: ${JSON.stringify(body)}`);
+      throw new Error(
+        `HTTP error when calling the Monday API: ${JSON.stringify(body)}`,
+      );
     }
 
     return body;
@@ -233,26 +235,39 @@ function assignPerson(person, values) {
  * @returns {{ column: string, value: string }[]} - The column ID and value to update in Monday.com
  */
 function handleMilestone(milestone) {
-  //
-  /**
-   * Formats a date string for Monday.com
-   * @param {string} date - The date string to format
-   * @returns { string } - The formatted date string
-   */
-  // const formatDate = (date) => JSON.stringify({ date: date });
+  const resetValues = [
+    {
+      column: mondayColumns.date,
+      value: "",
+    },
+    {
+      column: mondayColumns.status,
+      value: resources.labels.planning.needsMilestone,
+    },
+  ];
+
+  if (!milestone) {
+    return resetValues;
+  }
 
   // Attempt to extract the date from the milestone title
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
   const dueDate = milestone.match(dateRegex);
 
   if (dueDate) {
-    return [{
-      column: mondayColumns.date,
-      value: dueDate[0],
-    }];
+    return [
+      {
+        column: mondayColumns.date,
+        value: dueDate[0],
+      },
+    ];
   }
 
-  const statusMilestones = [resources.milestone.stalled, resources.milestone.backlog, resources.milestone.freezer];
+  const statusMilestones = [
+    resources.milestone.stalled,
+    resources.milestone.backlog,
+    resources.milestone.freezer,
+  ];
   if (statusMilestones.includes(milestone)) {
     return [
       {
@@ -266,16 +281,7 @@ function handleMilestone(milestone) {
     ];
   }
 
-  return [
-    {
-      column: mondayColumns.date,
-      value: "",
-    },
-    {
-      column: mondayColumns.status,
-      value: resources.labels.planning.needsMilestone,
-    },
-  ];
+  return resetValues;
 }
 
 module.exports = {
