@@ -1,5 +1,5 @@
 // @ts-check
-const { callMonday, addSyncLine, assignLabels, assignPerson, handleMilestone } = require("./support/utils");
+const { callMonday, addSyncLine, assignLabel, assignPerson, handleMilestone } = require("./support/utils");
 const { mondayBoard, mondayColumns } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
