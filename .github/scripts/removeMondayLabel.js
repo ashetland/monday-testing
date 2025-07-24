@@ -45,5 +45,5 @@ module.exports = async ({ context }) => {
     );
   }
 
-  console.log(`Removed label '${label.name}' from Monday.com task ID ${mondayID}.`);
+  console.log(`Cleared '${label.name}' from '${column}' on Monday.com task ID ${mondayID}.`);
 }
