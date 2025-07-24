@@ -25,13 +25,15 @@ module.exports = async ({ github, context }) => {
     };
 
     if (assignees) {
-      for (const person of assignees) {
+      assignees.forEach((person) => {
         values = assignPerson(person, values);
-      }
+      });
     }
 
     if (labels) {
-      values = assignLabels(labels, values);
+      labels.forEach((label) => {
+        values = assignLabel(labels, values);
+      });
     }
 
     if (milestone) {

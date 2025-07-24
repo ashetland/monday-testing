@@ -165,38 +165,32 @@ function addSyncLine(body, mondayID) {
 }
 
 /**
- * Assigns labels to the Monday.com task object based on the issue labels
- * @param {import('@octokit/webhooks-types').Label[]} labels - The labels from the issue
+ * Assigns a label to the Monday.com task object
+ * @param {import('@octokit/webhooks-types').Label} label
  * @param {object} values - The current column values object to update
  * @returns {object} - The updated column values object
  */
-function assignLabels(labels, values) {
-  for (const label of labels) {
-    // TEMP
-    if (label.name === "monday.com sync") {
-      // Skip the sync label, as it is not needed in Monday.com
-      continue;
-    }
-
-    if (!mondayLabels.has(label.name)) {
-      console.warn(`Label ${label.name} not found in Monday Labels map`);
-      continue;
-    }
-
-    const info = mondayLabels.get(label.name);
-    if (!info?.column || !info?.value) {
-      console.warn(
-        `Label ${label.name} is missing column or title information`,
-      );
-      continue;
-    }
-
-    if (!values[info.column]) {
-      values[info.column] = info.value;
-    } else {
-      values[info.column] += `, ${info.value}`;
-    }
+function assignLabel(label, values) {
+  // TEMP
+  if (label.name === "monday.com sync") {
+    // Skip the sync label, as it is not needed in Monday.com
+    return values;
   }
+
+  if (!mondayLabels.has(label.name)) {
+    console.warn(`Label ${label.name} not found in Monday Labels map`);
+    return values;
+  }
+
+  const info = mondayLabels.get(label.name);
+  if (!info?.column || !info?.value) {
+    console.warn(
+      `Label ${label.name} is missing column or title information`,
+    );
+    return values;
+  }
+
+  values[info.column] = info.value;
 
   return values;
 }
@@ -255,10 +249,15 @@ function handleMilestone(milestone) {
   const dueDate = milestone.match(dateRegex);
 
   if (dueDate) {
+    // TODO: do we want to check if a workflow label is assigned?
     return [
       {
         column: mondayColumns.date,
         value: dueDate[0],
+      },
+      {
+        column: mondayColumns.status,
+        value: String(mondayLabels.get(resources.labels.issueWorkflow.assigned)?.value),
       },
     ];
   }
@@ -290,7 +289,7 @@ module.exports = {
   callMonday,
   getMondayID,
   addSyncLine,
-  assignLabels,
+  assignLabel,
   assignPerson,
   handleMilestone,
 };
