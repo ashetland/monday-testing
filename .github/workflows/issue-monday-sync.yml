@@ -3,7 +3,7 @@ on:
   issues:
     types: [opened, labeled, unlabeled, milestoned, demilestoned]
 jobs:
-  create-monday-task:
+  create-task:
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -20,7 +20,7 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/createMondayTask.js')
             await action({github, context})
-  add-monday-id:
+  add-id:
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -37,7 +37,7 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/addMondayIDtoBody.js')
             await action({github, context})
-  update-monday-label:
+  update-label:
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -54,7 +54,7 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayLabels.js')
             await action({ context })
-  remove-monday-label:
+  remove-label:
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -76,7 +76,7 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabel.js')
             await action({ context })
-  update-monday-milestone:
+  update-milestone:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
