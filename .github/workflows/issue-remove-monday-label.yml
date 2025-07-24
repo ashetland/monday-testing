@@ -1,0 +1,21 @@
+name: Remove Label from Monday.com Task
+on:
+  issues:
+    types: [labeled]
+jobs:
+  add-monday-id:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Remove Label from Monday.com Task"
+        uses: actions/github-script@v7
+        env:
+          MONDAY_KEY: ${{ secrets.MONDAY_KEY }} 
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabels.js')
+            await action({ context })
