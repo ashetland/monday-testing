@@ -247,25 +247,10 @@ function handleMilestone(milestone, labels) {
   );
 
   if (dueDate) {
-    if (readyForDev) {
-      return [
-        {
-          column: mondayColumns.date,
-          value: dueDate[0],
-        },
-      ];
-    }
-
     return [
       {
         column: mondayColumns.date,
         value: dueDate[0],
-      },
-      {
-        column: mondayColumns.status,
-        value: String(
-          mondayLabels.get(resources.labels.issueWorkflow.assigned)?.value,
-        ),
       },
     ];
   }
