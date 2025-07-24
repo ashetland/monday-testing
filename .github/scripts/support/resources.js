@@ -92,6 +92,7 @@ const mondayColumns = {
   designIssue: "color_mkrdhk8",
   a11y: "color_mkt5c4q6",
   spike: "color_mkt5vd8a",
+  figmaChanges: "color_mkt58h3r",
   open: "color_mknkrb2n",
 };
 
@@ -305,6 +306,13 @@ const mondayLabels = new Map([
     {
       column: mondayColumns.designEstimate,
       value: "Large",
+    },
+  ],
+  [
+    resources.labels.handoff.figmaChanges,
+    {
+      column: mondayColumns.figmaChanges,
+      value: "Figma Changes Only",
     },
   ],
 ]);
