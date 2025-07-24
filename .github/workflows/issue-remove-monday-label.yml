@@ -17,5 +17,5 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }} 
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabels.js')
+            const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabel.js')
             await action({ context })
