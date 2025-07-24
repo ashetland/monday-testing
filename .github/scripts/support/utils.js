@@ -242,7 +242,7 @@ function handleMilestone(milestone) {
     },
     {
       column: mondayColumns.status,
-      value: resources.labels.planning.needsMilestone,
+      value: String(mondayLabels.get(resources.labels.planning.needsMilestone)?.value),
     },
   ];
 
