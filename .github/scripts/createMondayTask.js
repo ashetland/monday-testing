@@ -32,7 +32,7 @@ module.exports = async ({ github, context }) => {
 
     if (labels) {
       labels.forEach((label) => {
-        values = assignLabel(labels, values);
+        values = assignLabel(label, values);
       });
     }
 
