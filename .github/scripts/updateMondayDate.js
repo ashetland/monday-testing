@@ -20,20 +20,24 @@ module.exports = async ({ context }) => {
   /**
    * Update a column's value for a given Monday.com task.
    * @param {string} ID - the ID of the Monday.com task
-   * @param {string} column - the ID of the column to update
-   * @param {string} value - the value to set for the column
+   * @param {{ column: string, value: string }[]} values - an array of objects containing column IDs and values to update
    */
-  function updateColumnValue(ID, column, value) {
-    const query = `mutation {
-      change_column_value(
-        board_id: "${mondayBoard}",
-        item_id: "${ID}",
-        column_id: "${column}",
-        value: ${JSON.stringify(value)}
+  function updateColumnValues(ID, values) {
+    const valuesObject = values.map((value) => {
+      return `"${value.column}": "${value.value}"`;
+    });
+
+    const valuesString = JSON.stringify(valuesObject).replace(/"/g, '\\"');
+
+    const query = `mutation { 
+      change_multiple_column_values(
+        board_id: ${mondayBoard},
+        item_id: ${ID},
+        column_values: "${valuesString}"
       ) {
         id
       }
-    }`
+    }`;
 
     try {
       callMonday(MONDAY_KEY, query);
@@ -51,10 +55,10 @@ module.exports = async ({ context }) => {
     mondayID = await getMondayID(MONDAY_KEY, number);
   }
 
-  const { column, value } = handleMilestone(milestone);
+  const columnValues = handleMilestone(milestone);
 
   try {
-    updateColumnValue(mondayID, column, value);
+    updateColumnValues(mondayID, columnValues);
   }
   catch (error) {
     console.error(`Failed to update Monday.com task for issue #${number}: ${error.message}`);
