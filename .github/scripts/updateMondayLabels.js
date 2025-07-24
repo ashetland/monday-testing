@@ -32,11 +32,7 @@ module.exports = async ({ context }) => {
 
   const response = await callMonday(MONDAY_KEY, query);
 
-  if (!response || !response["data"]["change_simple_column_value"]) {
-    console.error(
-      "Failed to update Monday.com label:",
-      JSON.stringify(response),
-    );
-    return;
+  if (!response || !response["data"]["change_multiple_column_values"]) {
+    throw new Error(`Failed to update Monday.com label ${JSON.stringify(response)}`);
   }
 };
