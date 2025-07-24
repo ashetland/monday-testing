@@ -1,7 +1,7 @@
 name: Monday.com Issue Sync
 on:
   issues:
-    types: [opened, labeled, unlabeled, milestoned, demilestoned]
+    types: [opened, edited, labeled, unlabeled, milestoned, demilestoned]
 jobs:
   create-task:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayLabels.js')
-            await action({ context })
+            await action({context})
   remove-label:
     runs-on: ubuntu-latest
     permissions:
@@ -75,7 +75,7 @@ jobs:
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabel.js')
-            await action({ context })
+            await action({context})
   update-milestone:
     runs-on: ubuntu-latest
     steps:
@@ -89,4 +89,21 @@ jobs:
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayDate.js')
+            await action({github, context})
+  update-title:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Update Monday.com Task Title"
+        if: github.event.action == 'edited'
+        uses: actions/github-script@v7
+        env:
+          MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/updateMondayTitle.js')
             await action({github, context})

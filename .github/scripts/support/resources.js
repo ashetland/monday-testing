@@ -78,6 +78,7 @@ const resources = {
 const mondayBoard = "8780429793";
 
 const mondayColumns = {
+  title: "name",
   issueNumber: "numeric_mknk2xhh",
   link: "link",
   designers: "multiple_person_mkt2rtfv",
