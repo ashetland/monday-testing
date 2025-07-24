@@ -23,8 +23,9 @@ module.exports = async ({ context }) => {
    * @param {{ column: string, value: string }[]} values - an array of objects containing column IDs and values to update
    */
   function updateColumnValues(ID, values) {
-    const valuesObject = values.map((value) => {
-      return `"${value.column}": "${value.value}"`;
+    const valuesObject = {};
+    values.forEach((value) => {
+      valuesObject[value.column] = value.value;
     });
 
     const valuesString = JSON.stringify(valuesObject).replace(/"/g, '\\"');
