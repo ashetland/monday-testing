@@ -14,6 +14,9 @@ module.exports = async ({ context }) => {
     console.log("No label found in the payload.");
     return;
   }
+  
+  console.log(`Removing label '${label.name}' from Monday.com task...`);
+  console.log(`Issue labels: ${JSON.stringify(issue.labels)}`);
 
   const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
 
