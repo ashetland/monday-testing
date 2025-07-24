@@ -224,19 +224,14 @@ function assignPerson(person, values) {
 /**
  * Returns column and value to update from a milestone title
  * @param {string} milestone - The title of the milestone
+ * @param {import("@octokit/webhooks-types").Label[]} labels - The labels associated with the issue
  * @returns {{ column: string, value: string }[]} - The column ID and value to update in Monday.com
  */
-function handleMilestone(milestone) {
+function handleMilestone(milestone, labels) {
   const resetValues = [
     {
       column: mondayColumns.date,
       value: "",
-    },
-    {
-      column: mondayColumns.status,
-      value: String(
-        mondayLabels.get(resources.labels.planning.needsMilestone)?.value,
-      ),
     },
   ];
 
@@ -247,9 +242,20 @@ function handleMilestone(milestone) {
   // Attempt to extract the date from the milestone title
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
   const dueDate = milestone.match(dateRegex);
+  const readyForDev = labels.some(
+    (label) => label.name === resources.labels.issueWorkflow.readyForDev,
+  );
 
   if (dueDate) {
-    // TODO: do we want to check if a workflow label is assigned?
+    if (readyForDev) {
+      return [
+        {
+          column: mondayColumns.date,
+          value: dueDate[0],
+        },
+      ];
+    }
+
     return [
       {
         column: mondayColumns.date,
