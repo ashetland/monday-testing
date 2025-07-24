@@ -3,7 +3,7 @@ on:
   issues:
     types: [labeled]
 jobs:
-  add-monday-id:
+  remove-monday-label:
     runs-on: ubuntu-latest
     permissions:
       issues: write
