@@ -20,7 +20,7 @@ module.exports = async ({ context }) => {
   const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
 
   const columnValues = {
-    [mondayColumns.title]: `"${title}"`,
+    [mondayColumns.title]: title,
   };
 
   const columnValuesString = JSON.stringify(columnValues).replace(/"/g, '\\"');
