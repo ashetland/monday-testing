@@ -40,11 +40,9 @@ module.exports = async ({ context }) => {
 
   const response = await callMonday(MONDAY_KEY, query);
   if (!response || !response["data"]["change_simple_column_value"]) {
-    console.error(
-      "Failed to remove label from Monday.com task:",
-      JSON.stringify(response),
+    throw new Error(
+      `Failed to remove label from Monday.com task: ${JSON.stringify(response)}`,
     );
-    return;
   }
 
   console.log(`Removed label '${label.name}' from Monday.com task ID ${mondayID}.`);
