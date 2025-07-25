@@ -14,10 +14,10 @@ module.exports = async ({ context }) => {
     );
   const {
     issue: { number, body, assignees: currentAssignees },
-    assignee,
+    assignee: newAssignee,
   } = payload;
 
-  if (!assignee) {
+  if (!newAssignee) {
     console.log(`No new assignee found for issue #${number}. Skipping update.`);
     return;
   }
@@ -28,16 +28,20 @@ module.exports = async ({ context }) => {
     return;
   }
 
-  const personInfo = mondayPeople.get(assignee.login);
+  const personInfo = mondayPeople.get(newAssignee.login);
   if (!personInfo) {
     console.log(
-      `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
+      `No Monday person info found for assignee ${newAssignee.login}. Skipping update.`,
     );
     return;
   }
 
   let valueString = "";
   currentAssignees.forEach((assignee) => {
+    if (assignee.login === newAssignee.login) {
+      return;
+    }
+
     const info = mondayPeople.get(assignee.login);
     if (info && info.role === personInfo.role) {
       if (valueString) {
@@ -59,7 +63,7 @@ module.exports = async ({ context }) => {
       board_id: ${mondayBoard},
       item_id: ${mondayID},
       column_id: "${personInfo.role}",
-      column_values: ${valueString}
+      column_values: "${valueString}"
     ) {
       id
     }
