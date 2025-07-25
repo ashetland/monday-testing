@@ -22,7 +22,7 @@ module.exports = async ({ context }) => {
     return;
   }
 
-  const mondayID = getMondayID(MONDAY_KEY, body, number);
+  const mondayID = await getMondayID(MONDAY_KEY, body, number);
   if (!mondayID) {
     console.log(`No Monday ID found for issue #${number}. Skipping update.`);
     return;
