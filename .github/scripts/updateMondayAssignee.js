@@ -76,17 +76,3 @@ module.exports = async ({ context }) => {
     );
   }
 };
-// const currentValue = await callMonday(MONDAY_KEY, `query {
-//   items (ids: [${number}]) {
-//     column_values(ids: "${info.role}") {
-//       ... on PeopleValue {
-//          persons_and_teams {
-//           id
-//         }
-//       }
-//     }
-//   }
-// }`);
-//
-// // const valuesObject = currentValue.data.boards[0].items[0].column_values;
-// console.log(`Current value for ${info.role}:`, currentValue);
