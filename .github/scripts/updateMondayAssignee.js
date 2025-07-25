@@ -63,7 +63,7 @@ module.exports = async ({ context }) => {
       board_id: ${mondayBoard},
       item_id: ${mondayID},
       column_id: "${personInfo.role}",
-      column_values: "${valueString}"
+      value: "${valueString}"
     ) {
       id
     }
