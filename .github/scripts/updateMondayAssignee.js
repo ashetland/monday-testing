@@ -40,7 +40,11 @@ module.exports = async ({ context }) => {
   currentAssignees.forEach((assignee) => {
     const info = mondayPeople.get(assignee.login);
     if (info && info.role === personInfo.role) {
-      valueString = `${info.id}`;
+      if (valueString) {
+        valueString += `, `;
+      }
+
+      valueString += `${info.id}`;
     }
   });
 
