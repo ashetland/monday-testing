@@ -36,33 +36,37 @@ module.exports = async ({ context }) => {
     return;
   }
 
-  const existingRole = currentAssignees.some((assignee) => {
+  let valueString = "";
+  currentAssignees.forEach((assignee) => {
     const info = mondayPeople.get(assignee.login);
     if (info && info.role === personInfo.role) {
-      return true;
+      valueString = `${info.id}`;
     }
-    return false;
   });
 
-  const valuesObject = {};
-  if (existingRole) {
-    valuesObject[personInfo.role] = `, ${personInfo.id}`;
+  if (valueString) {
+    valueString += `, ${personInfo.id}`;
   } else {
-    valuesObject[personInfo.role] = personInfo.id;
+    valueString = `${personInfo.id}`;
   }
-  const valuesString = JSON.stringify(valuesObject).replace(/"/g, '\\"');
 
   const query = `mutation {
-    change_multiple_column_values (
+    change_simple_column_value (
       board_id: ${mondayBoard},
       item_id: ${mondayID},
-      column_values: "${valuesString}"
+      column_id: "${personInfo.role}",
+      column_values: ${valueString}
     ) {
       id
     }
   }`;
 
-  await callMonday(MONDAY_KEY, query);
+  const response = await callMonday(MONDAY_KEY, query);
+  if (!response || !response["data"] || !response["data"]["change_simple_column_value"]) {
+    throw new Error(
+      `Failed to update Monday board for issue #${number}. Response: ${JSON.stringify(response)}`,
+    );
+  }
 };
 // const currentValue = await callMonday(MONDAY_KEY, `query {
 //   items (ids: [${number}]) {
