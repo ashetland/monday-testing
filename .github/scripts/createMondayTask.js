@@ -1,5 +1,5 @@
 // @ts-check
-const { callMonday, addSyncLine, assignLabel, assignPerson, handleMilestone } = require("./support/utils");
+const { callMonday, addSyncLine, assignLabel, assignPerson, handleMilestone, formatValues } = require("./support/utils");
 const { mondayBoard, mondayColumns } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
@@ -42,14 +42,11 @@ module.exports = async ({ github, context }) => {
       });
     }
 
-    // Escape double quotes for GraphQL
-    const valuesString = JSON.stringify(values).replace(/"/g, '\\"');
-
     const query = `mutation { 
       create_item (
         board_id: ${mondayBoard},
         item_name: "${title}",
-        column_values: "${valuesString}"
+        column_values: "${formatValues(values)}"
       ) {
         id
       }

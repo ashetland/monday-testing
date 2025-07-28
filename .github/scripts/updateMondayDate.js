@@ -1,5 +1,5 @@
 // @ts-check
-const { callMonday, getMondayID, handleMilestone } = require("./support/utils");
+const { callMonday, getMondayID, handleMilestone, formatValues } = require("./support/utils");
 const { mondayBoard } = require("./support/resources");
 
 // When a Milestone is added or updated:
@@ -26,13 +26,11 @@ module.exports = async ({ context }) => {
       valuesObject[value.column] = value.value;
     });
 
-    const valuesString = JSON.stringify(valuesObject).replace(/"/g, '\\"');
-
     const query = `mutation { 
       change_multiple_column_values(
         board_id: ${mondayBoard},
         item_id: ${ID},
-        column_values: "${valuesString}"
+        column_values: "${formatValues(values)}"
       ) {
         id
       }
