@@ -112,14 +112,20 @@ const mondayLabels = new Map([
       value: "Needs Milestone",
     },
   ],
-  [resources.labels.planning.spike, {
-    column: mondayColumns.spike,
-    value: "Spike"
-  }],
-  [resources.labels.planning.spikeComplete, {
-    column: mondayColumns.spike,
-    value: "Spike Complete"
-  }],
+  [
+    resources.labels.planning.spike,
+    {
+      column: mondayColumns.spike,
+      value: "Spike",
+    },
+  ],
+  [
+    resources.labels.planning.spikeComplete,
+    {
+      column: mondayColumns.spike,
+      value: "Spike Complete",
+    },
+  ],
   [
     resources.labels.issueWorkflow.new,
     {
