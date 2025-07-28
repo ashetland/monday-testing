@@ -14,7 +14,7 @@ on:
         unassigned,
       ]
 jobs:
-  create-task:
+  determine-action:
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -24,7 +24,7 @@ jobs:
 
       - name: "Create Monday.com Task"
         if: github.event.action == 'opened' ||
-            (github.event.action == 'labeled' && github.event.label.name == 'monday.com sync')
+          (github.event.action == 'labeled' && github.event.label.name == 'monday.com sync')
         uses: actions/github-script@v7
         env:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
@@ -32,13 +32,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/createMondayTask.js')
             await action({github, context})
-  add-id:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Add Monday.com ID to Issue Summary"
         if: github.event.action == 'labeled' && github.event.label.name == 'monday.com sync'
@@ -49,13 +42,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/addMondayIDtoBody.js')
             await action({github, context})
-  update-label:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Update Label on Monday.com Task"
         if: github.event.action == 'labeled'
@@ -66,13 +52,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayLabels.js')
             await action({context})
-  remove-label:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Remove Label from Monday.com Task"
         if: |
@@ -88,10 +67,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabel.js')
             await action({context})
-  update-milestone:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Update Monday.com Milestone"
         if: github.event.action == 'milestoned' || github.event.action == 'demilestoned'
@@ -102,13 +77,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayDate.js')
             await action({github, context})
-  update-title:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Update Monday.com Task Title"
         if: github.event.action == 'edited'
@@ -119,13 +87,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayTitle.js')
             await action({github, context})
-  update-assignee:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Update Monday.com Task Assignee"
         if: github.event.action == 'assigned' || github.event.action == 'unassigned'
@@ -136,13 +97,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayAssignee.js')
             await action({github, context})
-  update-closed:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
 
       - name: "Update Monday.com Task Status"
         if: github.event.action == 'closed'
