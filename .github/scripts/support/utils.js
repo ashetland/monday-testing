@@ -247,11 +247,11 @@ function handleMilestone(milestone, assignee, labels) {
   const dueDate = milestone.title.match(dateRegex);
 
   if (dueDate) {
-    const notInLifecycle = labels.every(
-      label => !resources.labels.issueWorkflow.lifecycle.includes(label.name),
+    const notInLifecycle = labels?.every(
+      label => !Object.values(resources.labels.issueWorkflow).includes(label.name)
     );
-    const notReadyForDev = labels.every(
-      label => label.name !== resources.labels.issueWorkflow.readyForDev,
+    const notReadyForDev = labels?.every(
+      label => label.name !== resources.labels.issueWorkflow.readyForDev
     );
 
     const updates = [
