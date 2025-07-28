@@ -292,6 +292,15 @@ async function getMondayID(key, body, number) {
   return mondayID;
 }
 
+/**
+ * Formats the values object for use in Monday.com API calls
+ * @param {object} values - The values object to format
+ * @return {string} - The formatted values string
+ */
+function formatValues(values) {
+  return JSON.stringify(values).replace(/"/g, '\\"');
+}
+
 module.exports = {
   removeLabel,
   createLabelIfMissing,
@@ -302,4 +311,5 @@ module.exports = {
   assignLabel,
   assignPerson,
   handleMilestone,
+  formatValues,
 };
