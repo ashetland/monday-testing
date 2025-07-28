@@ -21,6 +21,8 @@ const resources = {
     issueWorkflow: {
       new: "_0 - new",
       assigned: "_1 - assigned",
+      needsTriage: "needs triage",
+      needsMilestone: "needs milestone",
       inDesign: "1 - in design",
       readyForDev: "2 - ready for dev",
       inDevelopment: "3 - in development",
@@ -28,8 +30,6 @@ const resources = {
       verified: "5 - verified",
     },
     planning: {
-      needsTriage: "needs triage",
-      needsMilestone: "needs milestone",
       needsInfo: "needs more info",
       spike: "spike",
       spikeComplete: "spike complete",
