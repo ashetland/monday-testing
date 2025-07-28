@@ -17,6 +17,7 @@ module.exports = async ({ context }) => {
     assignee: newAssignee,
   } = payload;
 
+  console.log(`New Assignee: ${newAssignee}, ${newAssignee?.login}`);
   if (!newAssignee) {
     console.log(`No new assignee found for issue #${number}. Skipping update.`);
     return;
