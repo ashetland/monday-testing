@@ -24,7 +24,7 @@ module.exports = async ({ context }) => {
 
   const isDesign = labels?.some(label => label.name === "design");
   const status = isDesign
-    ? "Adding to UI Kit"
+    ? "Adding to Kit"
     : "Done";
 
   const valueObject = {
