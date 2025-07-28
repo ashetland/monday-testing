@@ -32,7 +32,7 @@ module.exports = async ({ context }) => {
       change_multiple_column_values(
         board_id: ${mondayBoard},
         item_id: ${ID},
-        column_values: "${formatValues(values)}"
+        column_values: "${formatValues(valuesObject)}"
       ) {
         id
       }
