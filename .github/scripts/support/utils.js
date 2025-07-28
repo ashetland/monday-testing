@@ -241,7 +241,6 @@ function handleMilestone(milestone, assignee, labels) {
     return resetValues;
   }
 
-
   // Attempt to extract the date from the milestone title
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
   const dueDate = milestone.title.match(dateRegex);
