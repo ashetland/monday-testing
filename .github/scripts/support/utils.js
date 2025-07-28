@@ -223,10 +223,12 @@ function assignPerson(person, values) {
 
 /**
  * Returns column and value to update from a milestone title
- * @param {string} milestone - The title of the milestone
+ * @param {import('@octokit/webhooks-types').Milestone | null} milestone - The milestone object from the issue
+ * @param {import('@octokit/webhooks-types').User | null | undefined} assignee - The assignee of the issue
+ * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
  * @returns {{ column: string, value: string }[]} - The column ID and value to update in Monday.com
  */
-function handleMilestone(milestone) {
+function handleMilestone(milestone, assignee, labels) {
   const resetValues = [
     {
       column: mondayColumns.date,
@@ -234,21 +236,56 @@ function handleMilestone(milestone) {
     },
   ];
 
+  // Removed, or none present
   if (!milestone) {
     return resetValues;
   }
 
+
   // Attempt to extract the date from the milestone title
   const dateRegex = /\d{4}-\d{2}-\d{2}/;
-  const dueDate = milestone.match(dateRegex);
+  const dueDate = milestone.title.match(dateRegex);
 
   if (dueDate) {
-    return [
+    const notInLifecycle = labels.every(
+      label => !resources.labels.issueWorkflow.lifecycle.includes(label.name),
+    );
+    const notReadyForDev = labels.every(
+      label => label.name !== resources.labels.issueWorkflow.readyForDev,
+    );
+
+    const updates = [
       {
         column: mondayColumns.date,
         value: dueDate[0],
       },
     ];
+
+    // Assigned and NO lifecycle label
+    if (assignee && notInLifecycle) {
+      const status = mondayLabels.get(resources.labels.issueWorkflow.assigned);
+
+      if (status) {
+        updates.push({
+          column: status.column,
+          value: String(status.value),
+        });
+      }
+    }
+
+    // If unassigned and NOT "Ready for Dev"
+    if (!assignee && notReadyForDev) {
+      const status = mondayLabels.get(resources.labels.issueWorkflow.new);
+
+      if (status) {
+        updates.push({
+          column: status.column,
+          value: String(status.value),
+        });
+      }
+    }
+
+    return updates;
   }
 
   const statusMilestones = [
@@ -256,11 +293,11 @@ function handleMilestone(milestone) {
     resources.milestone.backlog,
     resources.milestone.freezer,
   ];
-  if (statusMilestones.includes(milestone)) {
+  if (statusMilestones.includes(milestone.title)) {
     return [
       {
         column: mondayColumns.status,
-        value: milestone,
+        value: milestone.title,
       },
       {
         column: mondayColumns.date,
