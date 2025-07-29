@@ -258,6 +258,37 @@ function assignPerson(person, values) {
 }
 
 /**
+ * Checks if the labels do not include any lifecycle labels
+ * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
+ * @return {boolean} - True if no lifecycle labels are present, false otherwise
+ */
+function notInLifecycle(labels) {
+  if (!labels) {
+    return true;
+  }
+
+  return labels.every(
+    (label) =>
+      !Object.values(resources.labels.issueWorkflow).includes(label.name),
+  );
+}
+
+/**
+ * Checks if the labels do not include the "Ready for Dev" label
+ * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
+ * @return {boolean} - True if "Ready for Dev" label is not present, false otherwise
+ */
+function notReadyForDev(labels) {
+  if (!labels) {
+    return true;
+  }
+
+  return labels.every(
+    (label) => label.name !== resources.labels.issueWorkflow.readyForDev,
+  );
+}
+
+/**
  * Returns column and value to update from a milestone title
  * @param {import('@octokit/webhooks-types').Milestone | null} milestone - The milestone object from the issue
  * @param {import('@octokit/webhooks-types').User | null | undefined} assignee - The assignee of the issue
@@ -282,14 +313,6 @@ function handleMilestone(milestone, assignee, labels) {
   const dueDate = milestone.title.match(dateRegex);
 
   if (dueDate) {
-    const notInLifecycle = labels?.every(
-      (label) =>
-        !Object.values(resources.labels.issueWorkflow).includes(label.name),
-    );
-    const notReadyForDev = labels?.every(
-      (label) => label.name !== resources.labels.issueWorkflow.readyForDev,
-    );
-
     const updates = [
       {
         column: mondayColumns.date,
@@ -298,7 +321,7 @@ function handleMilestone(milestone, assignee, labels) {
     ];
 
     // Assigned and NO lifecycle label
-    if (assignee && notInLifecycle) {
+    if (assignee && notInLifecycle(labels)) {
       const status = mondayLabels.get(resources.labels.issueWorkflow.assigned);
 
       if (status) {
@@ -310,7 +333,7 @@ function handleMilestone(milestone, assignee, labels) {
     }
 
     // If unassigned and NOT "Ready for Dev"
-    if (!assignee && notReadyForDev) {
+    if (!assignee && notReadyForDev(labels)) {
       const status = mondayLabels.get(resources.labels.issueWorkflow.new);
 
       if (status) {
@@ -384,6 +407,8 @@ module.exports = {
   addSyncLine,
   assignLabel,
   assignPerson,
+  notInLifecycle,
+  notReadyForDev,
   handleMilestone,
   formatValues,
 };

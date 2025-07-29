@@ -1,6 +1,5 @@
 // @ts-check
-const { callMonday, assignLabel, getMondayID, formatValues } = require("./support/utils");
-const { mondayBoard } = require("./support/resources");
+const { assignLabel, updateMultipleColumns } = require("./support/utils");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -15,21 +14,9 @@ module.exports = async ({ context }) => {
     return;
   }
 
-  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
-
-  const query = `mutation {
-    change_multiple_column_values(
-      board_id: ${mondayBoard},
-      item_id: ${mondayID},
-      column_values: "${formatValues(assignLabel(label, {}))}"
-    ) {
-      id
-    }
-  }`;
-
-  const response = await callMonday(MONDAY_KEY, query);
-
-  if (!response || !response["data"]["change_multiple_column_values"]) {
-    throw new Error(`Failed to update Monday.com label ${JSON.stringify(response)}`);
+  try {
+    await updateMultipleColumns(MONDAY_KEY, issue.body, issue.number, assignLabel(label, {}));
+  } catch (error) {
+    throw new Error(`Error updating Monday.com task with label '${label.name}': ${error}`);
   }
 };
