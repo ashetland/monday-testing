@@ -55,11 +55,12 @@ jobs:
 
       - name: "Remove Label from Task"
         if: |
-          github.event.action == 'unlabeled' &&
-          github.event.label.name == 'design' ||
-          github.event.label.name == 'a11y' ||
-          github.event.label.name == 'figma changes' ||
-          github.event.label.name == 'spike'
+          github.event.action == 'unlabeled' && (
+            github.event.label.name == 'design' ||
+            github.event.label.name == 'a11y' ||
+            github.event.label.name == 'figma changes' ||
+            github.event.label.name == 'spike'
+          )
         uses: actions/github-script@v7
         env:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
