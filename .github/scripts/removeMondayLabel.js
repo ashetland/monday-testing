@@ -15,9 +15,6 @@ module.exports = async ({ context }) => {
     return;
   }
   
-  console.log(`Removing label '${label.name}' from Monday.com task...`);
-  console.log(`Issue labels: ${JSON.stringify(issue.labels)}`);
-
   const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
 
   if (!mondayLabels.has(label.name)) {
