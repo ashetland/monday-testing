@@ -9,7 +9,7 @@ module.exports = async ({ github, context }) => {
     /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent} */ (
       context.payload
     );
-  const { title, body, number, labels, assignees, html_url, milestone } = payload.issue;
+  const { title, body, number, labels, assignee, assignees, html_url, milestone } = payload.issue;
 
   /**
    * Creates the GraphQL query to create a new item in Monday.com
@@ -37,7 +37,7 @@ module.exports = async ({ github, context }) => {
     }
 
     if (milestone) {
-      handleMilestone(milestone.title).forEach(({ column, value }) => {
+      handleMilestone(milestone, assignee, labels).forEach(({ column, value }) => {
         values[column] = value;
       });
     }
