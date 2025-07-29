@@ -1,5 +1,5 @@
 // @ts-check
-const { callMonday, getMondayID, handleMilestone, formatValues } = require("./support/utils");
+const { handleMilestone, updateMultipleColumns } = require("./support/utils");
 const { mondayBoard } = require("./support/resources");
 
 // When a Milestone is added or updated:
@@ -17,43 +17,17 @@ module.exports = async ({ context }) => {
     labels,
   } = payload.issue;
 
-  /**
-   * Update a column's value for a given Monday.com task.
-   * @param {string} ID - the ID of the Monday.com task
-   * @param {{ column: string, value: string }[]} values - an array of objects containing column IDs and values to update
-   */
-  function updateColumnValues(ID, values) {
-    const valuesObject = {};
-    values.forEach((value) => {
-      valuesObject[value.column] = value.value;
-    });
+  const columnUpdates = handleMilestone(milestone, assignee, labels);
 
-    const query = `mutation { 
-      change_multiple_column_values(
-        board_id: ${mondayBoard},
-        item_id: ${ID},
-        column_values: "${formatValues(valuesObject)}"
-      ) {
-        id
-      }
-    }`;
-
-    try {
-      callMonday(MONDAY_KEY, query);
-    }
-    catch (error) {
-      throw new Error(`Error updating column value in Monday.com: ${error}`);
-    }
-  }
-
-  const mondayID = await getMondayID(MONDAY_KEY, body, number);
-
-  const columnValues = handleMilestone(milestone, assignee, labels);
+  const valuesObject = {};
+  columnUpdates.forEach((value) => {
+    valuesObject[value.column] = value.value;
+  });
 
   try {
-    updateColumnValues(mondayID, columnValues);
+    updateMultipleColumns(MONDAY_KEY, body, number, valuesObject);
   }
   catch (error) {
-    console.error(`Failed to update Monday.com task for issue #${number}: ${error.message}`);
+    throw new Error(`Error updating Milestone values in Monday.com: ${error}`);
   }
 };

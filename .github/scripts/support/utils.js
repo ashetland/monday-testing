@@ -149,6 +149,42 @@ async function fetchMondayID(key, githubID) {
 }
 
 /**
+ * Updates multiple columns in a Monday.com item
+ * @param {string | undefined} key - The Monday.com API key
+ * @param {string | null} body - The issue body containing the sync line
+ * @param {number} githubID - The GitHub issue number
+ * @param {object} values - The values to update in the item
+ * @returns {Promise<string | undefined>}
+ */
+async function updateMultipleColumns(key, body, githubID, values) {
+  const mondayID = await getMondayID(key, body, githubID);
+  if (!mondayID) {
+    throw new Error(`No Monday ID found for GitHub issue #${githubID}`);
+  }
+
+  const query = `mutation { 
+      change_multiple_column_values(
+        board_id: ${mondayBoard},
+        item_id: ${mondayID},
+        column_values: "${formatValues(values)}"
+      ) {
+        id
+      }
+    }`;
+
+  const response = await callMonday(key, query);
+  if (
+    !response ||
+    !response["data"] ||
+    !response["data"]["change_multiple_column_values"]
+  ) {
+    throw new Error(`Failed to update columns for item ID ${mondayID}`);
+  }
+
+  return response["data"]["change_multiple_column_values"]["id"];
+}
+
+/**
  * Inserts or replaces the Monday sync line in the issue body string
  * @param {string | null} body - The current issue body
  * @param {string} mondayID - The Monday.com item ID
@@ -247,10 +283,11 @@ function handleMilestone(milestone, assignee, labels) {
 
   if (dueDate) {
     const notInLifecycle = labels?.every(
-      label => !Object.values(resources.labels.issueWorkflow).includes(label.name)
+      (label) =>
+        !Object.values(resources.labels.issueWorkflow).includes(label.name),
     );
     const notReadyForDev = labels?.every(
-      label => label.name !== resources.labels.issueWorkflow.readyForDev
+      (label) => label.name !== resources.labels.issueWorkflow.readyForDev,
     );
 
     const updates = [
@@ -343,6 +380,7 @@ module.exports = {
   callMonday,
   getMondayID,
   fetchMondayID,
+  updateMultipleColumns,
   addSyncLine,
   assignLabel,
   assignPerson,
