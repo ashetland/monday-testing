@@ -43,14 +43,12 @@ module.exports = async ({ context }) => {
         }
       }
     });
-    console.log(`Current assignees processed: ${JSON.stringify(values)}`);
 
     if (values[assigneeInfo.role]) {
       values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
     } else {
       values[assigneeInfo.role] = `${assigneeInfo.id}`;
     }
-    console.log(`Updated assignee values: ${JSON.stringify(values)}`);
 
     return values;
   }
