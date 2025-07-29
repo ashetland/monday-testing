@@ -207,7 +207,6 @@ function addSyncLine(body, mondayID) {
  * @returns {object} - The updated column values object
  */
 function assignLabel(label, values) {
-  // TEMP
   if (label.name === "monday.com sync") {
     // Skip the sync label, as it is not needed in Monday.com
     return values;
