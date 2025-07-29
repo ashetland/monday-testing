@@ -248,10 +248,10 @@ function assignPerson(person, values) {
     return;
   }
 
-  if (!values[info.role]) {
-    values[info.role] = `${info.id}`;
-  } else {
+  if (values[info.role]) {
     values[info.role] += `, ${info.id}`;
+  } else {
+    values[info.role] = `${info.id}`;
   }
 
   return values;
