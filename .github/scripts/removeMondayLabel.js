@@ -1,6 +1,6 @@
 // @ts-check
 const { callMonday, getMondayID } = require("./support/utils");
-const { mondayBoard, mondayLabels } = require("./support/resources");
+const { mondayBoard, mondayLabels, resources } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -13,6 +13,15 @@ module.exports = async ({ context }) => {
   if (!label || !label.name) {
     console.log("No label found in the payload.");
     return;
+  }
+
+  const isSpike = label.name === resources.labels.planning.spike;
+  if (isSpike && issue.labels) {
+    const isSpikeComplete = issue.labels.some((label) => label.name === resources.labels.planning.spikeComplete);
+    if (isSpikeComplete) {
+      console.log("Issue is marked as a spike complete. Skipping label removal.");
+      return;
+    }
   }
 
   if (issue.labels) {
