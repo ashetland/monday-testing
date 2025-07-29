@@ -35,14 +35,12 @@ module.exports = async ({ context }) => {
       }
 
       const currentPerson = mondayPeople.get(person.login);
-      // If same role
       if (currentPerson && currentPerson.role === assigneeInfo.role) {
-        // 
         if (values[currentPerson.role]) {
-          values[currentPerson.role] += `, `;
+          values[currentPerson.role] += `, ${currentPerson.id}`;
+        } else {
+          values[currentPerson.role] = `${currentPerson.id}`;
         }
-
-        values[currentPerson.role] += `${currentPerson.id}`;
       }
     });
     console.log(`Current assignees processed: ${JSON.stringify(values)}`);
