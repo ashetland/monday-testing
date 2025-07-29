@@ -20,35 +20,39 @@ module.exports = async ({ context }) => {
     * @param {import('@octokit/webhooks-types').User[]} currentAssignees
     * @param {object} values - Object to hold the values to be updated in Monday
   */
-  function getAssigneeValue(assignee, currentAssignees, values) {
-    const personInfo = mondayPeople.get(assignee.login);
-    if (!personInfo) {
+  function addAssignee(assignee, currentAssignees, values) {
+    const assigneeInfo = mondayPeople.get(assignee.login);
+    if (!assigneeInfo) {
       console.log(
         `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
       );
       return;
     }
 
-    currentAssignees.forEach((assignee) => {
-      if (assignee.login === assignee.login) {
+    currentAssignees.forEach((person) => {
+      if (person.login === assignee.login) {
         return;
       }
 
-      const info = mondayPeople.get(assignee.login);
-      if (info && info.role === personInfo.role) {
-        if (values[info.role]) {
-          values[info.role] += `, `;
+      const currentPerson = mondayPeople.get(person.login);
+      // If same role
+      if (currentPerson && currentPerson.role === assigneeInfo.role) {
+        // 
+        if (values[currentPerson.role]) {
+          values[currentPerson.role] += `, `;
         }
 
-        values[info.role] += `${info.id}`;
+        values[currentPerson.role] += `${currentPerson.id}`;
       }
     });
+    console.log(`Current assignees processed: ${JSON.stringify(values)}`);
 
-    if (values[personInfo.role]) {
-      values[personInfo.role] += `, ${personInfo.id}`;
+    if (values[assigneeInfo.role]) {
+      values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
     } else {
-      values[personInfo.role] = `${personInfo.id}`;
+      values[assigneeInfo.role] = `${assigneeInfo.id}`;
     }
+    console.log(`Updated assignee values: ${JSON.stringify(values)}`);
 
     return values;
   }
@@ -73,7 +77,7 @@ module.exports = async ({ context }) => {
       }
     }
 
-    valueObject = getAssigneeValue(newAssignee, currentAssignees, valueObject);
+    valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
   }
 
   try {
