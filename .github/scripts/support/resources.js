@@ -99,14 +99,14 @@ const mondayColumns = {
 
 const mondayLabels = new Map([
   [
-    resources.labels.planning.needsTriage,
+    resources.labels.issueWorkflow.needsTriage,
     {
       column: mondayColumns.status,
       value: "Needs Triage",
     },
   ],
   [
-    resources.labels.planning.needsMilestone,
+    resources.labels.issueWorkflow.needsMilestone,
     {
       column: mondayColumns.status,
       value: "Needs Milestone",
