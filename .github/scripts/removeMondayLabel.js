@@ -14,6 +14,10 @@ module.exports = async ({ context }) => {
     console.log("No label found in the payload.");
     return;
   }
+
+  if (issue.labels) {
+    console.log(`current labels: ${issue.labels.map(l => l.name).join(", ")}`);
+  }
   
   const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
 
