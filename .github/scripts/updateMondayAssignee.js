@@ -1,5 +1,5 @@
 // @ts-check
-const { updateMultipleColumns, notReadyForDev, notInLifecycle } = require("./support/utils");
+const { updateMultipleColumns, notInLifecycle } = require("./support/utils");
 const { mondayPeople, mondayLabels, resources } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
@@ -58,7 +58,7 @@ module.exports = async ({ context }) => {
   }
 
   let valueObject = {};
-  if (action === "unassigned" && notReadyForDev(labels)) {
+  if (action === "unassigned" && notInLifecycle(labels)) {
     const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
 
     if (unassigned) {
