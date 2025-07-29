@@ -88,8 +88,8 @@ jobs:
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayTitle.js')
             await action({github, context})
 
-      - name: "Add Task Assignee"
-        if: github.event.action == 'assigned'
+      - name: "Update Task Assignee"
+        if: github.event.action == 'assigned' || github.event.action == 'unassigned'
         uses: actions/github-script@v7
         env:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
@@ -97,16 +97,6 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/updateMondayAssignee.js')
             await action({github, context})
-      #
-      # - name: "Update Assigned Status"
-      #   if: github.event.action == 'unassigned'
-      #   uses: actions/github-script@v7
-      #   env:
-      #     MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
-      #   with:
-      #     script: |
-      #       const action = require('${{ github.workspace }}/.github/scripts/updateMondayAssignedStatus.js')
-      #       await action({github, context})
 
       - name: "Update Task Status"
         if: github.event.action == 'closed'
