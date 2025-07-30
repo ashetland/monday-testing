@@ -6,22 +6,24 @@ const { mondayColumns } = require("./support/resources");
 module.exports = async ({ context }) => {
   const { MONDAY_KEY } = process.env;
   const payload =
-    /** @type {import('@octokit/webhooks-types').IssuesClosedEvent} */ (
+    /** @type {import('@octokit/webhooks-types').IssuesClosedEvent | import('@octokit/webhooks-types').IssuesReopenedEvent}*/ (
       context.payload
     );
   const {
-    issue: { number, body, labels }
+    issue: { number, body },
+    action,
   } = payload;
 
-  const isDesign = labels?.some(label => label.name === "design");
-  const status = isDesign
-    ? "Adding to Kit"
-    : "Done";
+  console.log(payload.issue.state_reason);
 
   const valueObject = {
     [mondayColumns.open]: "Closed",
-    [mondayColumns.status]: status,
+    [mondayColumns.status]: "Done",
   };
+
+  if (action === "reopened") {
+    valueObject[mondayColumns.open] = "Open";
+  }
 
   try {
     await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);

@@ -100,7 +100,7 @@ jobs:
             await action({github, context})
 
       - name: "Update Task Status"
-        if: github.event.action == 'closed'
+        if: github.event.action == 'closed' || github.event.action == 'reopened'
         uses: actions/github-script@v7
         env:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
