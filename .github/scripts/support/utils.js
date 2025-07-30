@@ -259,17 +259,22 @@ function assignPerson(person, values) {
 /**
  * Checks if the labels do not include any lifecycle labels
  * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
+ * @param {object} options - Options to skip specific labels
  * @return {boolean} - True if no lifecycle labels are present, false otherwise
  */
-function notInLifecycle(labels) {
+function notInLifecycle(labels, { skipMilestone = false } = {}) {
   if (!labels) {
     return true;
   }
 
-  return labels.every(
-    (label) =>
-      !Object.values(resources.labels.issueWorkflow).includes(label.name),
-  );
+  let lifecycleLabels = Object.values(resources.labels.issueWorkflow);
+  if (skipMilestone) {
+    lifecycleLabels = lifecycleLabels.filter(
+      (label) => label !== resources.labels.issueWorkflow.milestone,
+    );
+  }
+
+  return labels.every((label) => !lifecycleLabels.includes(label.name));
 }
 
 /**
@@ -302,7 +307,7 @@ function handleMilestone(milestone, assignee, labels) {
     },
   ];
 
-  // Removed, or none present
+  // If removed and not ready for dev, reset date
   if (!milestone) {
     return resetValues;
   }
@@ -319,8 +324,8 @@ function handleMilestone(milestone, assignee, labels) {
       },
     ];
 
-    // Assigned and NO lifecycle label
-    if (assignee && notInLifecycle(labels)) {
+    // Assigned and NO lifecycle label - OUTSIDE OF "needs milestone"
+    if (assignee && notInLifecycle(labels, { skipMilestone: true })) {
       const status = mondayLabels.get(resources.labels.issueWorkflow.assigned);
 
       if (status) {
@@ -343,7 +348,7 @@ function handleMilestone(milestone, assignee, labels) {
       }
     }
 
-    return updates;
+    return [];
   }
 
   const statusMilestones = [
