@@ -53,6 +53,7 @@ module.exports = async ({ github, context }) => {
         values = assignLabel(label, values);
       });
     }
+    console.log(`after labels: ${JSON.stringify(values)}`);
 
     if (assignees) {
       assignees.forEach((person) => {
@@ -67,11 +68,13 @@ module.exports = async ({ github, context }) => {
           values[assigned.column] = assigned.value;
         }
       }
+      console.log(`after assignees: ${JSON.stringify(values)}`);
     } else if (notReadyForDev(labels)) {
       const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
       if (unassigned) {
         values[unassigned.column] = unassigned.value;
       }
+      console.log(`after no assignees: ${JSON.stringify(values)}`);
     }
 
     if (milestone) {
