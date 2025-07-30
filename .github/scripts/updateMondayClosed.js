@@ -1,6 +1,6 @@
 // @ts-check
 const { updateMultipleColumns } = require("./support/utils");
-const { mondayColumns } = require("./support/resources");
+const { mondayColumns, resources } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -10,19 +10,23 @@ module.exports = async ({ context }) => {
       context.payload
     );
   const {
-    issue: { number, body },
+    issue: { number, body, labels },
     action,
   } = payload;
 
   console.log(payload.issue.state_reason);
 
-  const valueObject = {
-    [mondayColumns.open]: "Closed",
-    [mondayColumns.status]: "Done",
-  };
+  const valueObject = { };
 
   if (action === "reopened") {
     valueObject[mondayColumns.open] = "Open";
+  } else {
+    valueObject[mondayColumns.status] = "Closed";
+  }
+
+  const isDesign = labels && labels.every((label) => label.name === resources.labels.issueType.design);
+  if (!isDesign) {
+    valueObject[mondayColumns.status] = "Done";
   }
 
   try {
