@@ -15,6 +15,11 @@ module.exports = async ({ context }) => {
 
   const columnUpdates = handleMilestone(milestone, assignee, labels);
 
+  if (columnUpdates.length === 0) {
+    console.log("No columns to update for the milestone event.");
+    return;
+  }
+
   const valuesObject = {};
   columnUpdates.forEach((value) => {
     valuesObject[value.column] = value.value;
