@@ -48,7 +48,7 @@ module.exports = async ({ github, context }) => {
       },
     };
 
-    if (labels) {
+    if (labels?.length) {
       labels.forEach((label) => {
         values = assignLabel(label, values);
       });
