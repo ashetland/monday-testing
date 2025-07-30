@@ -55,7 +55,7 @@ module.exports = async ({ github, context }) => {
     }
     console.log(`after labels: ${JSON.stringify(values)}`);
 
-    if (assignees) {
+    if (assignees.length) {
       assignees.forEach((person) => {
         values = assignPerson(person, values);
       });
