@@ -95,32 +95,6 @@ module.exports = async ({ github, context }) => {
     return query;
   }
 
-  // if (payload.action === "labeled") {
-  //   // Check if issue exists in Monday.com
-  //   const query = `query {
-  //     items_page_by_column_values(
-  //       board_id: "${mondayBoard}",
-  //       columns: {
-  //         column_id: "${mondayColumns.issueNumber}",
-  //         column_values: ["${number}"]
-  //       },
-  //     ) {
-  //       items {
-  //         id
-  //       }
-  //     }
-  //   }`;
-  //   const existingItemID = await callMonday(MONDAY_KEY, query);
-  //
-  //   if (
-  //     existingItemID &&
-  //     existingItemID["data"] &&
-  //     existingItemID["data"]["items_page_by_column_values"]["items"].length > 0
-  //   ) {
-  //     // Item already exists, no need to create a new one
-  //     return;
-  //   }
-  // } else {
   const response = await callMonday(MONDAY_KEY, createTaskQuery());
   if (
     !response ||
