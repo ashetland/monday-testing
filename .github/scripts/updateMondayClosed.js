@@ -22,17 +22,17 @@ module.exports = async ({ context }) => {
 
   if (action === "reopened") {
     valueObject[mondayColumns.open] = "Open";
-  }
-
-  if (reason && closedReasons.includes(reason)) {
-    valueObject[mondayColumns.status] = "Closed";
-  }
-  // If not a design issue, set status to "Done"
-  else if (
-    labels &&
-    labels.every((label) => label.name !== resources.labels.issueType.design)
-  ) {
-    valueObject[mondayColumns.status] = "Done";
+  } else {
+    if (reason && closedReasons.includes(reason)) {
+      valueObject[mondayColumns.status] = "Closed";
+    }
+    // If not a design issue, set status to "Done"
+    else if (
+      labels &&
+      labels.every((label) => label.name !== resources.labels.issueType.design)
+    ) {
+      valueObject[mondayColumns.status] = "Done";
+    }
   }
 
   try {
