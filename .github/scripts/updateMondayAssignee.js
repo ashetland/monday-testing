@@ -1,6 +1,10 @@
 // @ts-check
 const { updateMultipleColumns, notInLifecycle } = require("./support/utils");
-const { mondayPeople, mondayLabels, resources } = require("./support/resources");
+const {
+  mondayPeople,
+  mondayLabels,
+  resources,
+} = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -16,10 +20,10 @@ module.exports = async ({ context }) => {
   } = payload;
 
   /**
-    * @param {import('@octokit/webhooks-types').User} assignee
-    * @param {import('@octokit/webhooks-types').User[]} currentAssignees
-    * @param {object} values - Object to hold the values to be updated in Monday
-  */
+   * @param {import('@octokit/webhooks-types').User} assignee
+   * @param {import('@octokit/webhooks-types').User[]} currentAssignees
+   * @param {object} values - Object to hold the values to be updated in Monday
+   */
   function addAssignee(assignee, currentAssignees, values) {
     const assigneeInfo = mondayPeople.get(assignee.login);
     if (!assigneeInfo) {
@@ -57,23 +61,39 @@ module.exports = async ({ context }) => {
     throw new Error(`No new assignee found for issue #${number}.`);
   }
 
+  // Update status based on label state
+  // 1. If unassigned event and assignees not empty, don't do anything
+  // 2. If unassigned and no more assignees and notInLifecycle - set to "Unassigned"
+  // 3. If assigned and no status labels besides "needs milestone", set status to "Assigned" and add assignee
+  // 4. If assigned and has status labels, only add assignee
   let valueObject = {};
-  if (action === "unassigned" && notInLifecycle(labels)) {
+  if (
+    action === "unassigned" &&
+    currentAssignees.length === 0 &&
+    notInLifecycle(labels)
+  ) {
     const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
 
     if (unassigned) {
       valueObject[unassigned.column] = unassigned.value;
     }
-  } else {
-    if (notInLifecycle(labels)) {
-      const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
+  } else if (
+    action === "assigned" &&
+    notInLifecycle(labels, { skipMilestone: true })
+  ) {
+    const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
 
-      if (assigned) {
-        valueObject[assigned.column] = assigned.value;
-      }
+    if (assigned) {
+      valueObject[assigned.column] = assigned.value;
     }
 
     valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
+  } else if (action === "assigned" && !notInLifecycle(labels)) {
+    valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
+  }
+
+  if (!valueObject) {
+    throw new Error(`No value object created for issue #${number}.`);
   }
 
   try {
