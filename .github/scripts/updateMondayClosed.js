@@ -13,19 +13,25 @@ module.exports = async ({ context }) => {
     issue: { number, body, labels },
     action,
   } = payload;
+  const reason = payload.issue.state_reason;
+  const closedReasons = ["wontfix", "not_planned", "duplicate"];
 
-  console.log(payload.issue.state_reason);
-
-  const valueObject = { };
+  const valueObject = {
+    [mondayColumns.open]: "Closed",
+  };
 
   if (action === "reopened") {
     valueObject[mondayColumns.open] = "Open";
-  } else {
-    valueObject[mondayColumns.status] = "Closed";
   }
 
-  const isDesign = labels && labels.every((label) => label.name === resources.labels.issueType.design);
-  if (!isDesign) {
+  if (reason && closedReasons.includes(reason)) {
+    valueObject[mondayColumns.status] = "Closed";
+  }
+  // If not a design issue, set status to "Done"
+  else if (
+    labels &&
+    labels.every((label) => label.name !== resources.labels.issueType.design)
+  ) {
     valueObject[mondayColumns.status] = "Done";
   }
 
@@ -34,4 +40,4 @@ module.exports = async ({ context }) => {
   } catch (error) {
     throw new Error(`Error updating Monday.com task: ${error}`);
   }
-}
+};
