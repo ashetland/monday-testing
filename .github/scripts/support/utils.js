@@ -348,7 +348,7 @@ function handleMilestone(milestone, assignee, labels) {
       }
     }
 
-    return [];
+    return updates;
   }
 
   const statusMilestones = [
@@ -369,7 +369,7 @@ function handleMilestone(milestone, assignee, labels) {
     ];
   }
 
-  return resetValues;
+  return [];
 }
 
 /**
