@@ -263,14 +263,14 @@ function assignPerson(person, values) {
  * @return {boolean} - True if no lifecycle labels are present, false otherwise
  */
 function notInLifecycle(labels, { skipMilestone = false } = {}) {
-  if (!labels) {
+  if (!labels?.length) {
     return true;
   }
 
   let lifecycleLabels = Object.values(resources.labels.issueWorkflow);
   if (skipMilestone) {
     lifecycleLabels = lifecycleLabels.filter(
-      (label) => label !== resources.labels.issueWorkflow.milestone,
+      (label) => label !== resources.labels.issueWorkflow.needsMilestone,
     );
   }
 
