@@ -267,6 +267,13 @@ const mondayLabels = new Map([
     },
   ],
   [
+    resources.labels.priority.critical,
+    {
+      column: mondayColumns.priority,
+      value: "Critical",
+    },
+  ],
+  [
     resources.labels.devEstimate.one,
     {
       column: mondayColumns.devEstimate,
