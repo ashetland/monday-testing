@@ -62,11 +62,12 @@ module.exports = async ({ context }) => {
   }
 
   // Update status based on label state
-  // 1. If unassigned event and assignees not empty, don't do anything
+  // 1. If unassigned event and assignees not empty, don't do anything - no check in code
   // 2. If unassigned and no more assignees and notInLifecycle - set to "Unassigned"
   // 3. If assigned and no status labels besides "needs milestone", set status to "Assigned" and add assignee
   // 4. If assigned and has status labels, only add assignee
   let valueObject = {};
+  console.log("Not in lifecycle:", notInLifecycle(labels), JSON.stringify(labels));
   if (
     action === "unassigned" &&
     currentAssignees.length === 0 &&
