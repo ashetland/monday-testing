@@ -99,6 +99,7 @@ module.exports = async ({ context }) => {
 
   try {
     await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);
+    console.log(`Finished at: ${new Date().toTimeString()}`);
   } catch (error) {
     throw new Error(`Error updating assignee values in Monday.com: ${error}`);
   }
