@@ -113,7 +113,8 @@ module.exports = async ({ context }) => {
   }
 
   if (!Object.keys(valueObject).length) {
-    throw new Error(`No value object created for issue #${number}.`);
+    console.warn(`No value object created for issue #${number}.`);
+    return;
   }
 
   try {
