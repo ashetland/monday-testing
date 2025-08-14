@@ -1,9 +1,10 @@
 // @ts-check
-const { updateMultipleColumns, notInLifecycle } = require("./support/utils");
+const { updateMultipleColumns, notInLifecycle, assignPerson } = require("./support/utils");
 const {
   mondayPeople,
   mondayLabels,
   resources,
+  mondayColumns,
 } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
@@ -20,6 +21,9 @@ module.exports = async ({ context }) => {
   } = payload;
 
   /**
+   * Add an assignee to a values object. If another person of the same role
+   * is already assiged, it will append the new assignee to the existing list.
+   * If not, it will overwrite the value for that role.
    * @param {import('@octokit/webhooks-types').User} assignee
    * @param {import('@octokit/webhooks-types').User[]} currentAssignees
    * @param {object} values - Object to hold the values to be updated in Monday
@@ -62,10 +66,11 @@ module.exports = async ({ context }) => {
   }
 
   // Update status based on label state
-  // 1. If unassigned event and assignees not empty, don't do anything - no check in code
-  // 2. If unassigned and no more assignees and notInLifecycle - set to "Unassigned"
-  // 3. If assigned and no status labels besides "needs milestone", set status to "Assigned" and add assignee
-  // 4. If assigned and has status labels, only add assignee
+  // 1. No "if" statement: If unassigning event and assignees not empty, don't do anything
+  // 2. If unassigning and no more assignees and notInLifecycle - set to "Unassigned"
+  // 3. If unassigning a PE, and other PEs are assigned, "remove" the PE from the list by assigning other assigned PEs
+  // 4. If assigning and no status labels besides "needs milestone", set status to "Assigned" and add assignee
+  // 5. If assigning and has status labels, only add assignee
   let valueObject = {};
   console.log("Not in lifecycle:", notInLifecycle(labels), JSON.stringify(labels));
   if (
@@ -79,6 +84,20 @@ module.exports = async ({ context }) => {
       valueObject[unassigned.column] = unassigned.value;
     }
   } else if (
+    action === "unassigned" &&
+    currentAssignees.length !== 0 &&
+    currentAssignees.some(
+      (assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers,
+    )
+  ) {
+    const productEngineers = currentAssignees
+      .filter((assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers);
+
+    for (const person of productEngineers) {
+      valueObject = assignPerson(person, valueObject);
+    }
+  }
+    else if (
     action === "assigned" &&
     notInLifecycle(labels, { skipMilestone: true })
   ) {
