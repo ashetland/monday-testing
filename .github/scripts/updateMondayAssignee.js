@@ -72,44 +72,53 @@ module.exports = async ({ context }) => {
   // 4. If assigning and no status labels besides "needs milestone", set status to "Assigned" and add assignee
   // 5. If assigning and has status labels, only add assignee
   let valueObject = {};
-  if (
-    action === "unassigned" &&
-    currentAssignees.length === 0 &&
-    notInLifecycle(labels)
-  ) {
-    const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
 
-    if (unassigned) {
-      valueObject[unassigned.column] = unassigned.value;
+  for (const person of currentAssignees) {
+    if (person.login === newAssignee.login) {
+      return;
     }
-  } else if (
-    action === "unassigned" &&
-    currentAssignees.length !== 0 &&
-    currentAssignees.some(
-      (assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers,
-    )
-  ) {
-    const productEngineers = currentAssignees
-      .filter((assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers);
 
-    for (const person of productEngineers) {
-      valueObject = assignPerson(person, valueObject);
-    }
+    valueObject = assignPerson(person, valueObject);
   }
-    else if (
-    action === "assigned" &&
-    notInLifecycle(labels, { skipMilestone: true })
-  ) {
-    const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
 
-    if (assigned) {
-      valueObject[assigned.column] = assigned.value;
-    }
-
-    valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
-  } else if (action === "assigned" && !notInLifecycle(labels)) {
-    valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
-  }
+  // if (
+  //   action === "unassigned" &&
+  //   currentAssignees.length === 0 &&
+  //   notInLifecycle(labels)
+  // ) {
+  //   const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
+  //
+  //   if (unassigned) {
+  //     valueObject[unassigned.column] = unassigned.value;
+  //   }
+  // } else if (
+  //   action === "unassigned" &&
+  //   currentAssignees.length !== 0 &&
+  //   currentAssignees.some(
+  //     (assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers,
+  //   )
+  // ) {
+  //   const productEngineers = currentAssignees
+  //     .filter((assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers);
+  //
+  //   for (const person of productEngineers) {
+  //     valueObject = assignPerson(person, valueObject);
+  //   }
+  // }
+  //   else if (
+  //   action === "assigned" &&
+  //   notInLifecycle(labels, { skipMilestone: true })
+  // ) {
+  //   const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
+  //
+  //   if (assigned) {
+  //     valueObject[assigned.column] = assigned.value;
+  //   }
+  //
+  //   valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
+  // } else if (action === "assigned" && !notInLifecycle(labels)) {
+  //   valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
+  // }
 
   if (!Object.keys(valueObject).length) {
     console.warn(`No value object created for issue #${number}.`);
