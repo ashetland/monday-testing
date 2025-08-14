@@ -110,7 +110,7 @@ module.exports = async ({ context }) => {
     console.log(`Number 2 case set to assigned and people updated: currentAssignees: ${JSON.stringify(currentAssignees)}`);
   }
   // #3
-  else {
+  else if (currentAssignees.length > 0) {
     currentAssignees.forEach((assignee) => {
       valueObject = assignPerson(assignee, valueObject);
     });
