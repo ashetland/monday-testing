@@ -28,43 +28,35 @@ module.exports = async ({ context }) => {
    * @param {import('@octokit/webhooks-types').User[]} currentAssignees
    * @param {object} values - Object to hold the values to be updated in Monday
    */
-  function addAssignees(assignee, currentAssignees, values) {
+  function addAssignee(assignee, currentAssignees, values) {
+    const assigneeInfo = mondayPeople.get(assignee.login);
+    if (!assigneeInfo) {
+      console.log(
+        `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
+      );
+      return;
+    }
+
     currentAssignees.forEach((person) => {
       if (person.login === assignee.login) {
         return;
       }
 
-      values = assignPerson(person, values);
+      const currentPerson = mondayPeople.get(person.login);
+      if (currentPerson && currentPerson.role === assigneeInfo.role) {
+        if (values[currentPerson.role]) {
+          values[currentPerson.role] += `, ${currentPerson.id}`;
+        } else {
+          values[currentPerson.role] = `${currentPerson.id}`;
+        }
+      }
     });
 
-    // const assigneeInfo = mondayPeople.get(assignee.login);
-    // if (!assigneeInfo) {
-    //   console.log(
-    //     `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
-    //   );
-    //   return;
-    // }
-    //
-    // currentAssignees.forEach((person) => {
-    //   if (person.login === assignee.login) {
-    //     return;
-    //   }
-    //
-    //   const currentPerson = mondayPeople.get(person.login);
-    //   if (currentPerson && currentPerson.role === assigneeInfo.role) {
-    //     if (values[currentPerson.role]) {
-    //       values[currentPerson.role] += `, ${currentPerson.id}`;
-    //     } else {
-    //       values[currentPerson.role] = `${currentPerson.id}`;
-    //     }
-    //   }
-    // });
-    //
-    // if (values[assigneeInfo.role]) {
-    //   values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
-    // } else {
-    //   values[assigneeInfo.role] = `${assigneeInfo.id}`;
-    // }
+    if (values[assigneeInfo.role]) {
+      values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
+    } else {
+      values[assigneeInfo.role] = `${assigneeInfo.id}`;
+    }
 
     return values;
   }
@@ -99,6 +91,7 @@ module.exports = async ({ context }) => {
     if (unassigned) {
       valueObject[unassigned.column] = unassigned.value;
     }
+    console.log(`Number 1 case, set to unassiged and no people updates`);
   }
   // #2
     else if (
@@ -111,11 +104,17 @@ module.exports = async ({ context }) => {
       valueObject[assigned.column] = assigned.value;
     }
 
-    valueObject = addAssignees(newAssignee, currentAssignees, valueObject);
+    currentAssignees.forEach((assignee) => {
+      valueObject = assignPerson(assignee, valueObject);
+    });
+    console.log(`Number 2 case set to assigned and people updated: currentAssignees: ${JSON.stringify(currentAssignees)}`);
   }
   // #3
   else {
-    valueObject = addAssignees(newAssignee, currentAssignees, valueObject);
+    currentAssignees.forEach((assignee) => {
+      valueObject = assignPerson(assignee, valueObject);
+    });
+    console.log(`Number 3 case: currentAssignees: ${JSON.stringify(currentAssignees)}`);
   }
   // else if (
   //   action === "unassigned" &&
