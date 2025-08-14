@@ -112,7 +112,7 @@ module.exports = async ({ context }) => {
     valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
   }
 
-  if (!valueObject) {
+  if (!Object.keys(valueObject).length) {
     throw new Error(`No value object created for issue #${number}.`);
   }
 
