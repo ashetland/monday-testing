@@ -28,35 +28,43 @@ module.exports = async ({ context }) => {
    * @param {import('@octokit/webhooks-types').User[]} currentAssignees
    * @param {object} values - Object to hold the values to be updated in Monday
    */
-  function addAssignee(assignee, currentAssignees, values) {
-    const assigneeInfo = mondayPeople.get(assignee.login);
-    if (!assigneeInfo) {
-      console.log(
-        `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
-      );
-      return;
-    }
-
+  function addAssignees(assignee, currentAssignees, values) {
     currentAssignees.forEach((person) => {
       if (person.login === assignee.login) {
         return;
       }
 
-      const currentPerson = mondayPeople.get(person.login);
-      if (currentPerson && currentPerson.role === assigneeInfo.role) {
-        if (values[currentPerson.role]) {
-          values[currentPerson.role] += `, ${currentPerson.id}`;
-        } else {
-          values[currentPerson.role] = `${currentPerson.id}`;
-        }
-      }
+      values = assignPerson(person, values);
     });
 
-    if (values[assigneeInfo.role]) {
-      values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
-    } else {
-      values[assigneeInfo.role] = `${assigneeInfo.id}`;
-    }
+    // const assigneeInfo = mondayPeople.get(assignee.login);
+    // if (!assigneeInfo) {
+    //   console.log(
+    //     `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
+    //   );
+    //   return;
+    // }
+    //
+    // currentAssignees.forEach((person) => {
+    //   if (person.login === assignee.login) {
+    //     return;
+    //   }
+    //
+    //   const currentPerson = mondayPeople.get(person.login);
+    //   if (currentPerson && currentPerson.role === assigneeInfo.role) {
+    //     if (values[currentPerson.role]) {
+    //       values[currentPerson.role] += `, ${currentPerson.id}`;
+    //     } else {
+    //       values[currentPerson.role] = `${currentPerson.id}`;
+    //     }
+    //   }
+    // });
+    //
+    // if (values[assigneeInfo.role]) {
+    //   values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
+    // } else {
+    //   values[assigneeInfo.role] = `${assigneeInfo.id}`;
+    // }
 
     return values;
   }
@@ -71,27 +79,45 @@ module.exports = async ({ context }) => {
   // 3. If unassigning a PE, and other PEs are assigned, "remove" the PE from the list by assigning other assigned PEs
   // 4. If assigning and no status labels besides "needs milestone", set status to "Assigned" and add assignee
   // 5. If assigning and has status labels, only add assignee
+
+
+  // Update cases:
+  // 1. Unassigned with no other assignees and not in lifecycle: set status to "Unassigned"
+  // 2. Assigned and not in lifecycle labels besides "needs milestone": set status to "Assigned", add all assignees
+  // 3. All other cases: add all assignees
   let valueObject = {};
 
-  for (const person of currentAssignees) {
-    if (person.login === newAssignee.login) {
-      return;
+
+  // #1
+  if (
+    action === "unassigned" &&
+    currentAssignees.length === 0 &&
+    notInLifecycle(labels)
+  ) {
+    const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
+
+    if (unassigned) {
+      valueObject[unassigned.column] = unassigned.value;
+    }
+  }
+  // #2
+    else if (
+    action === "assigned" &&
+    notInLifecycle(labels, { skipMilestone: true })
+  ) {
+    const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
+
+    if (assigned) {
+      valueObject[assigned.column] = assigned.value;
     }
 
-    valueObject = assignPerson(person, valueObject);
+    valueObject = addAssignees(newAssignee, currentAssignees, valueObject);
   }
-
-  // if (
-  //   action === "unassigned" &&
-  //   currentAssignees.length === 0 &&
-  //   notInLifecycle(labels)
-  // ) {
-  //   const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
-  //
-  //   if (unassigned) {
-  //     valueObject[unassigned.column] = unassigned.value;
-  //   }
-  // } else if (
+  // #3
+  else {
+    valueObject = addAssignees(newAssignee, currentAssignees, valueObject);
+  }
+  // else if (
   //   action === "unassigned" &&
   //   currentAssignees.length !== 0 &&
   //   currentAssignees.some(
@@ -105,17 +131,6 @@ module.exports = async ({ context }) => {
   //     valueObject = assignPerson(person, valueObject);
   //   }
   // }
-  //   else if (
-  //   action === "assigned" &&
-  //   notInLifecycle(labels, { skipMilestone: true })
-  // ) {
-  //   const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
-  //
-  //   if (assigned) {
-  //     valueObject[assigned.column] = assigned.value;
-  //   }
-  //
-  //   valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
   // } else if (action === "assigned" && !notInLifecycle(labels)) {
   //   valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
   // }
