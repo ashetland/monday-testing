@@ -1,11 +1,10 @@
 // @ts-check
-const { updateMultipleColumns, notInLifecycle, assignPerson } = require("./support/utils");
 const {
-  mondayPeople,
-  mondayLabels,
-  resources,
-  mondayColumns,
-} = require("./support/resources");
+  updateMultipleColumns,
+  notInLifecycle,
+  assignPerson,
+} = require("./support/utils");
+const { mondayLabels, resources } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -20,67 +19,22 @@ module.exports = async ({ context }) => {
     action,
   } = payload;
 
-  /**
-   * Add an assignee to a values object. If another person of the same role
-   * is already assiged, it will append the new assignee to the existing list.
-   * If not, it will overwrite the value for that role.
-   * @param {import('@octokit/webhooks-types').User} assignee
-   * @param {import('@octokit/webhooks-types').User[]} currentAssignees
-   * @param {object} values - Object to hold the values to be updated in Monday
-   */
-  function addAssignee(assignee, currentAssignees, values) {
-    const assigneeInfo = mondayPeople.get(assignee.login);
-    if (!assigneeInfo) {
-      console.log(
-        `No Monday person info found for assignee ${assignee.login}. Skipping update.`,
-      );
-      return;
-    }
-
-    currentAssignees.forEach((person) => {
-      if (person.login === assignee.login) {
-        return;
-      }
-
-      const currentPerson = mondayPeople.get(person.login);
-      if (currentPerson && currentPerson.role === assigneeInfo.role) {
-        if (values[currentPerson.role]) {
-          values[currentPerson.role] += `, ${currentPerson.id}`;
-        } else {
-          values[currentPerson.role] = `${currentPerson.id}`;
-        }
-      }
-    });
-
-    if (values[assigneeInfo.role]) {
-      values[assigneeInfo.role] += `, ${assigneeInfo.id}`;
-    } else {
-      values[assigneeInfo.role] = `${assigneeInfo.id}`;
-    }
-
-    return values;
-  }
-
   if (!newAssignee) {
     throw new Error(`No new assignee found for issue #${number}.`);
   }
 
-  // Update status based on label state
-  // 1. No "if" statement: If unassigning event and assignees not empty, don't do anything
-  // 2. If unassigning and no more assignees and notInLifecycle - set to "Unassigned"
-  // 3. If unassigning a PE, and other PEs are assigned, "remove" the PE from the list by assigning other assigned PEs
-  // 4. If assigning and no status labels besides "needs milestone", set status to "Assigned" and add assignee
-  // 5. If assigning and has status labels, only add assignee
+  /**
+   * Assignes each of the current assignees to the value object.
+   */
+  function updateAssignees() {
+    currentAssignees.forEach((assignee) => {
+      valueObject = assignPerson(assignee, valueObject);
+    });
+  }
 
-
-  // Update cases:
-  // 1. Unassigned with no other assignees and not in lifecycle: set status to "Unassigned"
-  // 2. Assigned and not in lifecycle labels besides "needs milestone": set status to "Assigned", add all assignees
-  // 3. All other cases: add all assignees
   let valueObject = {};
-
-
-  // #1
+  // Unassigned action, no assignees left, not in lifecycle:
+  // Set status to "Unassigned", no assignee updates
   if (
     action === "unassigned" &&
     currentAssignees.length === 0 &&
@@ -91,48 +45,28 @@ module.exports = async ({ context }) => {
     if (unassigned) {
       valueObject[unassigned.column] = unassigned.value;
     }
-    console.log(`Number 1 case, set to unassiged and no people updates`);
+
+    console.info("Set status to unassigned, no assignees updated");
   }
-  // #2
-    else if (
+  // Assigned action, not in lifecycle besides "needs milestone":
+  // Set status to "Assigned", update assignees
+  else if (
     action === "assigned" &&
     notInLifecycle(labels, { skipMilestone: true })
   ) {
     const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
-
     if (assigned) {
       valueObject[assigned.column] = assigned.value;
     }
 
-    currentAssignees.forEach((assignee) => {
-      valueObject = assignPerson(assignee, valueObject);
-    });
-    console.log(`Number 2 case set to assigned and people updated: currentAssignees: ${JSON.stringify(currentAssignees)}`);
+    updateAssignees();
+
+    console.info("Update assignees, set status to assigned");
+  } else if (currentAssignees.length > 0) {
+    updateAssignees();
+
+    console.info("Update assignees, no status change");
   }
-  // #3
-  else if (currentAssignees.length > 0) {
-    currentAssignees.forEach((assignee) => {
-      valueObject = assignPerson(assignee, valueObject);
-    });
-    console.log(`Number 3 case: currentAssignees: ${JSON.stringify(currentAssignees)}`);
-  }
-  // else if (
-  //   action === "unassigned" &&
-  //   currentAssignees.length !== 0 &&
-  //   currentAssignees.some(
-  //     (assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers,
-  //   )
-  // ) {
-  //   const productEngineers = currentAssignees
-  //     .filter((assignee) => mondayPeople.get(assignee.login)?.role === mondayColumns.productEngineers);
-  //
-  //   for (const person of productEngineers) {
-  //     valueObject = assignPerson(person, valueObject);
-  //   }
-  // }
-  // } else if (action === "assigned" && !notInLifecycle(labels)) {
-  //   valueObject = addAssignee(newAssignee, currentAssignees, valueObject);
-  // }
 
   if (!Object.keys(valueObject).length) {
     console.warn(`No value object created for issue #${number}.`);
@@ -140,9 +74,7 @@ module.exports = async ({ context }) => {
   }
 
   try {
-    console.log(`Value object for issue #${number}:`, JSON.stringify(valueObject, null, 2));
     await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);
-    console.log(`Finished at: ${new Date().toTimeString()}`);
   } catch (error) {
     throw new Error(`Error updating assignee values in Monday.com: ${error}`);
   }
