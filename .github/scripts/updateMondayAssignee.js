@@ -72,7 +72,6 @@ module.exports = async ({ context }) => {
   // 4. If assigning and no status labels besides "needs milestone", set status to "Assigned" and add assignee
   // 5. If assigning and has status labels, only add assignee
   let valueObject = {};
-  console.log("Not in lifecycle:", notInLifecycle(labels), JSON.stringify(labels));
   if (
     action === "unassigned" &&
     currentAssignees.length === 0 &&
