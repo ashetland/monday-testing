@@ -126,6 +126,7 @@ module.exports = async ({ context }) => {
   }
 
   try {
+    console.log(`Value object for issue #${number}:`, JSON.stringify(valueObject, null, 2));
     await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);
     console.log(`Finished at: ${new Date().toTimeString()}`);
   } catch (error) {
