@@ -69,7 +69,7 @@ module.exports = async ({ context }) => {
   }
 
   if (!Object.keys(valueObject).length) {
-    console.warn(`No value object created for issue #${number}.`);
+    console.info("No updates to assignees or status.");
     return;
   }
 
