@@ -50,7 +50,7 @@ module.exports = async ({ github, context }) => {
 
     if (labels?.length) {
       labels.forEach((label) => {
-        values = assignLabel(label, values);
+        values = assignLabel(label.name, values);
       });
     } else {
       const needsTriage = mondayLabels.get(resources.labels.issueWorkflow.needsTriage);

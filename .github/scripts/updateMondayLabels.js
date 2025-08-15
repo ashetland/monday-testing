@@ -15,7 +15,7 @@ module.exports = async ({ context }) => {
   }
 
   try {
-    await updateMultipleColumns(MONDAY_KEY, issue.body, issue.number, assignLabel(label, {}));
+    await updateMultipleColumns(MONDAY_KEY, issue.body, issue.number, assignLabel(label.name, {}));
     console.log(`Finished at: ${new Date().toTimeString()}`);
   } catch (error) {
     throw new Error(`Error updating Monday.com task with label '${label.name}': ${error}`);

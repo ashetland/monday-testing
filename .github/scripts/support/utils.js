@@ -202,24 +202,24 @@ function addSyncLine(body, mondayID) {
 
 /**
  * Assigns a label to the Monday.com task object
- * @param {import('@octokit/webhooks-types').Label} label
+ * @param {string} label
  * @param {object} values - The current column values object to update
  * @returns {object} - The updated column values object
  */
 function assignLabel(label, values) {
-  if (label.name === "monday.com sync") {
+  if (label === "monday.com sync") {
     // Skip the sync label, as it is not needed in Monday.com
     return values;
   }
 
-  if (!mondayLabels.has(label.name)) {
-    console.warn(`Label ${label.name} not found in Monday Labels map`);
+  if (!mondayLabels.has(label)) {
+    console.warn(`Label ${label} not found in Monday Labels map`);
     return values;
   }
 
-  const info = mondayLabels.get(label.name);
+  const info = mondayLabels.get(label);
   if (!info?.column || !info?.value) {
-    console.warn(`Label ${label.name} is missing column or title information`);
+    console.warn(`Label ${label} is missing column or title information`);
     return values;
   }
 
@@ -255,6 +255,8 @@ function assignPerson(person, values) {
 
   return values;
 }
+
+
 
 /**
  * Checks if the labels do not include any lifecycle labels
