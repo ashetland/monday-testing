@@ -3,6 +3,7 @@ const {
   updateMultipleColumns,
   notInLifecycle,
   assignPerson,
+  assignLabel,
 } = require("./support/utils");
 const { mondayLabels, resources } = require("./support/resources");
 
@@ -25,11 +26,14 @@ module.exports = async ({ context }) => {
 
   /**
    * Assignes each of the current assignees to the value object.
+   * @param {Object} valueObject - The value object to update.
+   * @returns {Object} - The updated value object with assignees added to respective columns.
    */
-  function updateAssignees() {
+  function updateAssignees(valueObject) {
     currentAssignees.forEach((assignee) => {
       valueObject = assignPerson(assignee, valueObject);
     });
+    return valueObject;
   }
 
   let valueObject = {};
@@ -40,11 +44,7 @@ module.exports = async ({ context }) => {
     currentAssignees.length === 0 &&
     notInLifecycle(labels)
   ) {
-    const unassigned = mondayLabels.get(resources.labels.issueWorkflow.new);
-
-    if (unassigned) {
-      valueObject[unassigned.column] = unassigned.value;
-    }
+    valueObject = assignLabel(resources.labels.issueWorkflow.new, valueObject);
 
     console.info("Set status to unassigned, no assignees updated");
   }
@@ -54,16 +54,16 @@ module.exports = async ({ context }) => {
     action === "assigned" &&
     notInLifecycle(labels, { skipMilestone: true })
   ) {
-    const assigned = mondayLabels.get(resources.labels.issueWorkflow.assigned);
-    if (assigned) {
-      valueObject[assigned.column] = assigned.value;
-    }
+    valueObject = assignLabel(
+      resources.labels.issueWorkflow.assigned,
+      valueObject,
+    );
 
-    updateAssignees();
+    valueObject = updateAssignees(valueObject);
 
     console.info("Update assignees, set status to assigned");
   } else if (currentAssignees.length > 0) {
-    updateAssignees();
+    valueObject = updateAssignees(valueObject);
 
     console.info("Update assignees, no status change");
   }
