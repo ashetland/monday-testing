@@ -50,6 +50,16 @@ module.exports = async ({ github, context }) => {
 
     if (labels?.length) {
       labels.forEach((label) => {
+        // TEMP: Skip "needs milestone" if "ready for dev" is applied
+        if (
+          label.name === resources.labels.issueWorkflow.needsMilestone &&
+          !notReadyForDev(labels)
+        ) {
+          console.log(
+            `Skipping '${resources.labels.issueWorkflow.needsMilestone}' label as '${resources.labels.issueWorkflow.readyForDev}' is already applied.`,
+          );
+        }
+
         values = assignLabel(label.name, values);
       });
     } else {
