@@ -53,7 +53,9 @@ module.exports = async ({ github, context }) => {
         values = assignLabel(label.name, values);
       });
     } else {
-      const needsTriage = mondayLabels.get(resources.labels.issueWorkflow.needsTriage);
+      const needsTriage = mondayLabels.get(
+        resources.labels.issueWorkflow.needsTriage,
+      );
       if (needsTriage) {
         values[needsTriage.column] = needsTriage.value;
       }
@@ -103,7 +105,8 @@ module.exports = async ({ github, context }) => {
     !response["data"] ||
     !response["data"]["create_item"]["id"]
   ) {
-    throw new Error(`Missing or bad response for Github Issue #${number}`);
+    console.log(`Missing or bad response for Github Issue #${number}`);
+    process.exit(1);
   }
 
   const mondayID = response["data"]["create_item"]["id"];
@@ -111,10 +114,16 @@ module.exports = async ({ github, context }) => {
   const updatedBody = addSyncLine(body, mondayID);
 
   // Update the issue with the new body
-  await github.rest.issues.update({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: number,
-    body: updatedBody,
-  });
+  try {
+    await github.rest.issues.update({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: number,
+      body: updatedBody,
+    });
+    process.exit(0);
+  } catch (error) {
+    console.log(`Error adding ID to body: ${error}`);
+    process.exit(1);
+  }
 };

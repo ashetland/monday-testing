@@ -12,7 +12,7 @@ module.exports = async ({ context }) => {
 
   if (!label || !label.name) {
     console.log("No label found in the payload.");
-    return;
+    process.exit(0);
   }
 
   const isSpike = label.name === resources.labels.planning.spike;
@@ -20,7 +20,7 @@ module.exports = async ({ context }) => {
     const isSpikeComplete = issue.labels.some((label) => label.name === resources.labels.planning.spikeComplete);
     if (isSpikeComplete) {
       console.log("Issue is marked as a spike complete. Skipping label removal.");
-      return;
+      process.exit(0);
     }
   }
   
@@ -28,7 +28,7 @@ module.exports = async ({ context }) => {
 
   if (!mondayLabels.has(label.name)) {
     console.log(`Label '${label.name}' is not a recognized Monday.com label.`);
-    return;
+    process.exit(0);
   }
 
   const column = mondayLabels.get(label.name)?.column;
@@ -46,10 +46,12 @@ module.exports = async ({ context }) => {
 
   const response = await callMonday(MONDAY_KEY, query);
   if (!response || !response["data"]["change_simple_column_value"]) {
-    throw new Error(
+    console.log(
       `Failed to remove label from Monday.com task: ${JSON.stringify(response)}`,
     );
+    process.exit(1);
   }
 
   console.log(`Cleared '${label.name}' from '${column}' on Monday.com task ID ${mondayID}.`);
+  process.exit(0);
 }
