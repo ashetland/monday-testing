@@ -34,7 +34,7 @@ const resources = {
       spike: "spike",
       spikeComplete: "spike complete",
       noChangelogEntry: "no changelog entry",
-      // blocked: "blocked",
+      blocked: "blocked",
     },
     priority: {
       low: "p - low",
@@ -92,7 +92,7 @@ const mondayColumns = {
   designEstimate: "color_mkqr3y8a",
   devEstimate: "numeric_mksvm3v7",
   designIssue: "color_mkrdhk8",
-  // blocked: null,
+  blocked: "color_mkv259x0",
   a11y: "color_mkt5c4q6",
   spike: "color_mkt5vd8a",
   figmaChanges: "color_mkt58h3r",
@@ -128,13 +128,13 @@ const mondayLabels = new Map([
       value: "Spike Complete",
     },
   ],
-  // [
-  //   resources.labels.planning.blocked,
-  //   {
-  //     column: mondayColumns.blocked,
-  //     value: "Blocked",
-  //   },
-  // ],
+  [
+    resources.labels.planning.blocked,
+    {
+      column: mondayColumns.blocked,
+      value: "Blocked",
+    },
+  ],
   [
     resources.labels.issueWorkflow.new,
     {
