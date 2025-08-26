@@ -426,8 +426,8 @@ function createTaskQuery(issue) {
       values = assignLabel(label.name, values);
     });
   }
-  // Else: set default status
-  else {
+  // If no lifecycle label: set default status
+  if (notInLifecycle(labels)) {
     const needsTriage = mondayLabels.get(
       resources.labels.issueWorkflow.needsTriage,
     );
