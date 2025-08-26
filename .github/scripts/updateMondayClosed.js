@@ -10,10 +10,10 @@ module.exports = async ({ context }) => {
       context.payload
     );
   const {
-    issue: { number, body, labels },
+    issue: { number, body, labels, state_reason },
     action,
   } = payload;
-  const reason = payload.issue.state_reason;
+  console.log(`Reason: ${state_reason}`);
   const closedReasons = ["wontfix", "not_planned", "duplicate"];
 
   const valueObject = {
@@ -23,7 +23,8 @@ module.exports = async ({ context }) => {
   if (action === "reopened") {
     valueObject[mondayColumns.open] = "Open";
   } else {
-    if (reason && closedReasons.includes(reason)) {
+    // If closed but not completed, set status to "Closed"
+    if (state_reason && closedReasons.includes(state_reason)) {
       valueObject[mondayColumns.status] = "Closed";
     }
     // If not a design issue, set status to "Done"
