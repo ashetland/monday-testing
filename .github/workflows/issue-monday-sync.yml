@@ -31,7 +31,7 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/createMondayTask.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayCreateTask.js')
             await action({github, context})
 
       - name: "Update Label on Task"
@@ -41,7 +41,7 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/updateMondayLabels.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayUpdateLabels.js')
             await action({context})
 
       - name: "Remove Label from Task"
@@ -57,7 +57,7 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/removeMondayLabel.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayRemoveLabel.js')
             await action({context})
 
       - name: "Update Milestone"
@@ -67,7 +67,7 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/updateMondayDate.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayUpdateMilestone.js')
             await action({github, context})
 
       - name: "Update Task Title"
@@ -77,7 +77,7 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/updateMondayTitle.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayUpdateTitle.js')
             await action({github, context})
 
       - name: "Update Task Assignee"
@@ -87,7 +87,7 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/updateMondayAssignee.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayUpdateAssignee.js')
             await action({github, context})
 
       - name: "Update Task Status"
@@ -97,5 +97,5 @@ jobs:
           MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/updateMondayClosed.js')
+            const action = require('${{ github.workspace }}/.github/scripts/mondayUpdateState.js')
             await action({github, context})
