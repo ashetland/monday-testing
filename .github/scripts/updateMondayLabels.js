@@ -41,7 +41,6 @@ module.exports = async ({ context }) => {
       issue.number,
       assignLabel(labelName, {}),
     );
-    console.log(`Finished at: ${new Date().toTimeString()}`);
     process.exit(0);
   } catch (error) {
     console.log(
