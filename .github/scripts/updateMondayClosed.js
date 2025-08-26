@@ -1,20 +1,24 @@
 // @ts-check
 const { updateMultipleColumns } = require("./support/utils");
-const { mondayColumns, resources } = require("./support/resources");
+const {
+  mondayColumns,
+  resources: {
+    labels: {
+      issueType: { design },
+    },
+  },
+} = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
   const { MONDAY_KEY } = process.env;
-  const payload =
-    /** @type {import('@octokit/webhooks-types').IssuesClosedEvent | import('@octokit/webhooks-types').IssuesReopenedEvent}*/ (
-      context.payload
-    );
   const {
     issue: { number, body, labels, state_reason },
     action,
-  } = payload;
-  console.log(`Reason: ${state_reason}`);
-  const closedReasons = ["wontfix", "not_planned", "duplicate"];
+  } =
+    /** @type {import('@octokit/webhooks-types').IssuesClosedEvent | import('@octokit/webhooks-types').IssuesReopenedEvent}*/ (
+      context.payload
+    );
 
   const valueObject = {
     [mondayColumns.open]: "Closed",
@@ -24,21 +28,20 @@ module.exports = async ({ context }) => {
     valueObject[mondayColumns.open] = "Open";
   } else {
     // If closed but not completed, set status to "Closed"
-    if (state_reason && closedReasons.includes(state_reason)) {
+    if (state_reason !== "completed") {
       valueObject[mondayColumns.status] = "Closed";
     }
     // If not a design issue, set status to "Done"
-    else if (
-      labels &&
-      labels.every((label) => label.name !== resources.labels.issueType.design)
-    ) {
+    else if (labels && labels.every((label) => label.name !== design)) {
       valueObject[mondayColumns.status] = "Done";
     }
   }
 
   try {
     await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);
+    process.exit(0);
   } catch (error) {
-    throw new Error(`Error updating Monday.com task: ${error}`);
+    console.log(`Error updating Monday.com task: ${error}`);
+    process.exit(1);
   }
 };

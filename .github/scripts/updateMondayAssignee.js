@@ -2,38 +2,31 @@
 const {
   updateMultipleColumns,
   notInLifecycle,
-  assignPerson,
   assignLabel,
+  updateAssignees,
 } = require("./support/utils");
-const { mondayLabels, resources } = require("./support/resources");
+const {
+  resources: {
+    labels: {
+      issueWorkflow: { new: newLabel, assigned: assignedLabel },
+    },
+  },
+} = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
   const { MONDAY_KEY } = process.env;
-  const payload =
-    /** @type {import('@octokit/webhooks-types').IssuesAssignedEvent | import('@octokit/webhooks-types').IssuesUnassignedEvent } */ (
-      context.payload
-    );
   const {
     issue: { number, body, assignees: currentAssignees, labels },
     assignee: newAssignee,
     action,
-  } = payload;
+  } = /** @type {import('@octokit/webhooks-types').IssuesAssignedEvent | import('@octokit/webhooks-types').IssuesUnassignedEvent } */ (
+    context.payload
+  );
 
   if (!newAssignee) {
-    throw new Error(`No new assignee found for issue #${number}.`);
-  }
-
-  /**
-   * Assignes each of the current assignees to the value object.
-   * @param {Object} valueObject - The value object to update.
-   * @returns {Object} - The updated value object with assignees added to respective columns.
-   */
-  function updateAssignees(valueObject) {
-    currentAssignees.forEach((assignee) => {
-      valueObject = assignPerson(assignee, valueObject);
-    });
-    return valueObject;
+    console.log(`No new assignee found for issue #${number}.`);
+    process.exit(0);
   }
 
   let valueObject = {};
@@ -44,7 +37,7 @@ module.exports = async ({ context }) => {
     currentAssignees.length === 0 &&
     notInLifecycle(labels)
   ) {
-    valueObject = assignLabel(resources.labels.issueWorkflow.new, valueObject);
+    valueObject = assignLabel(newLabel, valueObject);
 
     console.info("Set status to unassigned, no assignees updated");
   }
@@ -54,28 +47,26 @@ module.exports = async ({ context }) => {
     action === "assigned" &&
     notInLifecycle(labels, { skipMilestone: true })
   ) {
-    valueObject = assignLabel(
-      resources.labels.issueWorkflow.assigned,
-      valueObject,
-    );
-
-    valueObject = updateAssignees(valueObject);
+    valueObject = assignLabel(assignedLabel, valueObject);
+    valueObject = updateAssignees(currentAssignees, valueObject);
 
     console.info("Update assignees, set status to assigned");
   } else if (currentAssignees.length > 0) {
-    valueObject = updateAssignees(valueObject);
+    valueObject = updateAssignees(currentAssignees, valueObject);
 
     console.info("Update assignees, no status change");
   }
 
   if (!Object.keys(valueObject).length) {
     console.info("No updates to assignees or status.");
-    return;
+    process.exit(0);
   }
 
   try {
     await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);
+    process.exit(0);
   } catch (error) {
-    throw new Error(`Error updating assignee values in Monday.com: ${error}`);
+    console.log(`Error updating assignee values in Monday.com: ${error}`);
+    process.exit(1);
   }
 };

@@ -256,8 +256,6 @@ function assignPerson(person, values) {
   return values;
 }
 
-
-
 /**
  * Checks if the labels do not include any lifecycle labels
  * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
@@ -395,6 +393,103 @@ async function getMondayID(key, body, number) {
 }
 
 /**
+ * Creates the GraphQL query to create a new item in Monday.com
+ * @param {import('@octokit/webhooks-types').Issue} issue
+ * @returns {string} - The GraphQL query string
+ */
+function createTaskQuery(issue) {
+  const { title, number, labels, assignee, assignees, html_url, milestone } =
+    issue;
+
+  /** @type {Record<string, string | number | object>} */
+  let values = {
+    [mondayColumns.issueNumber]: `${number}`,
+    [mondayColumns.link]: {
+      url: html_url,
+      text: `${number}`,
+    },
+  };
+
+  // Add labels if present
+  if (labels?.length) {
+    labels.forEach((label) => {
+      // TEMP: Skip "needs milestone" if "ready for dev" is applied
+      if (
+        label.name === resources.labels.issueWorkflow.needsMilestone &&
+        !notReadyForDev(labels)
+      ) {
+        console.log(
+          `Skipping '${resources.labels.issueWorkflow.needsMilestone}' label as '${resources.labels.issueWorkflow.readyForDev}' is already applied.`,
+        );
+      }
+
+      values = assignLabel(label.name, values);
+    });
+  }
+  // Else: set default status
+  else {
+    const needsTriage = mondayLabels.get(
+      resources.labels.issueWorkflow.needsTriage,
+    );
+    if (needsTriage) {
+      values[needsTriage.column] = needsTriage.value;
+    }
+  }
+
+  // Add assignees if present
+  if (assignees.length) {
+    assignees.forEach((person) => {
+      values = assignPerson(person, values);
+    });
+
+    // Set to "assigned" if no lifecycle labels were applied
+    // Overrides the default "needs triage" label
+    if (notInLifecycle(labels)) {
+      const assigned = mondayLabels.get(
+        resources.labels.issueWorkflow.assigned,
+      );
+      if (assigned) {
+        values[assigned.column] = assigned.value;
+      }
+    }
+  }
+
+  // Handle milestone if present
+  if (milestone) {
+    handleMilestone(milestone, assignee, labels).forEach(
+      ({ column, value }) => {
+        values[column] = value;
+      },
+    );
+  }
+
+  const query = `mutation { 
+      create_item (
+        board_id: ${mondayBoard},
+        item_name: "${title}",
+        column_values: "${formatValues(values)}"
+      ) {
+        id
+      }
+    }`;
+
+  return query;
+}
+
+/**
+ * Assignes each of the current assignees to the value object.
+ * @param {import('@octokit/webhooks-types').User[]} assignees - The list of assignees from the GitHub issue
+ * @param {Object} valueObject - The value object to update.
+ * @returns {Object} - The updated value object with assignees added to respective columns.
+ */
+function updateAssignees(assignees, valueObject) {
+  assignees.forEach((assignee) => {
+    valueObject = assignPerson(assignee, valueObject);
+  });
+  return valueObject;
+}
+
+/**
  * Formats the values object for use in Monday.com API calls
  * @param {object} values - The values object to format
  * @return {string} - The formatted values string
@@ -416,5 +511,7 @@ module.exports = {
   notInLifecycle,
   notReadyForDev,
   handleMilestone,
+  createTaskQuery,
+  updateAssignees,
   formatValues,
 };

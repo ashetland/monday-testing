@@ -4,20 +4,17 @@ const { handleMilestone, updateMultipleColumns } = require("./support/utils");
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
   const { MONDAY_KEY } = process.env;
-  const payload = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (context.payload);
   const {
-    body,
-    number,
-    milestone,
-    assignee,
-    labels,
-  } = payload.issue;
+    issue: { body, number, milestone, assignee, labels },
+  } = /** @type {import('@octokit/webhooks-types').IssuesMilestonedEvent} */ (
+    context.payload
+  );
 
   const columnUpdates = handleMilestone(milestone, assignee, labels);
 
   if (columnUpdates.length === 0) {
     console.log("No columns to update for the milestone event.");
-    return;
+    process.exit(0);
   }
 
   const valuesObject = {};
@@ -27,8 +24,9 @@ module.exports = async ({ context }) => {
 
   try {
     await updateMultipleColumns(MONDAY_KEY, body, number, valuesObject);
-  }
-  catch (error) {
-    throw new Error(`Error updating Milestone values in Monday.com: ${error}`);
+    process.exit(0);
+  } catch (error) {
+    console.log(`Error updating Milestone values in Monday.com: ${error}`);
+    process.exit(1);
   }
 };

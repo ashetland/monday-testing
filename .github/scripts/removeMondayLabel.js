@@ -1,6 +1,14 @@
 // @ts-check
 const { callMonday, getMondayID } = require("./support/utils");
-const { mondayBoard, mondayLabels, resources } = require("./support/resources");
+const {
+  mondayBoard,
+  mondayLabels,
+  resources: {
+    labels: {
+      planning: { spike, spikeComplete },
+    },
+  },
+} = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -9,35 +17,38 @@ module.exports = async ({ context }) => {
     /** @type {import('@octokit/webhooks-types').IssuesUnlabeledEvent} */ (
       context.payload
     );
+  const labelName = label?.name;
 
-  if (!label || !label.name) {
+  if (!labelName) {
     console.log("No label found in the payload.");
     process.exit(0);
   }
 
-  const isSpike = label.name === resources.labels.planning.spike;
+  const isSpike = labelName === spike;
   if (isSpike && issue.labels) {
-    const isSpikeComplete = issue.labels.some((label) => label.name === resources.labels.planning.spikeComplete);
+    const isSpikeComplete = issue.labels.some(
+      (label) => label.name === spikeComplete,
+    );
     if (isSpikeComplete) {
-      console.log("Issue is marked as a spike complete. Skipping label removal.");
+      console.log(
+        "Issue is marked as a spike complete. Skipping label removal.",
+      );
       process.exit(0);
     }
   }
-  
-  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
 
-  if (!mondayLabels.has(label.name)) {
-    console.log(`Label '${label.name}' is not a recognized Monday.com label.`);
+  if (!mondayLabels.has(labelName)) {
+    console.log(`Label '${labelName}' is not a recognized Monday.com label.`);
     process.exit(0);
   }
 
-  const column = mondayLabels.get(label.name)?.column;
-
+  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
+  const labelColumn = mondayLabels.get(labelName)?.column;
   const query = `mutation {
     change_simple_column_value(
       board_id: ${mondayBoard},
       item_id: ${mondayID},
-      column_id: "${column}",
+      column_id: "${labelColumn}",
       value: ""
     ) {
       id
@@ -52,6 +63,8 @@ module.exports = async ({ context }) => {
     process.exit(1);
   }
 
-  console.log(`Cleared '${label.name}' from '${column}' on Monday.com task ID ${mondayID}.`);
+  console.log(
+    `Cleared '${labelName}' from '${labelColumn}' on Monday.com task ID ${mondayID}.`,
+  );
   process.exit(0);
-}
+};

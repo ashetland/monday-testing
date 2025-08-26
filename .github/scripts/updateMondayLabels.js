@@ -1,5 +1,11 @@
 // @ts-check
-const { resources } = require("./support/resources");
+const {
+  resources: {
+    labels: {
+      issueWorkflow: { needsMilestone, readyForDev },
+    },
+  },
+} = require("./support/resources");
 const {
   notReadyForDev,
   assignLabel,
@@ -13,19 +19,17 @@ module.exports = async ({ context }) => {
     /** @type {import('@octokit/webhooks-types').IssuesLabeledEvent} */ (
       context.payload
     );
+  const labelName = label?.name;
 
-  if (!label || !label.name) {
+  if (!labelName) {
     console.log("No label found in the payload.");
-    return;
+    process.exit(0);
   }
 
-  // TEMP: Skip "needs milestone" if "ready for dev" is applied
-  if (
-    label.name === resources.labels.issueWorkflow.needsMilestone &&
-    !notReadyForDev(issue.labels)
-  ) {
+  // Skip "needs milestone" if "ready for dev" is applied
+  if (labelName === needsMilestone && !notReadyForDev(issue.labels)) {
     console.log(
-      `Skipping '${resources.labels.issueWorkflow.needsMilestone}' label as '${resources.labels.issueWorkflow.readyForDev}' is already applied.`,
+      `Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`,
     );
     process.exit(0);
   }
@@ -35,13 +39,13 @@ module.exports = async ({ context }) => {
       MONDAY_KEY,
       issue.body,
       issue.number,
-      assignLabel(label.name, {}),
+      assignLabel(labelName, {}),
     );
     console.log(`Finished at: ${new Date().toTimeString()}`);
     process.exit(0);
   } catch (error) {
     console.log(
-      `Error updating Monday.com task with label '${label.name}': ${error}`,
+      `Error updating Monday.com task with label '${labelName}': ${error}`,
     );
     process.exit(1);
   }
