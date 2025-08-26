@@ -42,7 +42,10 @@ module.exports = async ({ context }) => {
     process.exit(0);
   }
 
-  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number);
+  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number).catch((error) => {
+    console.log(error);
+    process.exit(1);
+  });
   const labelColumn = mondayLabels.get(labelName)?.column;
   const query = `mutation {
     change_simple_column_value(
