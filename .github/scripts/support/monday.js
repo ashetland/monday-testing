@@ -119,7 +119,7 @@ module.exports = function Monday(issue) {
   async function updateMultipleColumns(values) {
     const mondayID = await getId();
     if (!mondayID) {
-      throw new Error(`No Monday ID found for GitHub issue #${issueNumber}`);
+      return;
     }
 
     const query = `mutation { 
@@ -136,7 +136,8 @@ module.exports = function Monday(issue) {
     if (
       !response ||
       !response["data"] ||
-      !response["data"]["change_multiple_column_values"]
+      !response["data"]["change_multiple_column_values"] ||
+      !response["data"]["change_multiple_column_values"]["id"]
     ) {
       console.log(query, response);
       throw new Error(`Failed to update columns for item ID ${mondayID}`);
@@ -144,13 +145,11 @@ module.exports = function Monday(issue) {
 
     return response["data"]["change_multiple_column_values"]["id"];
   }
-
-  /** Public functions */
-
   /**
    * Return the Monday.com item ID for a issue.
    * ID is parsed from the issue body or fetched based on the issue number
-   * @return {Promise<string>} - The Monday.com item ID
+   * @private
+   * @return {Promise<string | undefined>} - The Monday.com item ID
    */
   async function getId() {
     const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
@@ -158,8 +157,12 @@ module.exports = function Monday(issue) {
     let mondayID =
       mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
 
-    if (!mondayID) {
-      const query = `query {
+    if (mondayID) {
+      console.log(`Found existing Monday ID ${mondayID} in issue body.`);
+      return mondayID;
+    }
+
+    const query = `query {
         items_page_by_column_values(
           board_id: "${mondayBoard}",
           columns: {
@@ -173,24 +176,26 @@ module.exports = function Monday(issue) {
         }
       }`;
 
-      const response = await runQuery(query);
+    const response = await runQuery(query);
 
-      if (!response) {
-        throw new Error(`No response for Github Issue #${issueNumber}`);
-      }
-
-      const items = response["data"]["items_page_by_column_values"]["items"];
-
-      if (!items?.length) {
-        console.warn(`No items found for Github Issue #${issueNumber}`);
-        return "";
-      }
-
-      mondayID = items[0]["id"];
+    if (!response) {
+      throw new Error(`No response for Github Issue #${issueNumber}`);
     }
 
-    return mondayID;
+    const items = response["data"]["items_page_by_column_values"]["items"];
+
+    // If no item found for the issue, return undefined as we can't proceed
+    // but do not throw an error as this is a valid state.
+    if (!items?.length) {
+      console.log(`No items found for Github Issue #${issueNumber}`);
+      return;
+    }
+
+    return items[0]["id"];
   }
+
+  /** Public functions */
+
   /**
    * Commit any pending column updates to Monday.com
    */
@@ -266,7 +271,8 @@ module.exports = function Monday(issue) {
     if (
       !response ||
       !response["data"] ||
-      !response["data"]["create_item"]["id"]
+      !response["data"]["create_item"] ||
+      !response["data"]["create_item"]["id"] 
     ) {
       throw new Error(`Failed to create item for issue #${issueNumber}`);
     }
@@ -383,10 +389,6 @@ module.exports = function Monday(issue) {
    * @returns {Promise<void>}
    */
   async function clearLabel(label) {
-    const id = await getId();
-    if (!id) {
-      return;
-    }
     const labelColumn = mondayLabels.get(label)?.column;
     if (!labelColumn) {
       console.warn(`Label ${label} not found in Monday Labels map`);
