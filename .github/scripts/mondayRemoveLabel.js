@@ -1,7 +1,6 @@
 // @ts-check
 const Monday = require("./support/monday.js");
 const {
-  mondayBoard,
   mondayLabels,
   resources: {
     labels: {
