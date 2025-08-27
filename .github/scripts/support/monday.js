@@ -325,7 +325,7 @@ module.exports = function Monday(issue) {
         }
       }
       // If unassigned and NOT "Ready for Dev"
-      else if (!assignee && notReadyForDev(labels)) {
+      if (!assignee && notReadyForDev(labels)) {
         const status = mondayLabels.get(resources.labels.issueWorkflow.new);
 
         if (status) {
