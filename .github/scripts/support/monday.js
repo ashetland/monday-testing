@@ -13,12 +13,6 @@ const { notReadyForDev, notInLifecycle } = require("./utils");
  */
 module.exports = function Monday(issue) {
   const { MONDAY_KEY } = process.env;
-  console.log(
-    MONDAY_KEY
-      ? "Monday.com API key is set."
-      : "Monday.com API key is NOT set.",
-  );
-
   if (!MONDAY_KEY) {
     throw new Error("Monday.com API key is not set.");
   }
@@ -57,13 +51,13 @@ module.exports = function Monday(issue) {
    */
   function addAssignee(person) {
     if (!person?.login) {
-      console.warn("No person or login provided for assignment");
+      console.log("No person or login provided for assignment.");
       return;
     }
 
     const info = mondayPeople.get(person.login);
     if (!info) {
-      console.warn(`Assignee ${person.login} not found in peopleMap`);
+      console.log(`Assignee ${person.login} not found in peopleMap.`);
       return;
     }
 
@@ -134,8 +128,7 @@ module.exports = function Monday(issue) {
 
     const response = await runQuery(query);
     if (!response?.data?.change_multiple_column_values?.id) {
-      console.log(query, response);
-      throw new Error(`Failed to update columns for item ID ${mondayID}`);
+      throw new Error(`Failed to update columns for item ID ${mondayID}: ${JSON.stringify(response)}`);
     }
 
     return response.data.change_multiple_column_values.id;
@@ -177,16 +170,16 @@ module.exports = function Monday(issue) {
       throw new Error(`No response for Github Issue #${issueNumber}`);
     }
 
-    const items = response["data"]["items_page_by_column_values"]["items"];
+    const items = response?.data?.items_page_by_column_values?.items;
 
     // If no item found for the issue, return undefined as we can't proceed
     // but do not throw an error as this is a valid state.
     if (!items?.length) {
-      console.log(`No items found for Github Issue #${issueNumber}`);
+      console.log(`No Monday task found for Github Issue #${issueNumber}.`);
       return;
     }
 
-    return items[0]["id"];
+    return items[0].id;
   }
 
   /** Public functions */
@@ -196,12 +189,16 @@ module.exports = function Monday(issue) {
    */
   async function commitChanges() {
     if (Object.keys(columnUpdates).length === 0) {
-      console.log("No column updates to commit.");
+      console.log("No updates to commit.");
       return;
     }
 
     const id = await updateMultipleColumns(columnUpdates);
-    console.log(`Committed changes to Monday item ID ${id}`);
+    if (!id) {
+      console.log("Changes NOT committed.");
+    } else {
+      console.log(`Changes committed to Monday task: ${id}.`);
+    }
     columnUpdates = {};
   }
   /**
@@ -277,11 +274,11 @@ module.exports = function Monday(issue) {
    */
   function setColumnValue(column, value) {
     if (!column) {
-      console.warn("No column provided to setColumnValue");
+      console.log("No column provided to setColumnValue.");
       return;
     }
     if (value === undefined || value === null) {
-      console.warn("No value provided to setColumnValue");
+      console.log("No value provided to setColumnValue.");
       return;
     }
 
@@ -362,13 +359,13 @@ module.exports = function Monday(issue) {
     }
 
     if (!mondayLabels.has(label)) {
-      console.warn(`Label ${label} not found in Monday Labels map`);
+      console.log(`Label "${label}" not found in Monday Labels map.`);
       return;
     }
 
     const info = mondayLabels.get(label);
     if (!info?.column || !info?.value) {
-      console.warn(`Label ${label} is missing column or title information`);
+      console.log(`Label "${label}" is missing column or title information.`);
       return;
     }
 
@@ -382,7 +379,7 @@ module.exports = function Monday(issue) {
   function clearLabel(label) {
     const labelColumn = mondayLabels.get(label)?.column;
     if (!labelColumn) {
-      console.warn(`Label ${label} not found in Monday Labels map`);
+      console.log(`Label "${label}" not found in Monday Labels map.`);
       return;
     }
     // Clear the label by setting it to an empty string
