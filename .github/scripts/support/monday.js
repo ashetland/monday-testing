@@ -20,12 +20,10 @@ module.exports = function Monday(issue) {
   );
 
   if (!MONDAY_KEY) {
-    console.log("Monday.com API key is not set.");
-    process.exit(1);
+    throw new Error("Monday.com API key is not set.");
   }
   if (!issue) {
-    console.log("No GitHub issue provided.");
-    process.exit(1);
+    throw new Error("No GitHub issue provided.");
   }
 
   const {
