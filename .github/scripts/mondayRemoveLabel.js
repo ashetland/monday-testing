@@ -17,12 +17,12 @@ module.exports = async ({ context }) => {
       context.payload
     );
   const labelName = label?.name;
-  const monday = Monday(issue);
-
   if (!labelName) {
     console.log("No label found in the payload.");
     process.exit(0);
   }
+
+  const monday = Monday(issue);
 
   const isSpike = labelName === spike;
   if (isSpike && issue.labels) {
