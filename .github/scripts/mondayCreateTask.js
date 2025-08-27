@@ -1,30 +1,18 @@
 // @ts-check
-const {
-  callMonday,
-  addSyncLine,
-  createTaskQuery,
-} = require("./support/utils");
+const Monday = require("./support/monday.js");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
-  const { MONDAY_KEY } = process.env;
   const { issue } =
     /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent | import('@octokit/webhooks-types').IssuesLabeledEvent}*/ (
       context.payload
     );
+  const monday = Monday(issue);
 
-  const response = await callMonday(MONDAY_KEY, createTaskQuery(issue));
-  if (
-    !response ||
-    !response["data"] ||
-    !response["data"]["create_item"]["id"]
-  ) {
-    console.log(`Missing or bad response for Github Issue #${issue.number}`);
-    process.exit(1);
-  }
+  const id = await monday.createTask();
 
   // Add the Monday.com item ID to the issue body
-  const updatedBody = addSyncLine(issue.body, response["data"]["create_item"]["id"]);
+  const updatedBody = monday.addSyncLine(id);
   try {
     await github.rest.issues.update({
       owner: context.repo.owner,

@@ -1,10 +1,6 @@
 // @ts-check
-const {
-  updateMultipleColumns,
-  notInLifecycle,
-  assignLabel,
-  updateAssignees,
-} = require("./support/utils");
+const { notInLifecycle } = require("./support/utils");
+const Monday = require("./support/monday.js");
 const {
   resources: {
     labels: {
@@ -15,21 +11,21 @@ const {
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
-  const { MONDAY_KEY } = process.env;
   const {
-    issue: { number, body, assignees: currentAssignees, labels },
+    issue,
     assignee: newAssignee,
     action,
   } = /** @type {import('@octokit/webhooks-types').IssuesAssignedEvent | import('@octokit/webhooks-types').IssuesUnassignedEvent } */ (
-    context.payload
-  );
+      context.payload
+    );
+  const { assignees: currentAssignees, labels } = issue;
+  const monday = Monday(issue);
 
   if (!newAssignee) {
-    console.log(`No new assignee found for issue #${number}.`);
+    console.log(`No new assignee found, exiting.`);
     process.exit(0);
   }
 
-  let valueObject = {};
   // Unassigned action, no assignees left, not in lifecycle:
   // Set status to "Unassigned", no assignee updates
   if (
@@ -37,8 +33,7 @@ module.exports = async ({ context }) => {
     currentAssignees.length === 0 &&
     notInLifecycle(labels)
   ) {
-    valueObject = assignLabel(newLabel, valueObject);
-
+    monday.addLabel(newLabel);
     console.info("Set status to unassigned, no assignees updated");
   }
   // Assigned action, not in lifecycle besides "needs milestone":
@@ -47,26 +42,13 @@ module.exports = async ({ context }) => {
     action === "assigned" &&
     notInLifecycle(labels, { skipMilestone: true })
   ) {
-    valueObject = assignLabel(assignedLabel, valueObject);
-    valueObject = updateAssignees(currentAssignees, valueObject);
-
+    monday.addLabel(assignedLabel);
+    monday.addAllAssignees();
     console.info("Update assignees, set status to assigned");
   } else if (currentAssignees.length > 0) {
-    valueObject = updateAssignees(currentAssignees, valueObject);
-
+    monday.addAllAssignees();
     console.info("Update assignees, no status change");
   }
 
-  if (!Object.keys(valueObject).length) {
-    console.info("No updates to assignees or status.");
-    process.exit(0);
-  }
-
-  try {
-    await updateMultipleColumns(MONDAY_KEY, body, number, valueObject);
-    process.exit(0);
-  } catch (error) {
-    console.log(`Error updating assignee values in Monday.com: ${error}`);
-    process.exit(1);
-  }
+  await monday.commitChanges();
 };
