@@ -1,7 +1,6 @@
 // @ts-check
-const { callMonday, getMondayID } = require("./support/utils");
+const Monday = require("./support/monday.js");
 const {
-  mondayBoard,
   mondayLabels,
   resources: {
     labels: {
@@ -12,17 +11,17 @@ const {
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
-  const { MONDAY_KEY } = process.env;
   const { issue, label } =
     /** @type {import('@octokit/webhooks-types').IssuesUnlabeledEvent} */ (
       context.payload
     );
   const labelName = label?.name;
-
   if (!labelName) {
     console.log("No label found in the payload.");
     process.exit(0);
   }
+
+  const monday = Monday(issue);
 
   const isSpike = labelName === spike;
   if (isSpike && issue.labels) {
@@ -42,32 +41,6 @@ module.exports = async ({ context }) => {
     process.exit(0);
   }
 
-  const mondayID = await getMondayID(MONDAY_KEY, issue.body, issue.number).catch((error) => {
-    console.log(error);
-    process.exit(1);
-  });
-  const labelColumn = mondayLabels.get(labelName)?.column;
-  const query = `mutation {
-    change_simple_column_value(
-      board_id: ${mondayBoard},
-      item_id: ${mondayID},
-      column_id: "${labelColumn}",
-      value: ""
-    ) {
-      id
-    }
-  }`;
-
-  const response = await callMonday(MONDAY_KEY, query);
-  if (!response || !response["data"]["change_simple_column_value"]) {
-    console.log(
-      `Failed to remove label from Monday.com task: ${JSON.stringify(response)}`,
-    );
-    process.exit(1);
-  }
-
-  console.log(
-    `Cleared '${labelName}' from '${labelColumn}' on Monday.com task ID ${mondayID}.`,
-  );
-  process.exit(0);
+  monday.clearLabel(labelName);
+  await monday.commitChanges();
 };
