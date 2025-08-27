@@ -77,7 +77,7 @@ module.exports = function Monday(issue) {
    * Calls the Monday.com API with a provided query
    * @private
    * @param {string} query - The GraphQL query string
-   * @returns {Promise<string | undefined>}
+   * @returns {Promise<any>}
    */
   async function runQuery(query) {
     // Double-check as TS doesn't seem to narrow based on the outer function check
@@ -133,17 +133,12 @@ module.exports = function Monday(issue) {
     }`;
 
     const response = await runQuery(query);
-    if (
-      !response ||
-      !response["data"] ||
-      !response["data"]["change_multiple_column_values"] ||
-      !response["data"]["change_multiple_column_values"]["id"]
-    ) {
+    if (!response?.data?.change_multiple_column_values?.id) {
       console.log(query, response);
       throw new Error(`Failed to update columns for item ID ${mondayID}`);
     }
 
-    return response["data"]["change_multiple_column_values"]["id"];
+    return response.data.change_multiple_column_values.id;
   }
   /**
    * Return the Monday.com item ID for a issue.
@@ -205,7 +200,8 @@ module.exports = function Monday(issue) {
       return;
     }
 
-    await updateMultipleColumns(columnUpdates);
+    const id = await updateMultipleColumns(columnUpdates);
+    console.log(`Committed changes to Monday item ID ${id}`);
     columnUpdates = {};
   }
   /**
@@ -268,16 +264,11 @@ module.exports = function Monday(issue) {
     }`;
 
     const response = await runQuery(query);
-    if (
-      !response ||
-      !response["data"] ||
-      !response["data"]["create_item"] ||
-      !response["data"]["create_item"]["id"] 
-    ) {
+    if (!response?.data?.create_item?.id) {
       throw new Error(`Failed to create item for issue #${issueNumber}`);
     }
 
-    return response["data"]["create_item"]["id"];
+    return response.data.create_item.id;
   }
   /**
    * Set a specific column value in columnUpdates
