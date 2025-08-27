@@ -386,9 +386,9 @@ module.exports = function Monday(issue) {
   /**
    * Clear a column value in columnUpdates based on the label
    * @param {string} label - The label name to clear
-   * @returns {Promise<void>}
+   * @returns {void}
    */
-  async function clearLabel(label) {
+  function clearLabel(label) {
     const labelColumn = mondayLabels.get(label)?.column;
     if (!labelColumn) {
       console.warn(`Label ${label} not found in Monday Labels map`);
