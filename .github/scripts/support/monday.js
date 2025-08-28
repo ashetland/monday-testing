@@ -268,8 +268,8 @@ module.exports = function Monday(issue) {
   }
   /**
    * Set a specific column value in columnUpdates
-   * @param {string} column - The column ID to set
-   * @param {string | number | object} value - The value to set
+   * @param {string} column
+   * @param {string | number | object} value
    */
   function setColumnValue(column, value) {
     if (!column) {
