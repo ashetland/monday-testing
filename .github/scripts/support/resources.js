@@ -92,6 +92,7 @@ const mondayColumns = {
   designEstimate: "color_mkqr3y8a",
   devEstimate: "numeric_mksvm3v7",
   designIssue: "color_mkrdhk8",
+  stalled: "color_mktksrja",
   blocked: "color_mkv259x0",
   a11y: "color_mkt5c4q6",
   spike: "color_mkt5vd8a",
@@ -336,6 +337,13 @@ const mondayLabels = new Map([
     {
       column: mondayColumns.figmaChanges,
       value: "Figma Changes Only",
+    },
+  ],
+  [
+    resources.milestone.stalled,
+    {
+      column: mondayColumns.stalled,
+      value: "Stalled",
     },
   ],
 ]);

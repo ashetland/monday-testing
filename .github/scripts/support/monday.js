@@ -339,7 +339,6 @@ module.exports = function Monday(issue) {
    */
   function handleMilestone() {
     const statusMilestones = [
-      resources.milestone.stalled,
       resources.milestone.backlog,
       resources.milestone.freezer,
     ];
@@ -360,25 +359,20 @@ module.exports = function Monday(issue) {
 
       // Assigned and NO lifecycle label - OUTSIDE OF "needs milestone"
       if (assignee && notInLifecycle(labels, { skipMilestone: true })) {
-        const status = mondayLabels.get(
-          resources.labels.issueWorkflow.assigned,
-        );
-
-        if (status) {
-          columnUpdates[status.column] = status.value;
-        }
+        addLabel(resources.labels.issueWorkflow.assigned);
       }
       // If unassigned and NOT "Ready for Dev"
       if (!assignee && notReadyForDev(labels)) {
-        const status = mondayLabels.get(resources.labels.issueWorkflow.new);
-
-        if (status) {
-          columnUpdates[status.column] = status.value;
-        }
+        addLabel(resources.labels.issueWorkflow.new);
       }
-    } else if (statusMilestones.includes(milestoneTitle)) {
-      columnUpdates[mondayColumns.status] = milestoneTitle;
+    } else {
       columnUpdates[mondayColumns.date] = "";
+
+      if (milestoneTitle === resources.milestone.stalled) {
+        addLabel(resources.milestone.stalled);
+      } else if (statusMilestones.includes(milestoneTitle)) {
+        columnUpdates[mondayColumns.status] = milestoneTitle;
+      }
     }
   }
   /**
