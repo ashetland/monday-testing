@@ -133,10 +133,12 @@ module.exports = function Monday(issue) {
 
     return response.data.change_multiple_column_values.id;
   }
+
+  /** Public functions */
+
   /**
    * Return the Monday.com item ID for a issue.
    * ID is parsed from the issue body or fetched based on the issue number
-   * @private
    * @return {Promise<string | undefined>} - The Monday.com item ID
    */
   async function getId() {
@@ -181,9 +183,6 @@ module.exports = function Monday(issue) {
 
     return items[0].id;
   }
-
-  /** Public functions */
-
   /**
    * Commit any pending column updates to Monday.com
    */
