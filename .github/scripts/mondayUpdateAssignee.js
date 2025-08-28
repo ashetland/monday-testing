@@ -34,7 +34,7 @@ module.exports = async ({ context }) => {
     notInLifecycle(labels)
   ) {
     monday.addLabel(newLabel);
-    console.info("Set status to unassigned, no assignees updated");
+    console.info("Set status to unassigned, no assignees updated.");
   }
   // Assigned action, not in lifecycle besides "needs milestone":
   // Set status to "Assigned", update assignees
@@ -44,10 +44,10 @@ module.exports = async ({ context }) => {
   ) {
     monday.addLabel(assignedLabel);
     monday.addAllAssignees();
-    console.info("Update assignees, set status to assigned");
+    console.info("Update assignees, set status to assigned.");
   } else if (currentAssignees.length > 0) {
     monday.addAllAssignees();
-    console.info("Update assignees, no status change");
+    console.info("Update assignees, no status change.");
   }
 
   await monday.commitChanges();
