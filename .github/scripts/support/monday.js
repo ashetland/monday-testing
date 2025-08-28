@@ -107,20 +107,21 @@ module.exports = function Monday(issue) {
   /**
    * Creates and runs a query to update columns in a Monday.com item
    * @private
-   * @param {object} values - The values to update in the item
+   * @param {string} id - The ID of the Monday.com item to update
    * @returns {Promise<string | undefined>} - The ID of the updated Monday.com item
    */
-  async function updateMultipleColumns(values) {
-    const mondayID = await getId();
-    if (!mondayID) {
+  async function updateMultipleColumns(id = "") {
+    const mondayId = id || (await getId());
+    if (!mondayId) {
+      console.log("No Monday ID found, cannot update columns.");
       return;
     }
 
     const query = `mutation { 
       change_multiple_column_values(
         board_id: ${mondayBoard},
-        item_id: ${mondayID},
-        column_values: "${formatValues(values)}"
+        item_id: ${mondayId},
+        column_values: "${formatValues(columnUpdates)}"
       ) {
         id
       }
@@ -128,30 +129,20 @@ module.exports = function Monday(issue) {
 
     const response = await runQuery(query);
     if (!response?.data?.change_multiple_column_values?.id) {
-      throw new Error(`Failed to update columns for item ID ${mondayID}: ${JSON.stringify(response)}`);
+      throw new Error(
+        `Failed to update columns for item ID ${mondayId}: ${JSON.stringify(response)}`,
+      );
     }
 
     return response.data.change_multiple_column_values.id;
   }
-
-  /** Public functions */
-
   /**
-   * Return the Monday.com item ID for a issue.
-   * ID is parsed from the issue body or fetched based on the issue number
-   * @return {Promise<string | undefined>} - The Monday.com item ID
+   * Query Monday.com for an item matching the issue number
+   * @private
+   * @returns {Promise<string | undefined>} - The Monday.com item ID if found
+   * @throws {Error} - If the query fails or no response is received
    */
-  async function getId() {
-    const mondayRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
-    const mondayRegexMatch = body?.match(mondayRegex);
-    let mondayID =
-      mondayRegexMatch && mondayRegexMatch[0] ? mondayRegexMatch[0] : "";
-
-    if (mondayID) {
-      console.log(`Found existing Monday ID ${mondayID} in issue body.`);
-      return mondayID;
-    }
-
+  async function queryForId() {
     const query = `query {
         items_page_by_column_values(
           board_id: "${mondayBoard}",
@@ -181,7 +172,56 @@ module.exports = function Monday(issue) {
       return;
     }
 
-    return items[0].id;
+    if (items.length > 1) {
+      throw new Error(
+        `Multiple Monday items found for Issue #${issueNumber}. Requires manual review.`,
+      );
+    }
+
+    const id = items[0].id;
+    console.log(`Found existing Monday task for Issue #${issueNumber}: ${id}.`);
+    return id;
+  }
+  /**
+   * Attempt to extract a Monday.com item ID from the issue body
+   * @private
+   * @returns {string | undefined} - The extracted Monday.com item ID, or undefined
+   */
+  function extractIdFromBody() {
+    const syncRegex = /(?<=\*\*monday\.com sync:\*\* #)(\d+)/;
+    const syncMatch = body?.match(syncRegex);
+    const id = syncMatch && syncMatch[0] ? syncMatch[0] : undefined;
+
+    if (!id) {
+      return;
+    }
+
+    console.log(`Found existing Monday ID ${id} in issue body.`);
+    return id;
+  }
+
+  /** Public functions */
+
+  /**
+   * Return the Monday.com item ID for a issue.
+   * ID is parsed from the issue body or fetched based on the issue number
+   * @param {("body" | "query" | "both")} location - Where to look for the ID: "body", "query", or "both" (default: "both")
+   * @return {Promise<string | undefined>} - The Monday.com item ID
+   */
+  async function getId(location = "both") {
+    if (location === "query") {
+      return await queryForId();
+    }
+    if (location === "body") {
+      return extractIdFromBody();
+    }
+
+    const id = extractIdFromBody();
+    if (id) {
+      return id;
+    }
+
+    return await queryForId();
   }
   /**
    * Commit any pending column updates to Monday.com
@@ -192,7 +232,7 @@ module.exports = function Monday(issue) {
       return;
     }
 
-    const id = await updateMultipleColumns(columnUpdates);
+    const id = await updateMultipleColumns();
     if (!id) {
       console.log("Changes NOT committed.");
     } else {
@@ -201,11 +241,11 @@ module.exports = function Monday(issue) {
     columnUpdates = {};
   }
   /**
-   * Create a new task in Monday.com
+   * Create a new task in Monday.com, or update an existing one if syncId is provided
+   * @param {string} syncId = When provided, updates item in Monday instead of creating new
    * @returns {Promise<string>} - The ID of the created Monday.com item
    */
-  async function createTask() {
-    /** @type {Record<string, string | number | object>} */
+  async function createTask(syncId = "") {
     columnUpdates = {
       [mondayColumns.issueNumber]: `${issueNumber}`,
       [mondayColumns.link]: {
@@ -247,6 +287,17 @@ module.exports = function Monday(issue) {
     // Handle milestone if present
     if (milestone) {
       handleMilestone();
+    }
+
+    if (syncId) {
+      console.log(
+        `Sync ID ${syncId} provided, updating existing item instead of creating new.`,
+      );
+      const updatedId = await updateMultipleColumns(syncId);
+      if (!updatedId) {
+        throw new Error(`Failed to update existing item with ID ${syncId}`);
+      }
+      return updatedId;
     }
 
     const query = `mutation { 

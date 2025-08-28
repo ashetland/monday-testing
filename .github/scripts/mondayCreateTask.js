@@ -8,29 +8,32 @@ module.exports = async ({ github, context }) => {
       context.payload
     );
   const monday = Monday(issue);
+  /** @type {string} - The ID of the item to sync with, if any */
+  let syncId = "";
+  /** @type {string|undefined} */
+  let queryId = undefined;
 
   if (action === "labeled") {
-    const id = await monday.getId();
-    if (id) {
-      console.log(`Issue already exists in Monday.com. ID: ${id}.`);
-      process.exit(0);
+    queryId = await monday.getId("query");
+    if (queryId) {
+      syncId = queryId;
     }
   }
 
-  const id = await monday.createTask();
+  const id = await monday.createTask(syncId);
 
-  // Add the Monday.com item ID to the issue body
-  const updatedBody = monday.addSyncLine(id);
-  try {
-    await github.rest.issues.update({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: issue.number,
-      body: updatedBody,
-    });
-    process.exit(0);
-  } catch (error) {
-    console.log(`Error adding ID to body: ${error}`);
-    process.exit(1);
+  if (id !== queryId) {
+    // Add the Monday.com item ID to the issue body
+    const updatedBody = monday.addSyncLine(id);
+    try {
+      await github.rest.issues.update({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: issue.number,
+        body: updatedBody,
+      });
+    } catch (error) {
+      throw new Error(`Error adding ID to body: ${error}`);
+    }
   }
 };
