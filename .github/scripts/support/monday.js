@@ -260,12 +260,7 @@ module.exports = function Monday(issue) {
     }
     // If no lifecycle label: set default status
     if (notInLifecycle(labels)) {
-      const needsTriage = mondayLabels.get(
-        resources.labels.issueWorkflow.needsTriage,
-      );
-      if (needsTriage) {
-        columnUpdates[needsTriage.column] = needsTriage.value;
-      }
+      addLabel(resources.labels.issueWorkflow.needsTriage);
     }
 
     // Add assignees if present
@@ -275,12 +270,7 @@ module.exports = function Monday(issue) {
       // Set to "assigned" if no lifecycle labels were applied
       // Overrides the default "needs triage" label
       if (notInLifecycle(labels)) {
-        const assigned = mondayLabels.get(
-          resources.labels.issueWorkflow.assigned,
-        );
-        if (assigned) {
-          columnUpdates[assigned.column] = assigned.value;
-        }
+        addLabel(resources.labels.issueWorkflow.assigned);
       }
     }
 
