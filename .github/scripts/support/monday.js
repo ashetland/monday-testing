@@ -356,6 +356,7 @@ module.exports = function Monday(issue) {
 
     if (dueDate) {
       columnUpdates[mondayColumns.date] = dueDate[0];
+      clearLabel(resources.milestone.stalled);
 
       // Assigned and NO lifecycle label - OUTSIDE OF "needs milestone"
       if (assignee && notInLifecycle(labels, { skipMilestone: true })) {
@@ -372,6 +373,7 @@ module.exports = function Monday(issue) {
         addLabel(resources.milestone.stalled);
       } else if (statusMilestones.includes(milestoneTitle)) {
         columnUpdates[mondayColumns.status] = milestoneTitle;
+        clearLabel(resources.milestone.stalled);
       }
     }
   }
