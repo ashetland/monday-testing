@@ -346,6 +346,7 @@ module.exports = function Monday(issue) {
     // If removed, reset date
     if (!milestone) {
       columnUpdates[mondayColumns.date] = "";
+      clearLabel(resources.milestone.stalled);
       return;
     }
     const milestoneTitle = milestone.title;
