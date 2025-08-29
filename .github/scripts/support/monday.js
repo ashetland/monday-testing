@@ -382,7 +382,7 @@ module.exports = function Monday(issue) {
    */
   function addLabel(label) {
     // Skip the sync label, as it is not needed in Monday.com
-    if (label === "monday.com sync") {
+    if (label === resources.labels.planning.monday) {
       return;
     }
 
