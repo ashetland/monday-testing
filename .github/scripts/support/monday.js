@@ -328,11 +328,6 @@ module.exports = function Monday(issue) {
    * Update columnUpdates based on milestone title
    */
   function handleMilestone() {
-    const statusMilestones = [
-      resources.milestone.backlog,
-      resources.milestone.freezer,
-    ];
-
     // If removed, reset date
     if (!milestone) {
       columnUpdates[mondayColumns.date] = "";
@@ -362,7 +357,7 @@ module.exports = function Monday(issue) {
 
       if (milestoneTitle === resources.milestone.stalled) {
         addLabel(resources.milestone.stalled);
-      } else if (statusMilestones.includes(milestoneTitle)) {
+      } else if (inMilestoneStatus()) {
         columnUpdates[mondayColumns.status] = milestoneTitle;
         clearLabel(resources.milestone.stalled);
       }
@@ -436,6 +431,22 @@ module.exports = function Monday(issue) {
       return syncMarkdown + (body || "");
     }
   }
+  /**
+   * Check if the current milestone is one of the "status" milestones
+   * @returns {boolean} - True if in a status milestone, false otherwise
+   */
+  function inMilestoneStatus() {
+    if (!milestone) {
+      return false;
+    }
+
+    const statusMilestones = [
+      resources.milestone.backlog,
+      resources.milestone.freezer,
+    ];
+
+    return statusMilestones.includes(milestone.title);
+  }
 
   return {
     getId,
@@ -447,5 +458,6 @@ module.exports = function Monday(issue) {
     addLabel,
     clearLabel,
     addSyncLine,
+    inMilestoneStatus,
   };
 };
