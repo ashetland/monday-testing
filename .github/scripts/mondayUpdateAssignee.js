@@ -16,8 +16,8 @@ module.exports = async ({ context }) => {
     assignee: newAssignee,
     action,
   } = /** @type {import('@octokit/webhooks-types').IssuesAssignedEvent | import('@octokit/webhooks-types').IssuesUnassignedEvent } */ (
-      context.payload
-    );
+    context.payload
+  );
   const { assignees: currentAssignees, labels } = issue;
   const monday = Monday(issue);
 
@@ -26,21 +26,23 @@ module.exports = async ({ context }) => {
     process.exit(0);
   }
 
-  // Unassigned action, no assignees left, not in lifecycle:
+  // Unassigned action, no assignees left, not in lifecycle or milestone status:
   // Set status to "Unassigned", no assignee updates
   if (
     action === "unassigned" &&
     currentAssignees.length === 0 &&
-    notInLifecycle(labels)
+    notInLifecycle(labels) &&
+    !monday.inMilestoneStatus()
   ) {
     monday.addLabel(newLabel);
     console.info("Set status to unassigned, no assignees updated.");
   }
-  // Assigned action, not in lifecycle besides "needs milestone":
+  // Assigned action, not in lifecycle or milestone status besides "needs milestone":
   // Set status to "Assigned", update assignees
   else if (
     action === "assigned" &&
-    notInLifecycle(labels, { skipMilestone: true })
+    notInLifecycle(labels, { skipMilestone: true }) &&
+    !monday.inMilestoneStatus()
   ) {
     monday.addLabel(assignedLabel);
     monday.addAllAssignees();
