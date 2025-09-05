@@ -1,6 +1,5 @@
 // @ts-check
 const Monday = require("./support/monday.js");
-const { mondayColumns } = require("./support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ context }) => {
@@ -15,6 +14,6 @@ module.exports = async ({ context }) => {
     process.exit(0);
   }
 
-  monday.setColumnValue(mondayColumns.title, issue.title);
+  monday.setColumnValue(monday.columns.title, issue.title);
   await monday.commitChanges();
 };

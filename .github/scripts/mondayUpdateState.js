@@ -1,11 +1,8 @@
 // @ts-check
 const Monday = require("./support/monday.js");
 const {
-  mondayColumns,
-  resources: {
-    labels: {
-      issueType: { design },
-    },
+  labels: {
+    issueType: { design },
   },
 } = require("./support/resources");
 
@@ -18,19 +15,19 @@ module.exports = async ({ context }) => {
   const monday = Monday(issue);
 
   if (action === "reopened") {
-    monday.setColumnValue(mondayColumns.open, "Open");
+    monday.setColumnValue(monday.columns.open, "Open");
   } else {
-    monday.setColumnValue(mondayColumns.open, "Closed");
+    monday.setColumnValue(monday.columns.open, "Closed");
     // If closed but not completed, set status to "Closed"
     if (issue.state_reason !== "completed") {
-      monday.setColumnValue(mondayColumns.status, "Closed");
+      monday.setColumnValue(monday.columns.status, "Closed");
     }
     // If not a design issue, set status to "Done"
     else if (
       issue.labels &&
       issue.labels.every((label) => label.name !== design)
     ) {
-      monday.setColumnValue(mondayColumns.status, "Done");
+      monday.setColumnValue(monday.columns.status, "Done");
     }
   }
 

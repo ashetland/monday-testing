@@ -2,10 +2,8 @@
 const { notInLifecycle } = require("./support/utils");
 const Monday = require("./support/monday.js");
 const {
-  resources: {
-    labels: {
-      issueWorkflow: { new: newLabel, assigned: assignedLabel },
-    },
+  labels: {
+    issueWorkflow: { new: newLabel, assigned: assignedLabel },
   },
 } = require("./support/resources");
 
@@ -16,8 +14,8 @@ module.exports = async ({ context }) => {
     assignee: newAssignee,
     action,
   } = /** @type {import('@octokit/webhooks-types').IssuesAssignedEvent | import('@octokit/webhooks-types').IssuesUnassignedEvent } */ (
-    context.payload
-  );
+      context.payload
+    );
   const { assignees: currentAssignees, labels } = issue;
   const monday = Monday(issue);
 

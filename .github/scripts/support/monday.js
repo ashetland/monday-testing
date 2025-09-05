@@ -1,10 +1,15 @@
 // @ts-check
 const {
-  mondayBoard,
-  mondayColumns,
-  mondayLabels,
-  mondayPeople,
-  resources,
+  labels: {
+    issueWorkflow,
+    issueType,
+    priority,
+    devEstimate,
+    designEstimate,
+    planning,
+    handoff,
+  },
+  milestone,
 } = require("./resources");
 const { notReadyForDev, notInLifecycle } = require("./utils");
 
@@ -12,9 +17,10 @@ const { notReadyForDev, notInLifecycle } = require("./utils");
  * @param {import('@octokit/webhooks-types').Issue} issue - The GitHub issue object
  */
 module.exports = function Monday(issue) {
+  const MONDAY_BOARD = "8780429793";
   const { MONDAY_KEY } = process.env;
   if (!MONDAY_KEY) {
-    throw new Error("Monday.com API key is not set.");
+    throw new Error("A Monday.com env variable is not set.");
   }
   if (!issue) {
     throw new Error("No GitHub issue provided.");
@@ -24,7 +30,7 @@ module.exports = function Monday(issue) {
     title,
     body,
     number: issueNumber,
-    milestone,
+    milestone: issueMilestone,
     labels,
     assignee,
     assignees,
@@ -32,6 +38,303 @@ module.exports = function Monday(issue) {
   } = issue;
 
   let columnUpdates = {};
+
+  /** Map Monday Column IDs */
+  const columns = {
+    title: "name",
+    issueNumber: "numeric_mknk2xhh",
+    link: "link",
+    designers: "people",
+    developers: "multiple_person_mkt920b0",
+    productEngineers: "multiple_person_mkt9pzj9",
+    status: "dup__of_overall_status__1",
+    date: "date6",
+    priority: "priority",
+    issueType: "color_mkrbz0t1",
+    designEstimate: "color_mkrbg2b9",
+    devEstimate: "numeric_mkswahrw",
+    designIssue: "color_mkswbke0",
+    stalled: "color_mkv79bbx",
+    blocked: "color_mkv7x1gw",
+    a11y: "color_mksw1sfa",
+    spike: "color_mkrt20dy",
+    figmaChanges: "color_mkrvmhg7",
+    open: "color_mknkrb2n",
+  };
+  /** Map Labels to Monday column/value pairs */
+  const labelMap = new Map([
+    [
+      issueWorkflow.needsTriage,
+      {
+        column: columns.status,
+        value: "Needs Triage",
+      },
+    ],
+    [
+      issueWorkflow.needsMilestone,
+      {
+        column: columns.status,
+        value: "Needs Milestone",
+      },
+    ],
+    [
+      planning.spike,
+      {
+        column: columns.spike,
+        value: "Spike",
+      },
+    ],
+    [
+      planning.spikeComplete,
+      {
+        column: columns.spike,
+        value: "Spike Complete",
+      },
+    ],
+    [
+      planning.blocked,
+      {
+        column: columns.blocked,
+        value: "Blocked",
+      },
+    ],
+    [
+      issueWorkflow.new,
+      {
+        column: columns.status,
+        value: "Unassigned",
+      },
+    ],
+    [
+      issueWorkflow.assigned,
+      {
+        column: columns.status,
+        value: "Assigned",
+      },
+    ],
+    [
+      issueWorkflow.inDesign,
+      {
+        column: columns.status,
+        value: "In Design",
+      },
+    ],
+    [
+      issueWorkflow.readyForDev,
+      {
+        column: columns.status,
+        value: "Ready for dev",
+      },
+    ],
+    [
+      issueWorkflow.inDevelopment,
+      {
+        column: columns.status,
+        value: "In Development",
+      },
+    ],
+    [
+      issueWorkflow.installed,
+      {
+        column: columns.status,
+        value: "Installed",
+      },
+    ],
+    [
+      issueWorkflow.verified,
+      {
+        column: columns.status,
+        value: "Verified",
+      },
+    ],
+    [
+      issueType.design,
+      {
+        column: columns.designIssue,
+        value: "Design",
+      },
+    ],
+    [
+      issueType.bug,
+      {
+        column: columns.issueType,
+        value: "Bug",
+      },
+    ],
+    [
+      issueType.chore,
+      {
+        column: columns.issueType,
+        value: "Chore",
+      },
+    ],
+    [
+      issueType.enhancement,
+      {
+        column: columns.issueType,
+        value: "Enhancement",
+      },
+    ],
+    [
+      issueType.newComponent,
+      {
+        column: columns.issueType,
+        value: "New Component",
+      },
+    ],
+    [
+      issueType.refactor,
+      {
+        column: columns.issueType,
+        value: "Refactor",
+      },
+    ],
+    [
+      issueType.docs,
+      {
+        column: columns.issueType,
+        value: "Docs",
+      },
+    ],
+    [
+      issueType.test,
+      {
+        column: columns.issueType,
+        value: "Testing",
+      },
+    ],
+    [
+      issueType.tooling,
+      {
+        column: columns.issueType,
+        value: "Tooling",
+      },
+    ],
+    [
+      issueType.a11y,
+      {
+        column: columns.a11y,
+        value: "a11y",
+      },
+    ],
+    [
+      priority.low,
+      {
+        column: columns.priority,
+        value: "Low",
+      },
+    ],
+    [
+      priority.medium,
+      {
+        column: columns.priority,
+        value: "Medium",
+      },
+    ],
+    [
+      priority.high,
+      {
+        column: columns.priority,
+        value: "High",
+      },
+    ],
+    [
+      priority.critical,
+      {
+        column: columns.priority,
+        value: "Critical",
+      },
+    ],
+    [
+      devEstimate.one,
+      {
+        column: columns.devEstimate,
+        value: 1,
+      },
+    ],
+    [
+      devEstimate.two,
+      {
+        column: columns.devEstimate,
+        value: 2,
+      },
+    ],
+    [
+      devEstimate.three,
+      {
+        column: columns.devEstimate,
+        value: 3,
+      },
+    ],
+    [
+      devEstimate.five,
+      {
+        column: columns.devEstimate,
+        value: 5,
+      },
+    ],
+    [
+      designEstimate.small,
+      {
+        column: columns.designEstimate,
+        value: "Small",
+      },
+    ],
+    [
+      designEstimate.medium,
+      {
+        column: columns.designEstimate,
+        value: "Medium",
+      },
+    ],
+    [
+      designEstimate.large,
+      {
+        column: columns.designEstimate,
+        value: "Large",
+      },
+    ],
+    [
+      handoff.figmaChanges,
+      {
+        column: columns.figmaChanges,
+        value: "Figma Changes Only",
+      },
+    ],
+    [
+      milestone.stalled,
+      {
+        column: columns.stalled,
+        value: "Stalled",
+      },
+    ],
+  ]);
+  /**
+   * @typedef {object} MondayPerson
+   * @property {string} role - The role of the person (e.g., developers, designers, productEngineers)
+   * @property {number} id - The Monday.com user ID
+   */
+  /** @type {Map<string, MondayPerson>} */
+  const peopleMap = new Map([
+    ["anveshmekala", { role: columns.developers, id: 48387134 }],
+    ["aPreciado88", { role: columns.developers, id: 6079524 }],
+    ["ashetland", { role: columns.designers, id: 45851619 }],
+    ["benelan", { role: columns.developers, id: 49704471 }],
+    ["chezHarper", { role: columns.designers, id: 71157966 }],
+    ["DitwanP", { role: columns.productEngineers, id: 53683093 }],
+    ["driskull", { role: columns.developers, id: 45944985 }],
+    ["Elijbet", { role: columns.developers, id: 55852207 }],
+    ["eriklharper", { role: columns.developers, id: 49699973 }],
+    ["geospatialem", { role: columns.productEngineers, id: 45853373 }],
+    ["isaacbraun", { role: columns.productEngineers, id: 76547859 }],
+    ["jcfranco", { role: columns.developers, id: 45854945 }],
+    ["josercarcamo", { role: columns.developers, id: 56555749 }],
+    ["macandcheese", { role: columns.developers, id: 45854918 }],
+    ["matgalla", { role: columns.designers, id: 69473378 }],
+    ["rmstinson", { role: columns.designers, id: 47277636 }],
+    ["SkyeSeitz", { role: columns.designers, id: 45854937 }],
+    ["Amretasre002762670", { role: columns.developers, id: 77031889 }],
+  ]);
 
   /** Private helper functions */
 
@@ -55,7 +358,7 @@ module.exports = function Monday(issue) {
       return;
     }
 
-    const info = mondayPeople.get(person.login);
+    const info = peopleMap.get(person.login);
     if (!info) {
       console.log(`Assignee ${person.login} not found in peopleMap.`);
       return;
@@ -119,7 +422,7 @@ module.exports = function Monday(issue) {
 
     const query = `mutation { 
       change_multiple_column_values(
-        board_id: ${mondayBoard},
+        board_id: ${MONDAY_BOARD},
         item_id: ${mondayId},
         column_values: "${formatValues(columnUpdates)}"
       ) {
@@ -145,9 +448,9 @@ module.exports = function Monday(issue) {
   async function queryForId() {
     const query = `query {
         items_page_by_column_values(
-          board_id: "${mondayBoard}",
+          board_id: "${MONDAY_BOARD}",
           columns: {
-            column_id: "${mondayColumns.issueNumber}",
+            column_id: "${columns.issueNumber}",
             column_values: ["${issueNumber}"]
           },
         ) {
@@ -247,8 +550,8 @@ module.exports = function Monday(issue) {
    */
   async function createTask(syncId = "") {
     columnUpdates = {
-      [mondayColumns.issueNumber]: `${issueNumber}`,
-      [mondayColumns.link]: {
+      [columns.issueNumber]: `${issueNumber}`,
+      [columns.link]: {
         url: html_url,
         text: `${issueNumber}`,
       },
@@ -260,7 +563,7 @@ module.exports = function Monday(issue) {
     }
     // If no lifecycle label: set default status
     if (notInLifecycle(labels)) {
-      addLabel(resources.labels.issueWorkflow.needsTriage);
+      addLabel(issueWorkflow.needsTriage);
     }
 
     // Add assignees if present
@@ -270,12 +573,12 @@ module.exports = function Monday(issue) {
       // Set to "assigned" if no lifecycle labels were applied
       // Overrides the default "needs triage" label
       if (notInLifecycle(labels)) {
-        addLabel(resources.labels.issueWorkflow.assigned);
+        addLabel(issueWorkflow.assigned);
       }
     }
 
     // Handle milestone if present
-    if (milestone) {
+    if (issueMilestone) {
       handleMilestone();
     }
 
@@ -292,7 +595,7 @@ module.exports = function Monday(issue) {
 
     const query = `mutation { 
       create_item (
-        board_id: ${mondayBoard},
+        board_id: ${MONDAY_BOARD},
         item_name: "${title}",
         column_values: "${formatValues(columnUpdates)}"
       ) {
@@ -329,37 +632,37 @@ module.exports = function Monday(issue) {
    */
   function handleMilestone() {
     // If removed, reset date
-    if (!milestone) {
-      columnUpdates[mondayColumns.date] = "";
-      clearLabel(resources.milestone.stalled);
+    if (!issueMilestone) {
+      columnUpdates[columns.date] = "";
+      clearLabel(milestone.stalled);
       return;
     }
-    const milestoneTitle = milestone.title;
+    const milestoneTitle = issueMilestone.title;
 
     // Attempt to extract the date from the milestone title
     const dateRegex = /\d{4}-\d{2}-\d{2}/;
     const dueDate = milestoneTitle.match(dateRegex);
 
     if (dueDate) {
-      columnUpdates[mondayColumns.date] = dueDate[0];
-      clearLabel(resources.milestone.stalled);
+      columnUpdates[columns.date] = dueDate[0];
+      clearLabel(milestone.stalled);
 
       // Assigned and NO lifecycle label - OUTSIDE OF "needs milestone"
       if (assignee && notInLifecycle(labels, { skipMilestone: true })) {
-        addLabel(resources.labels.issueWorkflow.assigned);
+        addLabel(issueWorkflow.assigned);
       }
       // If unassigned and NOT "Ready for Dev"
       if (!assignee && notReadyForDev(labels)) {
-        addLabel(resources.labels.issueWorkflow.new);
+        addLabel(issueWorkflow.new);
       }
     } else {
-      columnUpdates[mondayColumns.date] = "";
+      columnUpdates[columns.date] = "";
 
-      if (milestoneTitle === resources.milestone.stalled) {
-        addLabel(resources.milestone.stalled);
+      if (milestoneTitle === milestone.stalled) {
+        addLabel(milestone.stalled);
       } else if (inMilestoneStatus()) {
-        columnUpdates[mondayColumns.status] = milestoneTitle;
-        clearLabel(resources.milestone.stalled);
+        columnUpdates[columns.status] = milestoneTitle;
+        clearLabel(milestone.stalled);
       }
     }
   }
@@ -377,12 +680,12 @@ module.exports = function Monday(issue) {
    */
   function addLabel(label) {
     // Skip the sync label, as it is not needed in Monday.com
-    if (label === resources.labels.planning.monday) {
+    if (label === planning.monday) {
       return;
     }
 
     // Skip "needs milestone" if "ready for dev" is applied
-    const { needsMilestone, readyForDev } = resources.labels.issueWorkflow;
+    const { needsMilestone, readyForDev } = issueWorkflow;
     if (label === needsMilestone && !notReadyForDev(labels)) {
       console.log(
         `Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`,
@@ -390,12 +693,12 @@ module.exports = function Monday(issue) {
       return;
     }
 
-    if (!mondayLabels.has(label)) {
+    if (!labelMap.has(label)) {
       console.log(`Label "${label}" not found in Monday Labels map.`);
       return;
     }
 
-    const info = mondayLabels.get(label);
+    const info = labelMap.get(label);
     if (!info?.column || !info?.value) {
       console.log(`Label "${label}" is missing column or title information.`);
       return;
@@ -409,7 +712,7 @@ module.exports = function Monday(issue) {
    * @returns {void}
    */
   function clearLabel(label) {
-    const labelColumn = mondayLabels.get(label)?.column;
+    const labelColumn = labelMap.get(label)?.column;
     if (!labelColumn) {
       console.log(`Label "${label}" not found in Monday Labels map.`);
       return;
@@ -436,19 +739,17 @@ module.exports = function Monday(issue) {
    * @returns {boolean} - True if in a status milestone, false otherwise
    */
   function inMilestoneStatus() {
-    if (!milestone) {
+    if (!issueMilestone) {
       return false;
     }
 
-    const statusMilestones = [
-      resources.milestone.backlog,
-      resources.milestone.freezer,
-    ];
+    const statusMilestones = [milestone.backlog, milestone.freezer];
 
-    return statusMilestones.includes(milestone.title);
+    return statusMilestones.includes(issueMilestone.title);
   }
 
   return {
+    columns,
     getId,
     commitChanges,
     createTask,

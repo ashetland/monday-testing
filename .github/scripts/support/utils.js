@@ -1,8 +1,6 @@
 // @ts-check
 const {
-  resources: {
-    labels: { issueWorkflow },
-  },
+  labels: { issueWorkflow },
 } = require("./resources");
 
 module.exports = {

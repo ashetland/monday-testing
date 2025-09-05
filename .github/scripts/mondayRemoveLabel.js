@@ -1,11 +1,8 @@
 // @ts-check
 const Monday = require("./support/monday.js");
 const {
-  mondayLabels,
-  resources: {
-    labels: {
-      planning: { spike, spikeComplete },
-    },
+  labels: {
+    planning: { spike, spikeComplete },
   },
 } = require("./support/resources");
 
@@ -34,11 +31,6 @@ module.exports = async ({ context }) => {
       );
       process.exit(0);
     }
-  }
-
-  if (!mondayLabels.has(labelName)) {
-    console.log(`Label '${labelName}' is not a recognized Monday.com label.`);
-    process.exit(0);
   }
 
   monday.clearLabel(labelName);
