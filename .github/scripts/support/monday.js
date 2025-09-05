@@ -325,7 +325,7 @@ module.exports = function Monday(issue) {
     ["driskull", { role: columns.developers, id: 45944985 }],
     ["Elijbet", { role: columns.developers, id: 55852207 }],
     ["eriklharper", { role: columns.developers, id: 49699973 }],
-    ["geospatialem", { role: columns.productEngineers, id: 45853373 }],
+    ["geospatialem", { role: columns.developers, id: 45853373 }],
     ["isaacbraun", { role: columns.productEngineers, id: 76547859 }],
     ["jcfranco", { role: columns.developers, id: 45854945 }],
     ["josercarcamo", { role: columns.developers, id: 56555749 }],
