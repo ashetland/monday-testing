@@ -364,6 +364,15 @@ module.exports = function Monday(issue) {
       return;
     }
 
+    const notInstalledOrVerified = labels?.every(
+      (label) =>
+        label.name !== issueWorkflow.installed &&
+        label.name !== issueWorkflow.verified,
+    );
+    if (info.role === columns.productEngineers && notInstalledOrVerified) {
+      info.role = columns.developers;
+    }
+
     if (columnUpdates[info.role]) {
       columnUpdates[info.role] += `, ${info.id}`;
     } else {
