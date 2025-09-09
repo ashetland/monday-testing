@@ -15,8 +15,8 @@ jobs:
         if: github.event.label.name == '4 - installed'
         uses: actions/github-script@v7
         env:
-          ISSUE_VERIFIERS: "@isaacbraun,@DitwanP,@geospatialem"
-          CALCITE_DESIGNERS: "@ashetland"
+          ISSUE_VERIFIERS: "isaacbraun,DitwanP,geospatialem"
+          CALCITE_DESIGNERS: "ashetland"
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/assignForVerification.js')
