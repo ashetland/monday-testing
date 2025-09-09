@@ -13,7 +13,14 @@ jobs:
 
       - name: "Assign for verification"
         if: github.event.label.name == '3 - installed'
-        run: echo "Assign for verification fired"
+        uses: actions/github-script@v7
+        env:
+          ISSUE_VERIFIERS: "@isaacbraun,@DitwanP,@geospatialem"
+          CALCITE_DESIGNERS: "@ashetland"
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/assignForVerification.js')
+            await action({github, context, core})
 
       - name: "Spike complete notification"
         if: github.event.label.name == 'spike complete'
