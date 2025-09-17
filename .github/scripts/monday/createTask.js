@@ -1,5 +1,5 @@
 // @ts-check
-const Monday = require("./support/monday.js");
+const Monday = require("../support/monday");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
@@ -8,23 +8,11 @@ module.exports = async ({ github, context }) => {
       context.payload
     );
   const monday = Monday(issue);
-  /** @type {string} - The ID of the item to sync with, if any */
-  let syncId = "";
-  /** @type {string|undefined} */
-  let queryId = undefined;
+  const labeledId = action === "labeled" ? await monday.getId("query") : undefined;
+  const createdId = await monday.createTask(labeledId);
 
-  if (action === "labeled") {
-    queryId = await monday.getId("query");
-    if (queryId) {
-      syncId = queryId;
-    }
-  }
-
-  const id = await monday.createTask(syncId);
-
-  if (id !== queryId) {
-    // Add the Monday.com item ID to the issue body
-    const updatedBody = monday.addSyncLine(id);
+  if (createdId !== labeledId) {
+    const updatedBody = monday.addSyncLine(createdId);
     try {
       await github.rest.issues.update({
         owner: context.repo.owner,

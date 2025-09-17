@@ -25,10 +25,7 @@ module.exports = {
       });
     } catch (err) {
       if (err.status === 404) {
-        console.log(
-          `The label '${label}' is not associated with issue #${issue_number}.`,
-          err,
-        );
+        console.log(`The label '${label}' is not associated with issue #${issue_number}.`, err);
       } else {
         console.log("Error while attempting to remove issue label.", err);
       }
@@ -44,13 +41,7 @@ module.exports = {
    *
    * @param {createLabelIfMissingParam} obj
    **/
-  createLabelIfMissing: async ({
-    github,
-    context,
-    label,
-    color,
-    description,
-  }) => {
+  createLabelIfMissing: async ({ github, context, label, color, description }) => {
     const { owner, repo } = context.repo;
     try {
       await github.rest.issues.getLabel({
@@ -70,20 +61,19 @@ module.exports = {
   },
   /**
    * Checks if the labels do not include any lifecycle labels
-   * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
-   * @param {object} options - Options to skip specific labels
-   * @return {boolean} - True if no lifecycle labels are present, false otherwise
+   * @param {object} params
+   * @param {import('@octokit/webhooks-types').Label[] | undefined} params.labels - The array of labels for the issue
+   * @param {string[]} [params.skip] - The array of lifecycle labels to skip in the check
+   * @return {boolean} `true` if no lifecycle labels are present, `false` otherwise
    */
-  notInLifecycle: (labels, { skipMilestone = false } = {}) => {
+  notInLifecycle: ({ labels, skip = [] }) => {
     if (!labels?.length) {
       return true;
     }
 
     let lifecycleLabels = Object.values(issueWorkflow);
-    if (skipMilestone) {
-      lifecycleLabels = lifecycleLabels.filter(
-        (label) => label !== issueWorkflow.needsMilestone,
-      );
+    if (skip.length) {
+      lifecycleLabels = lifecycleLabels.filter((label) => !skip.includes(label));
     }
 
     return labels.every((label) => !lifecycleLabels.includes(label.name));
@@ -91,7 +81,7 @@ module.exports = {
   /**
    * Checks if the labels do not include the "Ready for Dev" label
    * @param {import('@octokit/webhooks-types').Label[] | undefined} labels - The list of labels for the issue
-   * @return {boolean} - True if "Ready for Dev" label is not present, false otherwise
+   * @return {boolean} `true` if "Ready for Dev" label is not present, `false` otherwise
    */
   notReadyForDev: (labels) => {
     if (!labels) {
@@ -99,5 +89,25 @@ module.exports = {
     }
 
     return labels.every((label) => label.name !== issueWorkflow.readyForDev);
+  },
+  /**
+   * Validates that no values in an array are undefined or null. If any are,
+   * logs an error message and exits the process with code 0.
+   *
+   * @template {readonly unknown[]} T - Tuple type of the input array
+   * @param {T} array - Array of values to validate
+   * @param {string} [errorMessage] - Optional custom error message to log
+   * @returns {{ [K in keyof T]: NonNullable<T[K]> }} The validated array with non-nullable types
+   */
+  assertRequired: (array, errorMessage) => {
+    for (const item of array) {
+      if (item === undefined || item === null) {
+        const message = errorMessage || `${String(item)} is required but is not defined, exiting.`;
+        console.error(message);
+        process.exit(0);
+      }
+    }
+
+    return /** @type {{ [K in keyof T]: NonNullable<T[K]> }} */ (array);
   },
 };
