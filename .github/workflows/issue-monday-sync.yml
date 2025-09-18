@@ -1,7 +1,27 @@
 name: Monday.com Issue Sync
 on:
   issues:
-    types: [opened, edited, closed, reopened, labeled, unlabeled, milestoned, demilestoned, assigned, unassigned]
+    types:
+      [
+        opened,
+        edited,
+        closed,
+        reopened,
+        labeled,
+        unlabeled,
+        milestoned,
+        demilestoned,
+        assigned,
+        unassigned,
+      ]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+      event_type:
+        required: true
+      label_name:
+        required: true
 env:
   MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
 jobs:
@@ -76,3 +96,11 @@ jobs:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/monday/updateState.js')
             await action({github, context})
+
+      - name: "Handle Ready For Dev Automation"
+        if: github.event.action == 'workflow_dispatch' && github.event.inputs.event_type == 'ReadyForDev'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/monday/handleReadyForDev.js')
+            await action({github, context, issue_number: github.event.inputs.issue_number, label_name: github.event.inputs.label_name})

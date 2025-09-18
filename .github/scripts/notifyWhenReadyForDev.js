@@ -62,6 +62,18 @@ module.exports = async ({ github, context }) => {
       ...issueProps,
       body: `cc MANAGERS`,
     });
+
+    // Emit event to trigger Monday.com syncing actions
+    await github.rest.actions.createWorkflowDispatch({
+      ...issueProps,
+      workflow_id: "issue-monday-sync.yml",
+      ref: "dev",
+      inputs: {
+        issue_number: number.toString(),
+        event_type: "ReadyForDev",
+        label_name: label.name,
+      }, 
+    });
   }
 };
 
