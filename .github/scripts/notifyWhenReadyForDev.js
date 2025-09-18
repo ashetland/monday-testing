@@ -31,17 +31,17 @@ module.exports = async ({ github, context }) => {
 
     /* Modify labels */
 
-    await removeLabel({
-      github,
-      context,
-      label: issueWorkflow.assigned,
-    });
-
-    await removeLabel({
-      github,
-      context,
-      label: issueWorkflow.needsTriage,
-    });
+    // await removeLabel({
+    //   github,
+    //   context,
+    //   label: issueWorkflow.assigned,
+    // });
+    //
+    // await removeLabel({
+    //   github,
+    //   context,
+    //   label: issueWorkflow.needsTriage,
+    // });
 
     await github.rest.issues.addLabels({
       ...issueProps,
