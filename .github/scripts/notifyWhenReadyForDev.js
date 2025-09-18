@@ -22,7 +22,7 @@ module.exports = async ({ github, context }) => {
     label,
   } = payload;
 
-  if (label?.name === "ready for dev") {
+  if (label?.name === "2 - ready for dev") {
     const issueProps = {
       owner,
       repo,
