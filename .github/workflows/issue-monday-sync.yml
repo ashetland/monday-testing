@@ -16,11 +16,11 @@ on:
       ]
   workflow_dispatch:
     inputs:
-      issue_number:
+      issueNumber:
         required: true
-      event_type:
+      eventType:
         required: true
-      label_name:
+      labelName:
         required: true
 env:
   MONDAY_KEY: ${{ secrets.MONDAY_KEY }}
@@ -98,9 +98,9 @@ jobs:
             await action({github, context})
 
       - name: "Handle Ready For Dev Automation"
-        if: github.event.action == 'workflow_dispatch' && github.event.inputs.event_type == 'ReadyForDev'
+        if: github.event.action == 'workflow_dispatch' && github.event.inputs.eventType == 'ReadyForDev'
         uses: actions/github-script@v7
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/monday/handleReadyForDev.js')
-            await action({github, context, issue_number: github.event.inputs.issue_number, label_name: github.event.inputs.label_name})
+            await action({github, context, issue_number: github.event.inputs.issueNumber, label_name: github.event.inputs.labelName})
