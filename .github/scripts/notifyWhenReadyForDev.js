@@ -68,7 +68,8 @@ module.exports = async ({ github, context }) => {
       owner,
       repo,
       workflow_id: "issue-monday-sync.yml",
-      ref: "dev",
+      // CHANGE for PR
+      ref: "main",
       inputs: {
         issue_number: number.toString(),
         event_type: "ReadyForDev",
