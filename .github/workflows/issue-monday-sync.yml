@@ -106,4 +106,4 @@ jobs:
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/monday/handleReadyForDev.js')
-            await action({github, context, issue_number: github.event.inputs.issue_number, label_name: github.event.inputs.label_name})
+            await action({github, context})

@@ -3,8 +3,8 @@ const Monday = require("../support/monday");
 const { assertRequired } = require("../support/utils");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
-module.exports = async ({ github, context, issue_number, label_name }) => {
-  const [issueNumber, labelName] = assertRequired([issue_number, label_name]);
+module.exports = async ({ github, context }) => {
+  const [issueNumber, labelName] = assertRequired([context.payload.issue_number, context.payload.label_name]);
 
   const { data: issue } = await github.rest.issues.get({
     ...context.repo,
