@@ -423,7 +423,10 @@ module.exports = function Monday(issue) {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error when calling the Monday API: ${JSON.stringify(body)}`);
+      const errorBody = await response.json();
+        throw new Error(
+          `${response.status} (${response.statusText}) HTTP error when calling Monday API: ${JSON.stringify(errorBody)}`,
+        );
       }
       return await response.json();
     } catch (error) {
@@ -585,6 +588,10 @@ module.exports = function Monday(issue) {
 
     if (syncId) {
       console.log(`Sync ID ${syncId} provided, updating existing item instead of creating new.`);
+      setColumnValue(columnIds.title, issue.title);
+      handleState();
+
+
       const { error } = await updateMultipleColumns(syncId);
       if (error) {
         throw new Error(`Syncing existing item ${syncId}: ${error}`);
@@ -664,6 +671,20 @@ module.exports = function Monday(issue) {
   }
 
   /**
+   * Set the Open/Closed and Status columns based on issue state
+   * @returns {void}
+   */
+  function handleState() {
+    setColumnValue(columnIds.open, issue.state === "open" ? "Open" : "Closed");
+
+    if (issue.state_reason !== "completed") {
+      setColumnValue(columnIds.status, "Closed");
+    } else if (labels?.every((label) => label.name !== issueType.design)) {
+      setColumnValue(columnIds.status, "Done");
+    }
+  }
+
+  /**
    * Assign each of the current assignees to columnUpdates.
    */
   function addAllAssignees() {
@@ -677,8 +698,8 @@ module.exports = function Monday(issue) {
    * @param {string} label
    */
   function addLabel(label) {
-    // Skip the sync label, as it is not needed in Monday.com
-    if (label === planning.monday) {
+    const skippedLabels = [planning.monday, issueWorkflow.new, issueWorkflow.assigned];
+    if (skippedLabels.includes(label)) {
       return;
     }
 
@@ -746,6 +767,7 @@ module.exports = function Monday(issue) {
     createTask,
     setColumnValue,
     handleMilestone,
+    handleState,
     addAllAssignees,
     addLabel,
     clearLabel,
