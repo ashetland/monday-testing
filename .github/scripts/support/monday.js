@@ -1,6 +1,14 @@
 // @ts-check
 const {
-  labels: { issueWorkflow, issueType, priority, devEstimate, designEstimate, planning, handoff },
+  labels: {
+    issueWorkflow,
+    issueType,
+    priority,
+    devEstimate,
+    designEstimate,
+    planning,
+    handoff,
+  },
   milestone,
 } = require("./resources");
 const { notReadyForDev, notInLifecycle } = require("./utils");
@@ -26,7 +34,16 @@ module.exports = function Monday(issue) {
     throw new Error("No GitHub issue provided.");
   }
 
-  const { title, body, number: issueNumber, milestone: issueMilestone, labels, assignee, assignees, html_url } = issue;
+  const {
+    title,
+    body,
+    number: issueNumber,
+    milestone: issueMilestone,
+    labels,
+    assignee,
+    assignees,
+    html_url,
+  } = issue;
 
   /**
    * Monday.com column value options
@@ -390,7 +407,9 @@ module.exports = function Monday(issue) {
     }
 
     const notInstalledOrVerified = labels?.every(
-      (label) => label.name !== issueWorkflow.installed && label.name !== issueWorkflow.verified,
+      (label) =>
+        label.name !== issueWorkflow.installed &&
+        label.name !== issueWorkflow.verified,
     );
     if (info.role === columnIds.productEngineers && notInstalledOrVerified) {
       info.role = columnIds.developers;
@@ -423,7 +442,7 @@ module.exports = function Monday(issue) {
       });
 
       if (!response.ok) {
-      const errorBody = await response.json();
+        const errorBody = await response.json();
         throw new Error(
           `${response.status} (${response.statusText}) HTTP error when calling Monday API: ${JSON.stringify(errorBody)}`,
         );
@@ -458,7 +477,9 @@ module.exports = function Monday(issue) {
 
     const response = await runQuery(query);
     if (!response?.data?.change_multiple_column_values?.id) {
-      return { error: `Failed to update columns for item ID ${mondayId}. Response: ${JSON.stringify(response)}` };
+      return {
+        error: `Failed to update columns for item ID ${mondayId}. Response: ${JSON.stringify(response)}`,
+      };
     }
     return { error: null };
   }
@@ -497,7 +518,9 @@ module.exports = function Monday(issue) {
     }
 
     if (items.length > 1) {
-      throw new Error(`Multiple Monday items found for Issue #${issueNumber}. Requires manual review.`);
+      throw new Error(
+        `Multiple Monday items found for Issue #${issueNumber}. Requires manual review.`,
+      );
     }
 
     const [{ id }] = items;
@@ -568,7 +591,7 @@ module.exports = function Monday(issue) {
       labels.forEach((label) => addLabel(label.name));
     }
 
-    if (notInLifecycle({ labels })) {
+    if (notInLifecycle({ labels, skip: [issueWorkflow.new] })) {
       addLabel(issueWorkflow.needsTriage);
     }
 
@@ -577,7 +600,12 @@ module.exports = function Monday(issue) {
 
       // Set to "assigned" if no lifecycle labels were applied
       // Overrides the default "needs triage" label
-      if (notInLifecycle({ labels })) {
+      if (
+        notInLifecycle({
+          labels,
+          skip: [issueWorkflow.new, issueWorkflow.needsTriage, issueWorkflow.needsMilestone],
+        })
+      ) {
         addLabel(issueWorkflow.assigned);
       }
     }
@@ -587,10 +615,11 @@ module.exports = function Monday(issue) {
     }
 
     if (syncId) {
-      console.log(`Sync ID ${syncId} provided, updating existing item instead of creating new.`);
+      console.log(
+        `Sync ID ${syncId} provided, updating existing item instead of creating new.`,
+      );
       setColumnValue(columnIds.title, issue.title);
       handleState();
-
 
       const { error } = await updateMultipleColumns(syncId);
       if (error) {
@@ -609,7 +638,11 @@ module.exports = function Monday(issue) {
       }
     }`;
 
-    const { data: { create_item: { id } } } = await runQuery(query);
+    const {
+      data: {
+        create_item: { id },
+      },
+    } = await runQuery(query);
     if (!id) {
       throw new Error(`Failed to create item for issue #${issueNumber}`);
     }
@@ -652,7 +685,13 @@ module.exports = function Monday(issue) {
       columnUpdates[columnIds.date] = milestoneDate;
       clearLabel(milestone.stalled);
 
-      if (assignee && notInLifecycle({ labels, skip: [issueWorkflow.needsMilestone] })) {
+      if (
+        assignee &&
+        notInLifecycle({
+          labels,
+          skip: [issueWorkflow.new, issueWorkflow.needsTriage, issueWorkflow.needsMilestone],
+        })
+      ) {
         addLabel(issueWorkflow.assigned);
       }
       if (!assignee && notReadyForDev(labels)) {
@@ -672,15 +711,18 @@ module.exports = function Monday(issue) {
 
   /**
    * Set the Open/Closed and Status columns based on issue state
+   * @param {("reopened" | "closed" | "open")} action - The action that triggered the state change
    * @returns {void}
    */
-  function handleState() {
+  function handleState(action = "open") {
     setColumnValue(columnIds.open, issue.state === "open" ? "Open" : "Closed");
 
-    if (issue.state_reason !== "completed") {
-      setColumnValue(columnIds.status, "Closed");
-    } else if (labels?.every((label) => label.name !== issueType.design)) {
-      setColumnValue(columnIds.status, "Done");
+    if (action === "closed") {
+      if (issue.state_reason !== "completed") {
+        setColumnValue(columnIds.status, "Closed");
+      } else if (issue.labels?.every((label) => label.name !== issueType.design)) {
+        setColumnValue(columnIds.status, "Done");
+      }
     }
   }
 
@@ -698,14 +740,15 @@ module.exports = function Monday(issue) {
    * @param {string} label
    */
   function addLabel(label) {
-    const skippedLabels = [planning.monday, issueWorkflow.new, issueWorkflow.assigned];
-    if (skippedLabels.includes(label)) {
+    if (label === planning.monday) {
       return;
     }
 
     const { needsMilestone, readyForDev } = issueWorkflow;
     if (label === needsMilestone && !notReadyForDev(labels)) {
-      console.log(`Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`);
+      console.log(
+        `Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`,
+      );
       return;
     }
 
@@ -757,7 +800,9 @@ module.exports = function Monday(issue) {
    * @returns {boolean} - True if in a status milestone, false otherwise
    */
   function inMilestoneStatus() {
-    return [milestone.backlog, milestone.freezer].includes(issueMilestone?.title || "");
+    return [milestone.backlog, milestone.freezer].includes(
+      issueMilestone?.title || "",
+    );
   }
 
   return {

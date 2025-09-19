@@ -3,7 +3,7 @@ const { notInLifecycle, assertRequired } = require("../support/utils");
 const Monday = require("../support/monday");
 const {
   labels: {
-    issueWorkflow: { new: newLabel, assigned: assignedLabel, needsMilestone },
+    issueWorkflow: { new: newLabel, assigned: assignedLabel, needsMilestone, needsTriage },
   },
 } = require("../support/resources");
 
@@ -16,17 +16,18 @@ module.exports = async ({ context }) => {
   const { assignees: currentAssignees, labels } = issue;
   assertRequired([assignee]);
   const monday = Monday(issue);
+  const skippedLabels = [needsTriage, needsMilestone];
 
   if (
     action === "unassigned" &&
     currentAssignees.length === 0 &&
-    notInLifecycle({ labels }) &&
+    notInLifecycle({ labels, skip: skippedLabels }) &&
     !monday.inMilestoneStatus()
   ) {
     monday.addLabel(newLabel);
     console.info("Set status to unassigned, no assignees updated.");
   }
-  else if (action === "assigned" && notInLifecycle({ labels, skip: [needsMilestone] }) && !monday.inMilestoneStatus()) {
+  else if (action === "assigned" && notInLifecycle({ labels, skip: skippedLabels }) && !monday.inMilestoneStatus()) {
     monday.addLabel(assignedLabel);
     monday.addAllAssignees();
     console.info("Update assignees, set status to assigned.");
