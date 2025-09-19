@@ -468,7 +468,7 @@ module.exports = function Monday(issue) {
       return { error: "No Monday ID found, cannot update columns." };
     }
 
-    const query = `mutation ChangeMultipleColumnValues($board_id: Int!, $item_id: Int!, $column_values: JSON!) { 
+    const query = `mutation ChangeMultipleColumnValues($board_id: ID!, $item_id: ID!, $column_values: JSON!) { 
       change_multiple_column_values(
         board_id: $board_id, 
         item_id: $item_id, 
@@ -500,7 +500,7 @@ module.exports = function Monday(issue) {
    * @throws {Error} - If the query fails or no response is received
    */
   async function queryForId() {
-    const query = `query QueryForId( $board_id: Int!, $column_id: String!, $column_values: [String!]!) {
+    const query = `query QueryForId( $board_id: ID!, $column_id: String!, $column_values: [String!]!) {
       items_page_by_column_values(
         board_id: $board_id,
         columns: {
@@ -643,7 +643,7 @@ module.exports = function Monday(issue) {
       return syncId;
     }
 
-    const query = `mutation CreateItem( $board_id: Int!, $item_name: String!, $column_values: JSON!) {
+    const query = `mutation CreateItem( $board_id: ID!, $item_name: String!, $column_values: JSON!) {
       create_item (
         board_id: $board_id,
         item_name: $item_name,
