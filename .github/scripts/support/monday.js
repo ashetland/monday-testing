@@ -430,9 +430,7 @@ module.exports = function Monday(issue) {
    * @returns {Promise<any>}
    */
   async function runQuery(query, variables = {}) {
-    console.log("Running Monday.com API query...");
-    console.log("Query:", query);
-    console.log("Variables:", variables);
+    console.log("Running Monday.com API query...", JSON.stringify({ query, variables }));
     try {
       const response = await fetch("https://api.monday.com/v2", {
         method: "post",
