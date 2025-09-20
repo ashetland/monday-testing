@@ -386,7 +386,8 @@ module.exports = function Monday(issue) {
    * @return {string} - The formatted values string
    */
   function formatValues(values) {
-    return JSON.stringify(values).replace(/"/g, '\\"');
+    return JSON.stringify(values);
+    // return JSON.stringify(values).replace(/"/g, '\\"');
   }
 
   /**
@@ -481,7 +482,7 @@ module.exports = function Monday(issue) {
     const variables = {
       board_id: MONDAY_BOARD,
       item_id: mondayId,
-      column_values: columnUpdates,
+      column_values: formatValues(columnUpdates),
     };
 
     const response = await runQuery(query, variables);
@@ -517,7 +518,7 @@ module.exports = function Monday(issue) {
     const variables = {
       board_id: MONDAY_BOARD,
       column_id: columnIds.issueNumber,
-      column_values: [issueNumber],
+      column_values: formatValues([issueNumber]),
     };
 
     const response = await runQuery(query, variables);
@@ -656,7 +657,7 @@ module.exports = function Monday(issue) {
     const queryVariables = {
       board_id: MONDAY_BOARD,
       item_name: title,
-      column_values: columnUpdates,
+      column_values: formatValues(columnUpdates),
     };
 
     const {
