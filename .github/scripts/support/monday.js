@@ -518,7 +518,7 @@ module.exports = function Monday(issue) {
     const variables = {
       board_id: MONDAY_BOARD,
       column_id: columnIds.issueNumber,
-      column_values: formatValues([issueNumber]),
+      column_values: [`"${issueNumber}"`],
     };
 
     const response = await runQuery(query, variables);
