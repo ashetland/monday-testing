@@ -380,17 +380,6 @@ module.exports = function Monday(issue) {
   /** Private helper functions */
 
   /**
-   * Formats the values object for use in Monday.com API calls
-   * @private
-   * @param {object} values - The values object to format
-   * @return {string} - The formatted values string
-   */
-  function formatValues(values) {
-    return JSON.stringify(values);
-    // return JSON.stringify(values).replace(/"/g, '\\"');
-  }
-
-  /**
    * Assigns a person to columnUpdates based on their GitHub username/role
    * @private
    * @param {import('@octokit/webhooks-types').User} person
@@ -431,7 +420,6 @@ module.exports = function Monday(issue) {
    * @returns {Promise<any>}
    */
   async function runQuery(query, variables = {}) {
-    console.log("Running Monday.com API query...", JSON.stringify({ query, variables }));
     try {
       const response = await fetch("https://api.monday.com/v2", {
         method: "post",
@@ -464,7 +452,7 @@ module.exports = function Monday(issue) {
    * @returns {Promise<{ error: string | null }>} - An object indicating success or failure
    */
   async function updateMultipleColumns(id = "") {
-    const mondayId = id || (await getId());
+    const mondayId = id || (await getId())?.id;
     if (!mondayId) {
       return { error: "No Monday ID found, cannot update columns." };
     }
@@ -482,7 +470,7 @@ module.exports = function Monday(issue) {
     const variables = {
       board_id: MONDAY_BOARD,
       item_id: mondayId,
-      column_values: formatValues(columnUpdates),
+      column_values: JSON.stringify(columnUpdates),
     };
 
     const response = await runQuery(query, variables);
@@ -557,20 +545,17 @@ module.exports = function Monday(issue) {
   /** Public functions */
 
   /**
-   * Return the Monday.com item ID for a issue.
+   * Find the Monday.com item ID for a issue and its source
    * ID is parsed from the issue body or fetched based on the issue number
-   * @param {("body" | "query" | "both")} location - Where to look for the ID: "body", "query", or "both" (default: "both")
-   * @return {Promise<string | undefined>} - The Monday.com item ID
+   * @return {Promise<{ id: string | undefined, source: ("body" | "query")}>} - The Monday.com item ID
    */
-  async function getId(location = "both") {
-    if (location === "query") {
-      return await queryForId();
+  async function getId() {
+    const bodyId = extractIdFromBody();
+    if (bodyId) {
+      return { id: bodyId, source: "body" };
     }
-    if (location === "body") {
-      return extractIdFromBody();
-    }
-
-    return extractIdFromBody() || (await queryForId());
+  
+    return { id: await queryForId(), source: "query" };
   }
 
   /**
@@ -657,7 +642,7 @@ module.exports = function Monday(issue) {
     const queryVariables = {
       board_id: MONDAY_BOARD,
       item_name: title,
-      column_values: formatValues(columnUpdates),
+      column_values: JSON.stringify(columnUpdates),
     };
 
     const {
