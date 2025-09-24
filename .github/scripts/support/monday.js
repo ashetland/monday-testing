@@ -509,6 +509,8 @@ module.exports = function Monday(issue) {
       column_values: [String(issueNumber)],
     };
 
+        console.log('About to call runQuery with:', JSON.stringify(variables, null, 2));
+
     const response = await runQuery(query, variables);
     if (!response) {
       throw new Error(`No response for Github Issue #${issueNumber}`);
