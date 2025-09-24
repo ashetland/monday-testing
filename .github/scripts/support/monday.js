@@ -28,7 +28,7 @@ function assertMondayEnv(env) {
  */
 module.exports = function Monday(issue) {
   assertMondayEnv(process.env);
-  const MONDAY_BOARD = "8780429793";
+  const MONDAY_BOARD = 8780429793;
   const { MONDAY_KEY } = process.env;
   if (!issue) {
     throw new Error("No GitHub issue provided.");
