@@ -941,7 +941,7 @@ module.exports = function Monday(issue) {
         ? unassignedCondition
         : defaultCondition;
 
-    console.log(assignees, Boolean(assignee));
+    console.log(assignees, Boolean(assignees), "-", assignee, Boolean(assignees));
     if (shouldSetAssigned && assignees) {
       setColumnValue(columnIds.status, "Assigned");
       console.log("Status set to 'Assigned'.");
