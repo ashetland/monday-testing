@@ -1,6 +1,7 @@
 // @ts-check
 const {
   labels: {
+    bug,
     issueWorkflow,
     issueType,
     priority,
@@ -10,15 +11,16 @@ const {
     handoff,
   },
   milestone,
+  packages,
 } = require("./resources");
-const { notReadyForDev, notInLifecycle } = require("./utils");
+const { includesLabel, notInLifecycle } = require("./utils");
 
 /**
  * @param {NodeJS.ProcessEnv} env
  * @returns {asserts env is NodeJS.ProcessEnv & { MONDAY_KEY: string; MONDAY_BOARD: string }}
  */
 function assertMondayEnv(env) {
-  if (!env.MONDAY_KEY) {
+  if (!env.MONDAY_KEY || !env.MONDAY_BOARD) {
     throw new Error("A Monday.com env variable is not set.");
   }
 }
@@ -28,8 +30,7 @@ function assertMondayEnv(env) {
  */
 module.exports = function Monday(issue) {
   assertMondayEnv(process.env);
-  const MONDAY_BOARD = "8780429793";
-  const { MONDAY_KEY } = process.env;
+  const { MONDAY_KEY, MONDAY_BOARD } = process.env;
   if (!issue) {
     throw new Error("No GitHub issue provided.");
   }
@@ -47,12 +48,13 @@ module.exports = function Monday(issue) {
 
   /**
    * Monday.com column value options
-   * @typedef {string | number | { url: string, text: string }} ColumnValue
+   * @typedef {string | number | { url: string, text: string } | { labels: string[] }} ColumnValue
    */
   /** @type {Record<string, ColumnValue>} */
   let columnUpdates = {};
 
   const columnIds = {
+    /* eslint-disable @cspell/spellchecker -- Monday IDs may include segments with randomized characters */
     title: "name",
     issueNumber: "numeric_mknk2xhh",
     link: "link",
@@ -62,18 +64,20 @@ module.exports = function Monday(issue) {
     status: "dup__of_overall_status__1",
     date: "date6",
     priority: "priority",
-    issueType: "color_mksw3bdr",
     designEstimate: "color_mkqr3y8a",
     devEstimate: "numeric_mksvm3v7",
     designIssue: "color_mkrdhk8",
     stalled: "color_mktksrja",
     blocked: "color_mkv259x0",
-    a11y: "color_mkt5c4q6",
     spike: "color_mkt5vd8a",
     figmaChanges: "color_mkt58h3r",
     open: "color_mknkrb2n",
+    /* eslint-enable @cspell/spellchecker */
   };
 
+
+  /** @typedef {{ column: string, value: string | number, clearable?: boolean }} MondayLabel */
+  /** @type {Map<string, MondayLabel>} */
   const labelMap = new Map([
     [
       issueWorkflow.needsTriage,
@@ -94,6 +98,7 @@ module.exports = function Monday(issue) {
       {
         column: columnIds.spike,
         value: "Spike",
+        clearable: true,
       },
     ],
     [
@@ -101,6 +106,7 @@ module.exports = function Monday(issue) {
       {
         column: columnIds.spike,
         value: "Spike Complete",
+        clearable: true,
       },
     ],
     [
@@ -108,20 +114,7 @@ module.exports = function Monday(issue) {
       {
         column: columnIds.blocked,
         value: "Blocked",
-      },
-    ],
-    [
-      issueWorkflow.new,
-      {
-        column: columnIds.status,
-        value: "Unassigned",
-      },
-    ],
-    [
-      issueWorkflow.assigned,
-      {
-        column: columnIds.status,
-        value: "Assigned",
+        clearable: true,
       },
     ],
     [
@@ -135,7 +128,7 @@ module.exports = function Monday(issue) {
       issueWorkflow.readyForDev,
       {
         column: columnIds.status,
-        value: "Ready for dev",
+        value: "Ready for Dev",
       },
     ],
     [
@@ -164,69 +157,111 @@ module.exports = function Monday(issue) {
       {
         column: columnIds.designIssue,
         value: "Design",
-      },
-    ],
-    [
-      issueType.bug,
-      {
-        column: columnIds.issueType,
-        value: "Bug",
-      },
-    ],
-    [
-      issueType.chore,
-      {
-        column: columnIds.issueType,
-        value: "Chore",
-      },
-    ],
-    [
-      issueType.enhancement,
-      {
-        column: columnIds.issueType,
-        value: "Enhancement",
-      },
-    ],
-    [
-      issueType.newComponent,
-      {
-        column: columnIds.issueType,
-        value: "New Component",
-      },
-    ],
-    [
-      issueType.refactor,
-      {
-        column: columnIds.issueType,
-        value: "Refactor",
-      },
-    ],
-    [
-      issueType.docs,
-      {
-        column: columnIds.issueType,
-        value: "Docs",
-      },
-    ],
-    [
-      issueType.test,
-      {
-        column: columnIds.issueType,
-        value: "Testing",
-      },
-    ],
-    [
-      issueType.tooling,
-      {
-        column: columnIds.issueType,
-        value: "Tooling",
+        clearable: true,
       },
     ],
     [
       issueType.a11y,
       {
-        column: columnIds.a11y,
+        column: columnIds.typeDropdown,
         value: "a11y",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.bug,
+      {
+        column: columnIds.typeDropdown,
+        value: "Bug",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.chore,
+      {
+        column: columnIds.typeDropdown,
+        value: "Chore",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.designTokens,
+      {
+        column: columnIds.typeDropdown,
+        value: "Design Tokens",
+        clearable: true,
+      },
+    ],
+    [
+      packages.tokens,
+      {
+        column: columnIds.typeDropdown,
+        value: "Design Tokens",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.docs,
+      {
+        column: columnIds.typeDropdown,
+        value: "Docs",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.enhancement,
+      {
+        column: columnIds.typeDropdown,
+        value: "Enhancement",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.newComponent,
+      {
+        column: columnIds.typeDropdown,
+        value: "New Component",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.refactor,
+      {
+        column: columnIds.typeDropdown,
+        value: "Refactor",
+        clearable: true,
+      },
+    ],
+    [
+      bug.regression,
+      {
+        column: columnIds.typeDropdown,
+        value: "Regression",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.research,
+      {
+        column: columnIds.typeDropdown,
+        value: "Research",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.test,
+      {
+        column: columnIds.typeDropdown,
+        value: "Testing",
+        clearable: true,
+      },
+    ],
+    [
+      issueType.tooling,
+      {
+        column: columnIds.typeDropdown,
+        value: "Tooling",
+        clearable: true,
       },
     ],
     [
@@ -339,6 +374,7 @@ module.exports = function Monday(issue) {
       {
         column: columnIds.figmaChanges,
         value: "Figma Changes Only",
+        clearable: true,
       },
     ],
     [
@@ -357,25 +393,33 @@ module.exports = function Monday(issue) {
    */
   /** @type {Map<string, MondayPerson>} */
   const peopleMap = new Map([
+    /* eslint-disable @cspell/spellchecker -- GitHub usernames */
     ["anveshmekala", { role: columnIds.developers, id: 48387134 }],
-    ["aPreciado88", { role: columnIds.developers, id: 6079524 }],
+    ["aPreciado88", { role: columnIds.developers, id: 60795249 }],
     ["ashetland", { role: columnIds.designers, id: 45851619 }],
     ["benelan", { role: columnIds.developers, id: 49704471 }],
     ["chezHarper", { role: columnIds.designers, id: 71157966 }],
+    ["DintaMel", { role: columnIds.productEngineers, id: 92955697 }],
     ["DitwanP", { role: columnIds.productEngineers, id: 53683093 }],
     ["driskull", { role: columnIds.developers, id: 45944985 }],
     ["Elijbet", { role: columnIds.developers, id: 55852207 }],
     ["eriklharper", { role: columnIds.developers, id: 49699973 }],
-    ["geospatialem", { role: columnIds.developers, id: 45853373 }],
+    ["geospatialem", { role: columnIds.productEngineers, id: 45853373 }],
     ["isaacbraun", { role: columnIds.productEngineers, id: 76547859 }],
     ["jcfranco", { role: columnIds.developers, id: 45854945 }],
-    ["josercarcamo", { role: columnIds.developers, id: 56555749 }],
     ["macandcheese", { role: columnIds.developers, id: 45854918 }],
     ["matgalla", { role: columnIds.designers, id: 69473378 }],
     ["rmstinson", { role: columnIds.designers, id: 47277636 }],
     ["SkyeSeitz", { role: columnIds.designers, id: 45854937 }],
     ["Amretasre002762670", { role: columnIds.developers, id: 77031889 }],
+    /* eslint-enable @cspell/spellchecker */
   ]);
+
+  /** @type {Record<Exclude<import('@octokit/webhooks-types').Issue["state"], undefined>, string>} */
+  const stateMap = {
+    open: "Open",
+    closed: "Closed",
+  };
 
   /** Private helper functions */
 
@@ -396,27 +440,29 @@ module.exports = function Monday(issue) {
       return;
     }
 
+    let role = info.role;
     const notInstalledOrVerified = labels?.every(
       (label) =>
         label.name !== issueWorkflow.installed &&
         label.name !== issueWorkflow.verified,
     );
-    if (info.role === columnIds.productEngineers && notInstalledOrVerified) {
-      info.role = columnIds.developers;
+    if (role === columnIds.productEngineers && notInstalledOrVerified) {
+      role = columnIds.developers;
     }
 
-    if (columnUpdates[info.role]) {
-      columnUpdates[info.role] += `, ${info.id}`;
+    if (columnUpdates[role]) {
+      columnUpdates[role] += `, ${info.id}`;
     } else {
-      columnUpdates[info.role] = `${info.id}`;
+      columnUpdates[role] = `${info.id}`;
     }
   }
 
+  /** @typedef {Record<string, string | string[]>} QueryVariables
   /**
    * Calls the Monday.com API with a provided query
    * @private
    * @param {string} query - The GraphQL query string
-   * @param {object} variables - The variables for the GraphQL query
+   * @param {QueryVariables} variables - The variables for the GraphQL query
    * @returns {Promise<any>}
    */
   async function runQuery(query, variables = {}) {
@@ -457,23 +503,24 @@ module.exports = function Monday(issue) {
       return { error: "No Monday ID found, cannot update columns." };
     }
 
-    const query = `mutation ChangeMultipleColumnValues($board_id: ID!, $item_id: ID!, $column_values: JSON!) { 
+    const query = `mutation ChangeMultipleColumnValues($board_id: ID!, $item_id: ID!, $column_values: JSON!) {
       change_multiple_column_values(
-        board_id: $board_id, 
-        item_id: $item_id, 
+        board_id: $board_id,
+        item_id: $item_id,
         column_values: $column_values
       ) {
         id
       }
     }`;
 
-    const variables = {
-      board_id: Number(MONDAY_BOARD),
-      item_id: Number(mondayId),
+    /** @type {QueryVariables} */
+    const queryVariables = {
+      board_id: MONDAY_BOARD,
+      item_id: mondayId,
       column_values: JSON.stringify(columnUpdates),
     };
 
-    const response = await runQuery(query, variables);
+    const response = await runQuery(query, queryVariables);
     if (!response?.data?.change_multiple_column_values?.id) {
       return {
         error: `Failed to update columns for item ID ${mondayId}. Response: ${JSON.stringify(response)}`,
@@ -489,7 +536,7 @@ module.exports = function Monday(issue) {
    * @throws {Error} - If the query fails or no response is received
    */
   async function queryForId() {
-    const query = `query QueryForId( $board_id: ID!, $column_id: String!, $column_values: [String!]!) {
+    const query = `query QueryForId($board_id: ID!, $column_id: String!, $column_values: [String!]!) {
       items_page_by_column_values(
         board_id: $board_id,
         columns: {
@@ -503,15 +550,14 @@ module.exports = function Monday(issue) {
       }
     }`;
 
-    const variables = {
+    /** @type {QueryVariables} */
+    const queryVariables = {
       board_id: MONDAY_BOARD,
       column_id: columnIds.issueNumber,
       column_values: [String(issueNumber)],
     };
 
-        console.log('About to call runQuery with:', JSON.stringify(variables, null, 2));
-
-    const response = await runQuery(query, variables);
+    const response = await runQuery(query, queryVariables);
     if (!response) {
       throw new Error(`No response for Github Issue #${issueNumber}`);
     }
@@ -544,6 +590,81 @@ module.exports = function Monday(issue) {
     return body?.match(mondayIdRegex)?.[0];
   }
 
+  /**
+   * Add or remove a label from a DropdownValues object. Creates a new object if none exists.
+   * @private
+   * @param {MondayLabel} labelInfo - The label information
+   * @param {("add" | "remove")} action - The action to perform: "add" or "remove"
+   * @returns {{ labels: string[] } | string} - The updated dropdown object or an empty string if no labels remain
+   */
+  function createDropdownValues(labelInfo, action) {
+    if (action !== "add" && action !== "remove") {
+      throw new Error(
+        `Invalid action "${action}" in createDropdownValues. Use "add" or "remove".`,
+      );
+    }
+
+    const labelValue = `${labelInfo.value}`;
+    const currentValue = columnUpdates[labelInfo.column];
+    const existingLabels =
+      currentValue &&
+      typeof currentValue === "object" &&
+      "labels" in currentValue
+        ? currentValue.labels
+        : [];
+
+    if (existingLabels.length === 0 && labels?.length) {
+      for (const { name } of labels) {
+        const info = labelMap.get(name);
+        if (info?.column === labelInfo.column && info.value) {
+          existingLabels.push(`${info.value}`);
+        }
+      }
+    }
+
+    const dropdownSet = new Set(existingLabels);
+    const present = dropdownSet.has(labelValue);
+    if (action === "add" && !present) {
+      dropdownSet.add(labelValue);
+    } else if (action === "remove" && present) {
+      dropdownSet.delete(labelValue);
+    }
+
+    return dropdownSet.size ? { labels: Array.from(dropdownSet) } : "";
+  }
+
+  /**
+   * Update a label in columnUpdates based on the action
+   * @private
+   * @param {string} label - The label name to update
+   * @param {("add" | "remove")} action - The action to perform
+   */
+  function updateLabel(label, action) {
+    if (!labelMap.has(label)) {
+      console.log(`Label "${label}" not found in Monday Labels map.`);
+      return;
+    }
+
+    const info = labelMap.get(label);
+    if (!info?.column || !info?.value) {
+      console.log(`Label "${label}" is missing column or title information.`);
+      return;
+    }
+
+    const isDropdown = info.column === columnIds.typeDropdown;
+    if (action === "add") {
+      setColumnValue(
+        info.column,
+        isDropdown ? createDropdownValues(info, "add") : info.value,
+      );
+    } else if (info.clearable) {
+      setColumnValue(
+        info.column,
+        isDropdown ? createDropdownValues(info, "remove") : "",
+      );
+    }
+  }
+
   /** Public functions */
 
   /**
@@ -556,7 +677,7 @@ module.exports = function Monday(issue) {
     if (bodyId) {
       return { id: bodyId, source: "body" };
     }
-  
+
     return { id: await queryForId(), source: "query" };
   }
 
@@ -594,23 +715,13 @@ module.exports = function Monday(issue) {
       labels.forEach((label) => addLabel(label.name));
     }
 
-    if (notInLifecycle({ labels, skip: [issueWorkflow.new] })) {
+    if (notInLifecycle({ labels })) {
       addLabel(issueWorkflow.needsTriage);
     }
 
     if (assignees.length) {
       assignees.forEach((person) => addAssignee(person));
-
-      // Set to "assigned" if no lifecycle labels were applied
-      // Overrides the default "needs triage" label
-      if (
-        notInLifecycle({
-          labels,
-          skip: [issueWorkflow.new, issueWorkflow.needsTriage, issueWorkflow.needsMilestone],
-        })
-      ) {
-        addLabel(issueWorkflow.assigned);
-      }
+      setAssignedStatus();
     }
 
     if (issueMilestone) {
@@ -631,7 +742,7 @@ module.exports = function Monday(issue) {
       return syncId;
     }
 
-    const query = `mutation CreateItem( $board_id: ID!, $item_name: String!, $column_values: JSON!) {
+    const query = `mutation CreateItem($board_id: ID!, $item_name: String!, $column_values: JSON!) {
       create_item (
         board_id: $board_id,
         item_name: $item_name,
@@ -641,6 +752,7 @@ module.exports = function Monday(issue) {
       }
     }`;
 
+    /** @type {QueryVariables} */
     const queryVariables = {
       board_id: MONDAY_BOARD,
       item_name: title,
@@ -680,9 +792,9 @@ module.exports = function Monday(issue) {
    * Update columnUpdates based on milestone title
    */
   function handleMilestone() {
-    // If removed, reset date and clear stalled label
+    // Null milestone indicates milestone was removed
     if (!issueMilestone) {
-      columnUpdates[columnIds.date] = "";
+      setColumnValue(columnIds.date, "");
       clearLabel(milestone.stalled);
       return;
     }
@@ -691,28 +803,26 @@ module.exports = function Monday(issue) {
     const milestoneDate = milestoneTitle.match(milestoneDateRegex)?.[0];
 
     if (milestoneDate) {
-      columnUpdates[columnIds.date] = milestoneDate;
+      setColumnValue(columnIds.date, milestoneDate);
       clearLabel(milestone.stalled);
-
-      if (
-        assignee &&
-        notInLifecycle({
+      const { needsTriage, needsMilestone, installed, readyForDev } =
+        issueWorkflow;
+      setAssignedStatus({
+        assignedCondition: notInLifecycle({
           labels,
-          skip: [issueWorkflow.new, issueWorkflow.needsTriage, issueWorkflow.needsMilestone],
-        })
-      ) {
-        addLabel(issueWorkflow.assigned);
-      }
-      if (!assignee && notReadyForDev(labels)) {
-        addLabel(issueWorkflow.new);
-      }
+          skip: [needsTriage, needsMilestone],
+        }),
+        unassignedCondition:
+          !includesLabel(labels, installed) &&
+          !includesLabel(labels, readyForDev),
+      });
     } else {
-      columnUpdates[columnIds.date] = "";
+      setColumnValue(columnIds.date, "");
 
       if (milestoneTitle === milestone.stalled) {
         addLabel(milestone.stalled);
       } else if (inMilestoneStatus()) {
-        columnUpdates[columnIds.status] = milestoneTitle;
+        setColumnValue(columnIds.status, milestoneTitle);
         clearLabel(milestone.stalled);
       }
     }
@@ -724,23 +834,35 @@ module.exports = function Monday(issue) {
    * @returns {void}
    */
   function handleState(action = "open") {
-    setColumnValue(columnIds.open, issue.state === "open" ? "Open" : "Closed");
+    if (!issue.state) {
+      console.log("No Issue state provided to handleState.");
+      return;
+    }
+    setColumnValue(columnIds.open, stateMap[issue.state]);
 
     if (action === "closed") {
       if (issue.state_reason !== "completed") {
         setColumnValue(columnIds.status, "Closed");
-      } else if (issue.labels?.every((label) => label.name !== issueType.design)) {
+      } else if (!includesLabel(issue.labels, issueType.design)) {
         setColumnValue(columnIds.status, "Done");
       }
     }
   }
 
   /**
-   * Assign each of the current assignees to columnUpdates.
+   * Handle assignment and removal of assignees. Add all assignees to their respective roles.
+   * If there are no more developers or product engineers assigned, clear those columns.
+   * @returns {void}
    */
-  function addAllAssignees() {
+  function handleAssignees() {
     assignees.forEach((assignee) => {
       addAssignee(assignee);
+    });
+
+    [columnIds.developers, columnIds.productEngineers].forEach((role) => {
+      if (!(role in columnUpdates)) {
+        setColumnValue(role, "");
+      }
     });
   }
 
@@ -754,25 +876,14 @@ module.exports = function Monday(issue) {
     }
 
     const { needsMilestone, readyForDev } = issueWorkflow;
-    if (label === needsMilestone && !notReadyForDev(labels)) {
+    if (label === needsMilestone && includesLabel(labels, readyForDev)) {
       console.log(
         `Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`,
       );
       return;
     }
 
-    if (!labelMap.has(label)) {
-      console.log(`Label "${label}" not found in Monday Labels map.`);
-      return;
-    }
-
-    const info = labelMap.get(label);
-    if (!info?.column || !info?.value) {
-      console.log(`Label "${label}" is missing column or title information.`);
-      return;
-    }
-
-    columnUpdates[info.column] = info.value;
+    updateLabel(label, "add");
   }
 
   /**
@@ -781,12 +892,7 @@ module.exports = function Monday(issue) {
    * @returns {void}
    */
   function clearLabel(label) {
-    const labelColumn = labelMap.get(label)?.column;
-    if (!labelColumn) {
-      console.log(`Label "${label}" not found in Monday Labels map.`);
-      return;
-    }
-    columnUpdates[labelColumn] = "";
+    updateLabel(label, "remove");
   }
 
   /**
@@ -814,15 +920,45 @@ module.exports = function Monday(issue) {
     );
   }
 
+  /**
+   * Set the issue status to "Unassigned" or "Assigned" based on assigned status.
+   * Default condition is: if issue is open, not in lifecycle, and not in a milestone status.
+   * @param {object} [params]
+   * @param {boolean} [params.assignedCondition] - Condition to set status to "Assigned"
+   * @param {boolean} [params.unassignedCondition] - Condition to set status to "Unassigned"
+   * @returns {void}
+   */
+  function setAssignedStatus({ assignedCondition, unassignedCondition } = {}) {
+    const defaultCondition =
+      issue.state === "open" &&
+      notInLifecycle({ labels }) &&
+      !inMilestoneStatus();
+    const shouldSetAssigned =
+      assignedCondition !== undefined ? assignedCondition : defaultCondition;
+    const shouldSetUnassigned =
+      unassignedCondition !== undefined
+        ? unassignedCondition
+        : defaultCondition;
+
+    if (shouldSetAssigned && assignees) {
+      setColumnValue(columnIds.status, "Assigned");
+      console.log("Status set to 'Assigned'.");
+    } else if (shouldSetUnassigned && !assignees) {
+      setColumnValue(columnIds.status, "Unassigned");
+      console.log("Status set to 'Unassigned'.");
+    }
+  }
+
   return {
     columnIds,
     getId,
     commit,
     createTask,
     setColumnValue,
+    setAssignedStatus,
     handleMilestone,
     handleState,
-    addAllAssignees,
+    handleAssignees,
     addLabel,
     clearLabel,
     addSyncLine,

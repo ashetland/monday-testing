@@ -3,7 +3,7 @@ const Monday = require("../support/monday");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context }) => {
-  const { issue, action } =
+  const { issue } =
     /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent | import('@octokit/webhooks-types').IssuesLabeledEvent}*/ (
       context.payload
     );
