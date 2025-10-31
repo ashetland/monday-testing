@@ -941,11 +941,10 @@ module.exports = function Monday(issue) {
         ? unassignedCondition
         : defaultCondition;
 
-    console.log(assignees, Boolean(assignees), "-", assignee, Boolean(assignee));
-    if (shouldSetAssigned && assignees) {
+    if (shouldSetAssigned && assignee) {
       setColumnValue(columnIds.status, "Assigned");
       console.log("Status set to 'Assigned'.");
-    } else if (shouldSetUnassigned && !assignees) {
+    } else if (shouldSetUnassigned && !assignee) {
       setColumnValue(columnIds.status, "Unassigned");
       console.log("Status set to 'Unassigned'.");
     }
