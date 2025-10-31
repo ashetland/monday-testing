@@ -20,7 +20,7 @@ const { includesLabel, notInLifecycle } = require("./utils");
  * @returns {asserts env is NodeJS.ProcessEnv & { MONDAY_KEY: string; MONDAY_BOARD: string }}
  */
 function assertMondayEnv(env) {
-  if (!env.MONDAY_KEY || !env.MONDAY_BOARD) {
+  if (!env.MONDAY_KEY) {
     throw new Error("A Monday.com env variable is not set.");
   }
 }
@@ -30,7 +30,8 @@ function assertMondayEnv(env) {
  */
 module.exports = function Monday(issue) {
   assertMondayEnv(process.env);
-  const { MONDAY_KEY, MONDAY_BOARD } = process.env;
+  const MONDAY_BOARD = "8780429793";
+  const { MONDAY_KEY } = process.env;
   if (!issue) {
     throw new Error("No GitHub issue provided.");
   }
