@@ -13,7 +13,7 @@ jobs:
       - name: "Create unblocked comment"
         uses: actions/github-script@v8
         env:
-          ISSUE_VERIFIERS: "Isaac,Ditwan,Kitty"
+          ISSUE_VERIFIERS: ""
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/addUnblockedComment.js')
