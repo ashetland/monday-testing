@@ -71,7 +71,7 @@ module.exports = async ({ github, context }) => {
           owner,
           repo,
           workflow_id: "issue-monday-sync.yml",
-          ref: "dev",
+          ref: "main",
           inputs: {
             issue_number: issueNumber,
             event_type: "SyncActionChanges",
