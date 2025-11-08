@@ -7,16 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      contents: read
       actions: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: "Installed notification"
         if: github.event.label.name == '4 - installed'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
-          ISSUE_VERIFIERS: "isaacbraun,DitwanP,geospatialem"
+          ISSUE_VERIFIERS: "Isaac,Ditwan,Kitty"
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/notifyWhenInstalled.js')
@@ -24,11 +23,19 @@ jobs:
 
       - name: "Spike complete notification"
         if: github.event.label.name == 'spike complete'
-        run: echo "Spike complete notification fired"
+        uses: actions/github-script@v8
+        env:
+          MANAGERS: "Isaac,Ditwan,Kitty"
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/notifyWhenSpikeComplete.js')
+            await action({github, context, core})
 
       - name: "Ready for dev notification"
         if: github.event.label.name == '2 - ready for dev'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
+        env:
+          MANAGERS: "Isaac,Ditwan,Kitty"
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/notifyWhenReadyForDev.js')
@@ -36,7 +43,13 @@ jobs:
 
       - name: "New component notification"
         if: github.event.label.name == 'new component'
-        run: echo "New component notification fired"
+        uses: actions/github-script@v8
+        env:
+          DESIGNERS: "Aaron,Skye"
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/notifyAboutNewComponent.js')
+            await action({github, context, core})
 
       - name: "Icon request notification"
         if: github.event.label.name == 'calcite-ui-icons'

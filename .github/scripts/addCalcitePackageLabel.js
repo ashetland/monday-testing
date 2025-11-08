@@ -7,7 +7,6 @@ module.exports = async ({ github, context }) => {
 
   const payload = /** @type {import('@octokit/webhooks-types').IssuesEvent} */ (context.payload);
   const {
-    action,
     issue: { body, number: issue_number },
   } = payload;
 
@@ -16,34 +15,25 @@ module.exports = async ({ github, context }) => {
     return;
   }
 
-  const addPriorityRegex = new RegExp(
-    action === "edited"
-      ? // the way GitHub parses the issue body into plaintext
-        // requires this exact format for edits
-        "(?<=### Priority impact\r\n\r\n).+"
-      : // otherwise it depends on the submitter's OS
-        "(?<=### Priority impact[\r\n|\r|\n]{2}).+$",
-    "m",
-  );
+  // NOTE: assumes all packages will be in the @esri NPM scope
+  const packageRegex = /(?<=\[X\]\s@esri\/)[\w-]*$/gm;
+  const packages = body.match(packageRegex) || [];
 
-  const addPriorityRegexMatch = body.match(addPriorityRegex);
-
-  const addPriorityLabel = (addPriorityRegexMatch && addPriorityRegexMatch[0] ? addPriorityRegexMatch[0] : "").trim();
-
-  if (addPriorityLabel && addPriorityLabel !== "N/A") {
+  for (const package of packages) {
     await createLabelIfMissing({
       github,
       context,
-      label: addPriorityLabel,
-      color: "bb7fe0",
-      description: `User set priority status of ${addPriorityLabel}`,
+      label: package,
+      // eslint-disable-next-line @cspell/spellchecker -- hex color
+      color: "BFBEAF",
+      description: `Issues specific to the @esri/${package} package.`,
     });
 
     await github.rest.issues.addLabels({
       issue_number,
       owner,
       repo,
-      labels: [addPriorityLabel],
+      labels: [package],
     });
 
     await github.rest.actions.createWorkflowDispatch({
@@ -54,7 +44,7 @@ module.exports = async ({ github, context }) => {
       inputs: {
         issue_number: issue_number.toString(),
         event_type: "SyncActionChanges",
-        label_name: addPriorityLabel,
+        label_name: package,
         label_action: "added"
       },
     });

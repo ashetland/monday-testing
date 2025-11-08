@@ -1,5 +1,5 @@
 // @ts-check
-// When the "2 - ready for dev" label is added to an issue:
+// When the "spike complete" label is added to an issue:
 // 1. Modifies the labels,
 // 2. Updates the assignees and milestone, and
 // 3. Generates a notification to the Calcite project manager(s)
@@ -9,7 +9,7 @@
 //
 // Note the script automatically adds the "@" character in to notify the project manager(s)
 const {
-  labels: { issueWorkflow },
+  labels: { issueWorkflow, planning },
 } = require("./support/resources");
 const { removeLabel } = require("./support/utils");
 
@@ -17,13 +17,9 @@ const { removeLabel } = require("./support/utils");
 module.exports = async ({ github, context }) => {
   const { repo, owner } = context.repo;
 
-  const payload =
-    /** @type {import('@octokit/webhooks-types').IssuesLabeledEvent} */ (
-      context.payload
-    );
+  const payload = /** @type {import('@octokit/webhooks-types').IssuesLabeledEvent} */ (context.payload);
   const {
     issue: { number },
-    label,
   } = payload;
 
   const { MANAGERS } = process.env;
@@ -42,7 +38,13 @@ module.exports = async ({ github, context }) => {
   await removeLabel({
     github,
     context,
-    label: issueWorkflow.needsTriage,
+    label: planning.spike,
+  });
+
+  await removeLabel({
+    github,
+    context,
+    label: issueWorkflow.inDevelopment,
   });
 
   await github.rest.issues.addLabels({
@@ -75,6 +77,8 @@ module.exports = async ({ github, context }) => {
       event_type: "SyncActionChanges",
       milestone_updated: true,
       assignee_updated: true,
+      label_name: issueWorkflow.needsMilestone,
+      label_action: "added",
     },
   });
 };
