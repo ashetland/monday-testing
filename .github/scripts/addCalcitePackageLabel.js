@@ -20,6 +20,7 @@ module.exports = async ({ github, context }) => {
   const packages = body.match(packageRegex) || [];
 
   for (const package of packages) {
+    console.log("Adding: ", package);
     await createLabelIfMissing({
       github,
       context,
