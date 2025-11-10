@@ -65,6 +65,7 @@ module.exports = function Monday(issue) {
     status: "dup__of_overall_status__1",
     date: "date6",
     priority: "priority",
+    issueDropdown: "dropdown_mkxjwv7h",
     designEstimate: "color_mkqr3y8a",
     devEstimate: "numeric_mksvm3v7",
     designIssue: "color_mkrdhk8",
