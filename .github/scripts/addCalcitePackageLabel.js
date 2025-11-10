@@ -18,10 +18,8 @@ module.exports = async ({ github, context }) => {
   // NOTE: assumes all packages will be in the @esri NPM scope
   const packageRegex = /(?<=\[X\]\s@esri\/)[\w-]*$/gm;
   const packages = body.match(packageRegex) || [];
-  console.log("Packages found: ", packages);
 
   for (const package of packages) {
-    console.log("Adding: ", package);
     await createLabelIfMissing({
       github,
       context,
