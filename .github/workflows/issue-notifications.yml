@@ -45,7 +45,7 @@ jobs:
         if: github.event.label.name == 'new component'
         uses: actions/github-script@v8
         env:
-          DESIGNERS: "Aaron,Skye"
+          DESIGNERS: "ashetland"
         with:
           script: |
             const action = require('${{ github.workspace }}/.github/scripts/notifyAboutNewComponent.js')
