@@ -901,7 +901,7 @@ module.exports = function Monday(issue, core) {
 
     const { needsMilestone, readyForDev } = issueWorkflow;
     if (label === needsMilestone && includesLabel(labels, readyForDev)) {
-      core.info(
+      core.notice(
         `Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`,
       );
       return;
