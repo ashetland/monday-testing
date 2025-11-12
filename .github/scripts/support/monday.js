@@ -435,14 +435,18 @@ module.exports = function Monday(issue, core) {
    * @param {import('@octokit/webhooks-types').User} person
    */
   function addAssignee(person) {
+    const logParams = { title: "Add Assignee" };
     if (!person?.login) {
-      core.info("No person or login provided for assignment.");
+      core.warning("No person or login provided.", logParams);
       return;
     }
 
     const info = peopleMap.get(person.login);
     if (!info) {
-      core.info(`Assignee ${person.login} not found in peopleMap.`);
+      core.warning(
+        `Assignee ${person.login} not found in peopleMap.`,
+        logParams,
+      );
       return;
     }
 
@@ -579,8 +583,9 @@ module.exports = function Monday(issue, core) {
 
     const items = response?.data?.items_page_by_column_values?.items ?? [];
     if (items.length === 0) {
-      // No item found, log and reutrn as this is a valid state.
-      core.info(`No Monday task found for Github Issue #${issueNumber}.`);
+      core.notice(`No Monday task found for Github Issue #${issueNumber}.`, {
+        title: "Query for ID",
+      });
       return;
     }
 
@@ -656,14 +661,21 @@ module.exports = function Monday(issue, core) {
    * @param {("add" | "remove")} action - The action to perform
    */
   function updateLabel(label, action) {
+    const logParams = { title: "Update Label" };
     if (!labelMap.has(label)) {
-      core.warning(`Label "${label}" not found in Monday Labels map.`);
+      core.notice(
+        `Label "${label}" not found in Monday Labels map.`,
+        logParams,
+      );
       return;
     }
 
     const info = labelMap.get(label);
     if (!info?.column || !info?.value) {
-      core.warning(`Label "${label}" is missing column or title information.`);
+      core.warning(
+        `Label "${label}" is missing column or title information.`,
+        logParams,
+      );
       return;
     }
 
@@ -673,13 +685,13 @@ module.exports = function Monday(issue, core) {
         info.column,
         isDropdown ? createDropdownValues(info, "add") : info.value,
       );
-      core.info(`Added "${label}" to column updates.`);
+      core.notice(`Added "${label}" label to column updates.`, logParams);
     } else if (info.clearable) {
       setColumnValue(
         info.column,
         isDropdown ? createDropdownValues(info, "remove") : "",
       );
-      core.info(`Cleared "${label}" in column updates.`);
+      core.notice(`Cleared "${label}" label in column updates.`, logParams);
     }
   }
 
@@ -704,8 +716,9 @@ module.exports = function Monday(issue, core) {
    * @returns {Promise<void>}
    */
   async function commit() {
+    const logParams = { title: "Commit Updates" };
     if (Object.keys(columnUpdates).length === 0) {
-      core.info("No updates to commit.");
+      core.notice("No updates to commit.", logParams);
       return;
     }
 
@@ -714,7 +727,7 @@ module.exports = function Monday(issue, core) {
       const log = error.expected ? core.warning : core.setFailed;
       log(`Error committing updates: ${error.message}`);
     }
-    core.info("Column updates committed.");
+    core.notice("Updates committed successfully.", logParams);
     columnUpdates = {};
   }
 
@@ -724,6 +737,7 @@ module.exports = function Monday(issue, core) {
    * @returns {Promise<string | undefined>} - The ID of the created Monday.com item
    */
   async function createTask(syncId = "") {
+    const logParams = { title: "Create Task" };
     columnUpdates = {
       [columnIds.issueNumber]: `${issueNumber}`,
       [columnIds.link]: {
@@ -750,15 +764,17 @@ module.exports = function Monday(issue, core) {
     }
 
     if (syncId) {
-      core.info(
+      core.notice(
         `Sync ID ${syncId} provided, updating existing item instead of creating new.`,
+        logParams,
       );
       setColumnValue(columnIds.title, issue.title);
       handleState();
 
       const { error } = await updateMultipleColumns(syncId);
       if (error) {
-        const log = error.expected ? core.warning : core.setFailed;
+        const log = (/** @type {string} **/ msg) =>
+          error.expected ? core.warning(msg, logParams) : core.setFailed(msg);
         log(`Error syncing item ${syncId}: ${error.message}`);
         return;
       }
@@ -799,12 +815,13 @@ module.exports = function Monday(issue, core) {
    * @param {ColumnValue} value
    */
   function setColumnValue(column, value) {
+    const logParams = { title: "Set Column Value" };
     if (!column) {
-      core.info("No column provided to setColumnValue.");
+      core.warning("No column provided.", logParams);
       return;
     }
     if (value == null) {
-      core.info("No value provided to setColumnValue.");
+      core.warning("No value provided.", logParams);
       return;
     }
 
@@ -815,10 +832,11 @@ module.exports = function Monday(issue, core) {
    * Update columnUpdates based on milestone title
    */
   function handleMilestone() {
+    const logParams = { title: "Handle Milestone" };
     if (!issueMilestone) {
       setColumnValue(columnIds.date, "");
       clearLabel(milestone.stalled);
-      core.info("Date column cleared.");
+      core.notice("Date column cleared.", logParams);
       return;
     }
     const milestoneTitle = issueMilestone.title;
@@ -839,6 +857,7 @@ module.exports = function Monday(issue, core) {
           !includesLabel(labels, installed) &&
           !includesLabel(labels, readyForDev),
       });
+      core.notice(`Date column set to ${milestoneDate}.`, logParams);
     } else {
       setColumnValue(columnIds.date, "");
 
@@ -848,7 +867,10 @@ module.exports = function Monday(issue, core) {
         setColumnValue(columnIds.status, milestoneTitle);
         clearLabel(milestone.stalled);
       }
-      core.info(`Date column set to ${milestoneDate}.`);
+      core.notice(
+        `Status set to '${milestoneTitle}', Date column cleared.`,
+        logParams,
+      );
     }
   }
 
@@ -859,7 +881,7 @@ module.exports = function Monday(issue, core) {
    */
   function handleState(action = "open") {
     if (!issue.state) {
-      core.warning("No Issue state provided to handleState.");
+      core.warning("No Issue state provided.", { title: "Handle State" });
       return;
     }
     setColumnValue(columnIds.open, stateMap[issue.state]);
@@ -903,6 +925,7 @@ module.exports = function Monday(issue, core) {
     if (label === needsMilestone && includesLabel(labels, readyForDev)) {
       core.notice(
         `Skipping '${needsMilestone}' label as '${readyForDev}' is already applied.`,
+        { title: "Add Label" },
       );
       return;
     }
@@ -955,6 +978,7 @@ module.exports = function Monday(issue, core) {
   function setAssignedStatus({ assignedCondition, unassignedCondition } = {}) {
     const ASSIGNED = "Assigned";
     const UNASSIGNED = "Unassigned";
+    const logParams = { title: "Set Assigned Status" };
     const defaultCondition =
       issue.state === "open" &&
       notInLifecycle({ labels }) &&
@@ -964,12 +988,12 @@ module.exports = function Monday(issue, core) {
 
     if (assignee && shouldSetAssigned) {
       setColumnValue(columnIds.status, ASSIGNED);
-      core.info(`Status set to '${ASSIGNED}'.`);
+      core.notice(`Status set to '${ASSIGNED}'.`, logParams);
     } else if (!assignee && shouldSetUnassigned) {
       setColumnValue(columnIds.status, UNASSIGNED);
-      core.info(`Status set to '${UNASSIGNED}'.`);
+      core.notice(`Status set to '${UNASSIGNED}'.`, logParams);
     } else {
-      core.info("Status not chaged based on assignment.");
+      core.notice("Status not changed based on assignment.", logParams);
     }
   }
 
