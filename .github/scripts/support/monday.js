@@ -21,7 +21,7 @@ const { includesLabel, notInLifecycle } = require("./utils");
  * @returns {asserts env is NodeJS.ProcessEnv & { MONDAY_KEY: string; MONDAY_BOARD: string }}
  */
 function assertMondayEnv(env, core) {
-  if (!env.MONDAY_KEY || !env.MONDAY_BOARD) {
+  if (!env.MONDAY_KEY) {
     core.setFailed("A Monday.com env variable is not set.");
     process.exit(1);
   }
@@ -33,7 +33,8 @@ function assertMondayEnv(env, core) {
  */
 module.exports = function Monday(issue, core) {
   assertMondayEnv(process.env, core);
-  const { MONDAY_KEY, MONDAY_BOARD } = process.env;
+  const MONDAY_BOARD = "8780429793";
+  const { MONDAY_KEY } = process.env;
   if (!issue) {
     core.setFailed("No GitHub issue provided.");
     process.exit(1);
@@ -62,20 +63,20 @@ module.exports = function Monday(issue, core) {
     title: "name",
     issueNumber: "numeric_mknk2xhh",
     link: "link",
-    designers: "people",
-    developers: "multiple_person_mkt920b0",
-    productEngineers: "multiple_person_mkt9pzj9",
+    designers: "multiple_person_mkt2rtfv",
+    developers: "multiple_person_mkt2q89j",
+    productEngineers: "multiple_person_mkt2hhzm",
     status: "dup__of_overall_status__1",
     date: "date6",
     priority: "priority",
-    typeDropdown: "dropdown_mkwhjde2",
-    designEstimate: "color_mkrbg2b9",
-    devEstimate: "numeric_mkswahrw",
-    designIssue: "color_mkswbke0",
-    stalled: "color_mkv79bbx",
-    blocked: "color_mkv7x1gw",
-    spike: "color_mkrt20dy",
-    figmaChanges: "color_mkrvmhg7",
+    typeDropdown: "dropdown_mkxjwv7h",
+    designEstimate: "color_mkqr3y8a",
+    devEstimate: "numeric_mksvm3v7",
+    designIssue: "color_mkrdhk8",
+    stalled: "color_mktksrja",
+    blocked: "color_mkv259x0",
+    spike: "color_mkt5vd8a",
+    figmaChanges: "color_mkt58h3r",
     open: "color_mknkrb2n",
     /* eslint-enable @cspell/spellchecker */
   };
