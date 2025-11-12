@@ -2,6 +2,7 @@
 const {
   labels: { issueWorkflow },
 } = require("./resources");
+const core = require("@actions/core");
 
 module.exports = {
   /**
@@ -100,7 +101,7 @@ module.exports = {
     for (const item of array) {
       if (item === undefined || item === null) {
         const message = errorMessage || `${String(item)} is required but is not defined, exiting.`;
-        console.error(message);
+        core.error(message);
         process.exit(0);
       }
     }

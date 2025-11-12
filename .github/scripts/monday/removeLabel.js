@@ -10,7 +10,7 @@ const {
 } = require("../support/resources");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
-module.exports = async ({ context }) => {
+module.exports = async ({ context, core }) => {
   const { issue, label } =
     /** @type {import('@octokit/webhooks-types').IssuesUnlabeledEvent} */ (
       context.payload
@@ -19,19 +19,21 @@ module.exports = async ({ context }) => {
   const [labelName] = assertRequired([label?.name]);
 
   if (labelName === spike && includesLabel(issueLabels, spikeComplete)) {
-    console.log("Issue is marked as a spike complete. Skipping label removal.");
-    process.exit(0);
+    core.info("Issue is marked as a spike complete. Skipping label removal.");
+    return;
   }
 
-  const tokensLabels = [designTokens, tokensPackage];
   const remainingTokenLabel =
-    tokensLabels.includes(labelName) &&
-    tokensLabels.find((l) => l !== labelName);
+    labelName === designTokens
+      ? tokensPackage
+      : labelName === tokensPackage
+        ? designTokens
+        : null;
   if (remainingTokenLabel && includesLabel(issueLabels, remainingTokenLabel)) {
-    console.error(
+    core.info(
       "Issue is still marked as a design token issue. Skipping label removal.",
     );
-    process.exit(0);
+    return;
   }
 
   const monday = Monday(issue);
