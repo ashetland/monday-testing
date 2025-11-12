@@ -511,7 +511,7 @@ module.exports = function Monday(issue, core) {
       return {
         error: {
           expected: true,
-          message: "No Monday ID found, cannot update columns.",
+          message: "Monday Task not found, cannot update columns.",
         },
       };
     }
@@ -673,13 +673,13 @@ module.exports = function Monday(issue, core) {
         info.column,
         isDropdown ? createDropdownValues(info, "add") : info.value,
       );
-      core.info(`Label "${label}" added.`);
+      core.info(`Added "${label}" to column updates.`);
     } else if (info.clearable) {
       setColumnValue(
         info.column,
         isDropdown ? createDropdownValues(info, "remove") : "",
       );
-      core.info(`Label "${label}" removed.`);
+      core.info(`Cleared "${label}" in column updates.`);
     }
   }
 
@@ -711,7 +711,7 @@ module.exports = function Monday(issue, core) {
 
     const { error } = await updateMultipleColumns();
     if (error) {
-      const log = error.expected ? core.info : core.setFailed;
+      const log = error.expected ? core.warning : core.setFailed;
       log(`Error committing updates: ${error.message}`);
     }
     columnUpdates = {};
