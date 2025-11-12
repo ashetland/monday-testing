@@ -815,10 +815,10 @@ module.exports = function Monday(issue, core) {
    * Update columnUpdates based on milestone title
    */
   function handleMilestone() {
-    let milestoneLog = "Milestone and Stalled columns cleared.";
     if (!issueMilestone) {
       setColumnValue(columnIds.date, "");
       clearLabel(milestone.stalled);
+      core.info("Date column cleared.");
       return;
     }
     const milestoneTitle = issueMilestone.title;
@@ -839,20 +839,17 @@ module.exports = function Monday(issue, core) {
           !includesLabel(labels, installed) &&
           !includesLabel(labels, readyForDev),
       });
-      milestoneLog = `Milestone date set to ${milestoneDate}, Stalled label cleared.`;
     } else {
       setColumnValue(columnIds.date, "");
 
       if (milestoneTitle === milestone.stalled) {
         addLabel(milestone.stalled);
-        milestoneLog = "Stalled label added.";
       } else if (inMilestoneStatus()) {
         setColumnValue(columnIds.status, milestoneTitle);
         clearLabel(milestone.stalled);
-        milestoneLog = `Status set to '${milestoneTitle}', Stalled label cleared.`;
       }
+      core.info(`Date column set to ${milestoneDate}.`);
     }
-    core.info(milestoneLog);
   }
 
   /**

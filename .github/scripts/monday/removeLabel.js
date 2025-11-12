@@ -19,7 +19,7 @@ module.exports = async ({ context, core }) => {
   const [labelName] = assertRequired([label?.name]);
 
   if (labelName === spike && includesLabel(issueLabels, spikeComplete)) {
-    core.info("Issue is marked as a spike complete. Skipping label removal.");
+    core.warning("Issue is marked as a spike complete. Skipping label removal.");
     return;
   }
 
@@ -30,7 +30,7 @@ module.exports = async ({ context, core }) => {
         ? designTokens
         : null;
   if (remainingTokenLabel && includesLabel(issueLabels, remainingTokenLabel)) {
-    core.info(
+    core.warning(
       "Issue is still marked as a design token issue. Skipping label removal.",
     );
     return;
