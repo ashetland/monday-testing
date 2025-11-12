@@ -714,6 +714,7 @@ module.exports = function Monday(issue, core) {
       const log = error.expected ? core.warning : core.setFailed;
       log(`Error committing updates: ${error.message}`);
     }
+    core.info("Column updates committed.");
     columnUpdates = {};
   }
 
@@ -757,7 +758,7 @@ module.exports = function Monday(issue, core) {
 
       const { error } = await updateMultipleColumns(syncId);
       if (error) {
-        const log = error.expected ? core.info : core.setFailed;
+        const log = error.expected ? core.warning : core.setFailed;
         log(`Error syncing item ${syncId}: ${error.message}`);
         return;
       }
