@@ -14,13 +14,13 @@ const {
   packages,
 } = require("./resources");
 const { includesLabel, notInLifecycle } = require("./utils");
-const core = require("@actions/core");
 
 /**
  * @param {NodeJS.ProcessEnv} env
+ * @param {import('@actions/core')} core
  * @returns {asserts env is NodeJS.ProcessEnv & { MONDAY_KEY: string; MONDAY_BOARD: string }}
  */
-function assertMondayEnv(env) {
+function assertMondayEnv(env, core) {
   if (!env.MONDAY_KEY || !env.MONDAY_BOARD) {
     core.setFailed("A Monday.com env variable is not set.");
     process.exit(1);
@@ -29,13 +29,14 @@ function assertMondayEnv(env) {
 
 /**
  * @param {import('@octokit/webhooks-types').Issue} issue - The GitHub issue object
+ * @param {import('@actions/core')} core
  */
-module.exports = function Monday(issue) {
-  assertMondayEnv(process.env);
+module.exports = function Monday(issue, core) {
+  assertMondayEnv(process.env, core);
   const { MONDAY_KEY, MONDAY_BOARD } = process.env;
   if (!issue) {
     core.setFailed("No GitHub issue provided.");
-    return;
+    process.exit(1);
   }
 
   const {
@@ -671,13 +672,13 @@ module.exports = function Monday(issue) {
         info.column,
         isDropdown ? createDropdownValues(info, "add") : info.value,
       );
-      core.info(`Label '${label}' added.`);
+      core.info(`Label "${label}" added.`);
     } else if (info.clearable) {
       setColumnValue(
         info.column,
         isDropdown ? createDropdownValues(info, "remove") : "",
       );
-      core.info(`Label '${label}' removed.`);
+      core.info(`Label "${label}" removed.`);
     }
   }
 
@@ -968,6 +969,8 @@ module.exports = function Monday(issue) {
     } else if (!assignee && shouldSetUnassigned) {
       setColumnValue(columnIds.status, UNASSIGNED);
       core.info(`Status set to '${UNASSIGNED}'.`);
+    } else {
+      core.info("Status not chaged based on assignment.");
     }
   }
 

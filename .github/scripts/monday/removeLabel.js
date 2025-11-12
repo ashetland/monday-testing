@@ -36,7 +36,7 @@ module.exports = async ({ context, core }) => {
     return;
   }
 
-  const monday = Monday(issue);
+  const monday = Monday(issue, core);
   monday.setAssignedStatus();
   monday.clearLabel(labelName);
   await monday.commit();

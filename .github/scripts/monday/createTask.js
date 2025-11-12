@@ -7,7 +7,7 @@ module.exports = async ({ github, context, core }) => {
     /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent | import('@octokit/webhooks-types').IssuesLabeledEvent}*/ (
       context.payload
     );
-  const monday = Monday(issue);
+  const monday = Monday(issue, core);
   const { id, source } = await monday.getId();
   const createdId = await monday.createTask(id);
 

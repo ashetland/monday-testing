@@ -21,7 +21,7 @@ const { assertRequired } = require("../support/utils");
  * 4. If `label_name` and `label_action` are provided: Adds or removes the label through `addLabel()` or `clearLabel()`
  */
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
-module.exports = async ({ github, context }) => {
+module.exports = async ({ github, context, core }) => {
   const [issueNumber] = assertRequired([context.payload.inputs.issue_number]);
 
   const { data: issue } = await github.rest.issues.get({
@@ -37,7 +37,7 @@ module.exports = async ({ github, context }) => {
       label_action,
     } = context.payload.inputs;
 
-  const monday = Monday(issue);
+  const monday = Monday(issue, core);
 
   if (milestone_updated) {
     monday.handleMilestone();
