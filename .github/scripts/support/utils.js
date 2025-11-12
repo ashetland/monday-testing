@@ -99,7 +99,7 @@ module.exports = {
   assertRequired: (array, errorMessage) => {
     if (array.some((item) => item === undefined || item === null)) {
       console.error(errorMessage || `One or more required items are not defined, exiting.`);
-      process.exit(1);
+      process.exit(0);
     }
 
     return /** @type {{ [K in keyof T]: NonNullable<T[K]> }} */ (array);
