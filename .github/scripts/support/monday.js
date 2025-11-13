@@ -465,6 +465,7 @@ module.exports = function Monday(issue, core) {
     } else {
       columnUpdates[role] = `${info.id}`;
     }
+    core.notice(`Added assignee ${person.login} to ${role} column.`, logParams);
   }
 
   /** @typedef {Record<string, string | string[]>} QueryVariables
