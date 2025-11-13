@@ -468,7 +468,7 @@ module.exports = function Monday(issue, core) {
       columnUpdates[role.id] = `${info.id}`;
     }
     core.notice(
-      `Added assignee ${person.login} to ${role.title} column.`,
+      `Added assignee '${person.login}' to '${role.title}' column.`,
       logParams,
     );
   }
