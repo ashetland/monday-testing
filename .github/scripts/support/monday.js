@@ -685,13 +685,11 @@ module.exports = function Monday(issue, core) {
         info.column,
         isDropdown ? createDropdownValues(info, "add") : info.value,
       );
-      core.notice(`Added "${label}" label to column updates.`, logParams);
     } else if (info.clearable) {
       setColumnValue(
         info.column,
         isDropdown ? createDropdownValues(info, "remove") : "",
       );
-      core.notice(`Cleared "${label}" label in column updates.`, logParams);
     }
   }
 
@@ -726,7 +724,9 @@ module.exports = function Monday(issue, core) {
     if (error) {
       const log = error.expected ? core.warning : core.setFailed;
       log(`Error committing updates: ${error.message}`);
+      return;
     }
+
     core.notice("Updates committed successfully.", logParams);
     columnUpdates = {};
   }
@@ -783,14 +783,14 @@ module.exports = function Monday(issue, core) {
     }
 
     const query = `mutation CreateItem($board_id: ID!, $item_name: String!, $column_values: JSON!) {
-      create_item (
-        board_id: $board_id,
-        item_name: $item_name,
-        column_values: $column_values
-      ) {
-        id
-      }
-    }`;
+       create_item (
+         board_id: $board_id,
+         item_name: $item_name,
+         column_values: $column_values
+       ) {
+         id
+       }
+     }`;
 
     /** @type {QueryVariables} */
     const queryVariables = {
@@ -813,9 +813,13 @@ module.exports = function Monday(issue, core) {
    * Set a specific column value in columnUpdates
    * @param {string} column
    * @param {ColumnValue} value
+   * @param {import('@actions/core').AnnotationProperties} [logParams] - Optional logging parameters
    */
-  function setColumnValue(column, value) {
-    const logParams = { title: "Set Column Value" };
+  function setColumnValue(
+    column,
+    value,
+    logParams = { title: "Set Column Value" },
+  ) {
     if (!column) {
       core.warning("No column provided.", logParams);
       return;
@@ -826,6 +830,10 @@ module.exports = function Monday(issue, core) {
     }
 
     columnUpdates[column] = value;
+    core.notice(
+      `Set column '${column}' to value '${JSON.stringify(value)}'.`,
+      logParams,
+    );
   }
 
   /**
@@ -836,7 +844,6 @@ module.exports = function Monday(issue, core) {
     if (!issueMilestone) {
       setColumnValue(columnIds.date, "");
       clearLabel(milestone.stalled);
-      core.notice("Date column cleared.", logParams);
       return;
     }
     const milestoneTitle = issueMilestone.title;
@@ -857,7 +864,6 @@ module.exports = function Monday(issue, core) {
           !includesLabel(labels, installed) &&
           !includesLabel(labels, readyForDev),
       });
-      core.notice(`Date column set to ${milestoneDate}.`, logParams);
     } else {
       setColumnValue(columnIds.date, "");
 
@@ -867,10 +873,6 @@ module.exports = function Monday(issue, core) {
         setColumnValue(columnIds.status, milestoneTitle);
         clearLabel(milestone.stalled);
       }
-      core.notice(
-        `Status set to '${milestoneTitle}', Date column cleared.`,
-        logParams,
-      );
     }
   }
 
@@ -880,17 +882,20 @@ module.exports = function Monday(issue, core) {
    * @returns {void}
    */
   function handleState(action = "open") {
+    const CLOSED = "Closed";
+    const DONE = "Done";
+    const logParams = { title: "Handle State" };
     if (!issue.state) {
-      core.warning("No Issue state provided.", { title: "Handle State" });
+      core.warning("No Issue state provided.", logParams);
       return;
     }
-    setColumnValue(columnIds.open, stateMap[issue.state]);
+    setColumnValue(columnIds.open, stateMap[issue.state], logParams);
 
     if (action === "closed") {
       if (issue.state_reason !== "completed") {
-        setColumnValue(columnIds.status, "Closed");
+        setColumnValue(columnIds.status, CLOSED, logParams);
       } else if (!includesLabel(issue.labels, issueType.design)) {
-        setColumnValue(columnIds.status, "Done");
+        setColumnValue(columnIds.status, DONE, logParams);
       }
     }
   }
@@ -987,11 +992,9 @@ module.exports = function Monday(issue, core) {
     const shouldSetUnassigned = unassignedCondition ?? defaultCondition;
 
     if (assignee && shouldSetAssigned) {
-      setColumnValue(columnIds.status, ASSIGNED);
-      core.notice(`Status set to '${ASSIGNED}'.`, logParams);
+      setColumnValue(columnIds.status, ASSIGNED, logParams);
     } else if (!assignee && shouldSetUnassigned) {
-      setColumnValue(columnIds.status, UNASSIGNED);
-      core.notice(`Status set to '${UNASSIGNED}'.`, logParams);
+      setColumnValue(columnIds.status, UNASSIGNED, logParams);
     } else {
       core.notice("Status not changed based on assignment.", logParams);
     }
