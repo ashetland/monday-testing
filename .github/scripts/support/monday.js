@@ -446,7 +446,7 @@ module.exports = function Monday(issue, core) {
     const info = peopleMap.get(person.login);
     if (!info) {
       core.warning(
-        `Assignee ${person.login} not found in peopleMap.`,
+        `Assignee "${person.login}" not found in peopleMap.`,
         logParams,
       );
       return;
@@ -458,7 +458,7 @@ module.exports = function Monday(issue, core) {
         label.name !== issueWorkflow.installed &&
         label.name !== issueWorkflow.verified,
     );
-    if (role === mondayColumns.productEngineers && notInstalledOrVerified) {
+    if (role.id === mondayColumns.productEngineers.id && notInstalledOrVerified) {
       role = mondayColumns.developers;
     }
 
@@ -685,7 +685,7 @@ module.exports = function Monday(issue, core) {
       return;
     }
 
-    const isDropdown = info.column === mondayColumns.typeDropdown;
+    const isDropdown = info.column.id === mondayColumns.typeDropdown.id;
     if (action === "add") {
       setColumnValue(
         info.column,
@@ -781,9 +781,12 @@ module.exports = function Monday(issue, core) {
 
       const { error } = await updateMultipleColumns(syncId);
       if (error) {
-        const log = (/** @type {string} **/ msg) =>
-          error.expected ? core.warning(msg, logParams) : core.setFailed(msg);
-        log(`Error syncing item ${syncId}: ${error.message}`);
+        error.expected
+          ? core.warning(
+              `Expected error syncing item ${syncId}: ${error.message}`,
+              logParams,
+            )
+          : core.setFailed(`Error syncing item ${syncId}: ${error.message}`);
         return;
       }
 
