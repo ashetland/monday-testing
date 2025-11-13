@@ -839,7 +839,9 @@ module.exports = function Monday(issue, core) {
 
     columnUpdates[column.id] = value;
     core.notice(
-      `Set column '${column.title}' to value '${JSON.stringify(value)}'.`,
+      value === ""
+        ? `Cleared column '${column.title}'.`
+        : `Set column '${column.title}' to value '${JSON.stringify(value)}'.`,
       logParams,
     );
   }
