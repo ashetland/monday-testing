@@ -468,7 +468,7 @@ module.exports = function Monday(issue, core) {
       columnUpdates[role.id] = `${info.id}`;
     }
     core.notice(
-      `Added assignee '${person.login}' to '${role.title}' column.`,
+      `Added assignee "${person.login}" to "${role.title}" column.`,
       logParams,
     );
   }
@@ -773,7 +773,7 @@ module.exports = function Monday(issue, core) {
 
     if (syncId) {
       core.notice(
-        `Sync ID ${syncId} provided, updating existing item instead of creating new.`,
+        `Sync ID "${syncId}" provided, updating existing item instead of creating new.`,
         logParams,
       );
       setColumnValue(mondayColumns.title, issue.title);
@@ -840,8 +840,8 @@ module.exports = function Monday(issue, core) {
     columnUpdates[column.id] = value;
     core.notice(
       value === ""
-        ? `Cleared column '${column.title}'.`
-        : `Set column '${column.title}' to value '${JSON.stringify(value)}'.`,
+        ? `Cleared "${column.title}" column.`
+        : `Set "${column.title}" column to: ${JSON.stringify(value)}.`,
       logParams,
     );
   }
