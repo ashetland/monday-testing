@@ -17,7 +17,7 @@ module.exports = async ({ context, core }) => {
 
   const isVerified = labelName === issueWorkflow.verified;
   if (isVerified && issue.state === "closed" && !includesLabel(issue.labels, design)) {
-    monday.setColumnValue(monday.columnIds.status, "Done");
+    monday.setColumnValue(monday.mondayColumns.status, "Done", { title: "Issue Verified and Closed" });
   } else {
     monday.addLabel(labelName);
   }

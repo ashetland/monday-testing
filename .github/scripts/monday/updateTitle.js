@@ -8,6 +8,6 @@ module.exports = async ({ context, core }) => {
   assertRequired([changes?.title?.from]);
 
   const monday = Monday(issue, core);
-  monday.setColumnValue(monday.columnIds.title, issue.title);
+  monday.setColumnValue(monday.mondayColumns.title, issue.title, { title: "Update Title" });
   await monday.commit();
 };
