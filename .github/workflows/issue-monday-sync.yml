@@ -119,10 +119,10 @@ jobs:
             const action = require('${{ github.workspace }}/.github/scripts/monday/updateState.js')
             await action({context, core})
 
-      - name: "Handle Notify Workflow Event"
-        if: github.event.inputs.event_type == 'NotifyWorkflow'
+      - name: "Sync Action Changes"
+        if: github.event.inputs.event_type == 'SyncActionChanges'
         uses: actions/github-script@v8
         with:
           script: |
-            const action = require('${{ github.workspace }}/.github/scripts/monday/handleNotifyWorkflow.js')
-            await action({github, context})
+            const action = require('${{ github.workspace }}/.github/scripts/monday/syncActionChanges.js')
+            await action({github, context, core})
