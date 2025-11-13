@@ -58,50 +58,52 @@ module.exports = function Monday(issue, core) {
   /** @type {Record<string, ColumnValue>} */
   let columnUpdates = {};
 
-  const columnIds = {
+  /** @typedef {{ id: string, title: string }} MondayColumn */
+  /** @type {Record<string, MondayColumn>} */
+  const mondayColumns = {
     /* eslint-disable @cspell/spellchecker -- Monday IDs may include segments with randomized characters */
-    title: "name",
-    issueNumber: "numeric_mknk2xhh",
-    link: "link",
-    designers: "multiple_person_mkt2rtfv",
-    developers: "multiple_person_mkt2q89j",
-    productEngineers: "multiple_person_mkt2hhzm",
-    status: "dup__of_overall_status__1",
-    date: "date6",
-    priority: "priority",
-    typeDropdown: "dropdown_mkxjwv7h",
-    designEstimate: "color_mkqr3y8a",
-    devEstimate: "numeric_mksvm3v7",
-    designIssue: "color_mkrdhk8",
-    stalled: "color_mktksrja",
-    blocked: "color_mkv259x0",
-    spike: "color_mkt5vd8a",
-    figmaChanges: "color_mkt58h3r",
-    open: "color_mknkrb2n",
+    title: { id: "name", title: "Item" },
+    issueNumber: { id: "numeric_mknk2xhh", title: "Issue Number" },
+    link: { id: "link", title: "GH Link" },
+    designers: { id: "multiple_person_mkt2rtfv", title: "Designer" },
+    developers: { id: "multiple_person_mkt2q89j", title: "Developer" },
+    productEngineers: { id: "multiple_person_mkt2hhzm", title: "Verified by" },
+    status: { id: "dup__of_overall_status__1", title: "Status" },
+    date: { id: "date6", title: "Milestone" },
+    priority: { id: "priority", title: "Priority" },
+    typeDropdown: { id: "dropdown_mkxjwv7h", title: "Issue Type" },
+    designEstimate: { id: "color_mkqr3y8a", title: "Design Estimate" },
+    devEstimate: { id: "numeric_mksvm3v7", title: "Dev Estimate" },
+    designIssue: { id: "color_mkrdhk8", title: "Design Issue" },
+    stalled: { id: "color_mktksrja", title: "Stalled" },
+    blocked: { id: "color_mkv259x0", title: "Blocked" },
+    spike: { id: "color_mkt5vd8a", title: "Spike" },
+    figmaChanges: { id: "color_mkt58h3r", title: "Figma Changes" },
+    open: { id: "color_mknkrb2n", title: "Open/Closed" },
     /* eslint-enable @cspell/spellchecker */
   };
 
-  /** @typedef {{ column: string, value: string | number, clearable?: boolean }} MondayLabel */
+  /** @typedef {{ column: MondayColumn, value: string | number, clearable?: boolean }} MondayLabel */
   /** @type {Map<string, MondayLabel>} */
   const labelMap = new Map([
     [
       issueWorkflow.needsTriage,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "Needs Triage",
       },
     ],
     [
       issueWorkflow.needsMilestone,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "Needs Milestone",
       },
     ],
     [
       planning.spike,
       {
-        column: columnIds.spike,
+        column: mondayColumns.spike,
         value: "Spike",
         clearable: true,
       },
@@ -109,7 +111,7 @@ module.exports = function Monday(issue, core) {
     [
       planning.spikeComplete,
       {
-        column: columnIds.spike,
+        column: mondayColumns.spike,
         value: "Spike Complete",
         clearable: true,
       },
@@ -117,7 +119,7 @@ module.exports = function Monday(issue, core) {
     [
       planning.blocked,
       {
-        column: columnIds.blocked,
+        column: mondayColumns.blocked,
         value: "Blocked",
         clearable: true,
       },
@@ -125,42 +127,42 @@ module.exports = function Monday(issue, core) {
     [
       issueWorkflow.inDesign,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "In Design",
       },
     ],
     [
       issueWorkflow.readyForDev,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "Ready for Dev",
       },
     ],
     [
       issueWorkflow.inDevelopment,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "In Development",
       },
     ],
     [
       issueWorkflow.installed,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "Installed",
       },
     ],
     [
       issueWorkflow.verified,
       {
-        column: columnIds.status,
+        column: mondayColumns.status,
         value: "Verified",
       },
     ],
     [
       issueType.design,
       {
-        column: columnIds.designIssue,
+        column: mondayColumns.designIssue,
         value: "Design",
         clearable: true,
       },
@@ -168,7 +170,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.a11y,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "a11y",
         clearable: true,
       },
@@ -176,7 +178,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.bug,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Bug",
         clearable: true,
       },
@@ -184,7 +186,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.chore,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Chore",
         clearable: true,
       },
@@ -192,7 +194,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.designTokens,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Design Tokens",
         clearable: true,
       },
@@ -200,7 +202,7 @@ module.exports = function Monday(issue, core) {
     [
       packages.tokens,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Design Tokens",
         clearable: true,
       },
@@ -208,7 +210,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.docs,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Docs",
         clearable: true,
       },
@@ -216,7 +218,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.enhancement,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Enhancement",
         clearable: true,
       },
@@ -224,7 +226,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.newComponent,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "New Component",
         clearable: true,
       },
@@ -232,7 +234,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.refactor,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Refactor",
         clearable: true,
       },
@@ -240,7 +242,7 @@ module.exports = function Monday(issue, core) {
     [
       bug.regression,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Regression",
         clearable: true,
       },
@@ -248,7 +250,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.research,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Research",
         clearable: true,
       },
@@ -256,7 +258,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.test,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Testing",
         clearable: true,
       },
@@ -264,7 +266,7 @@ module.exports = function Monday(issue, core) {
     [
       issueType.tooling,
       {
-        column: columnIds.typeDropdown,
+        column: mondayColumns.typeDropdown,
         value: "Tooling",
         clearable: true,
       },
@@ -272,112 +274,112 @@ module.exports = function Monday(issue, core) {
     [
       priority.low,
       {
-        column: columnIds.priority,
+        column: mondayColumns.priority,
         value: "Low",
       },
     ],
     [
       priority.medium,
       {
-        column: columnIds.priority,
+        column: mondayColumns.priority,
         value: "Medium",
       },
     ],
     [
       priority.high,
       {
-        column: columnIds.priority,
+        column: mondayColumns.priority,
         value: "High",
       },
     ],
     [
       priority.critical,
       {
-        column: columnIds.priority,
+        column: mondayColumns.priority,
         value: "Critical",
       },
     ],
     [
       devEstimate.one,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 1,
       },
     ],
     [
       devEstimate.two,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 2,
       },
     ],
     [
       devEstimate.three,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 3,
       },
     ],
     [
       devEstimate.five,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 5,
       },
     ],
     [
       devEstimate.eight,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 8,
       },
     ],
     [
       devEstimate.thirteen,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 13,
       },
     ],
     [
       devEstimate.twentyOne,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 21,
       },
     ],
     [
       devEstimate.thirtyFour,
       {
-        column: columnIds.devEstimate,
+        column: mondayColumns.devEstimate,
         value: 34,
       },
     ],
     [
       designEstimate.small,
       {
-        column: columnIds.designEstimate,
+        column: mondayColumns.designEstimate,
         value: "Small",
       },
     ],
     [
       designEstimate.medium,
       {
-        column: columnIds.designEstimate,
+        column: mondayColumns.designEstimate,
         value: "Medium",
       },
     ],
     [
       designEstimate.large,
       {
-        column: columnIds.designEstimate,
+        column: mondayColumns.designEstimate,
         value: "Large",
       },
     ],
     [
       handoff.figmaChanges,
       {
-        column: columnIds.figmaChanges,
+        column: mondayColumns.figmaChanges,
         value: "Figma Changes Only",
         clearable: true,
       },
@@ -385,7 +387,7 @@ module.exports = function Monday(issue, core) {
     [
       milestone.stalled,
       {
-        column: columnIds.stalled,
+        column: mondayColumns.stalled,
         value: "Stalled",
         clearable: true,
       },
@@ -394,30 +396,30 @@ module.exports = function Monday(issue, core) {
 
   /**
    * @typedef {object} MondayPerson
-   * @property {string} role - The role of the person (e.g., developers, designers, productEngineers)
+   * @property {MondayColumn} role - The role of the person (e.g., developers, designers, productEngineers)
    * @property {number} id - The Monday.com user ID
    */
   /** @type {Map<string, MondayPerson>} */
   const peopleMap = new Map([
     /* eslint-disable @cspell/spellchecker -- GitHub usernames */
-    ["anveshmekala", { role: columnIds.developers, id: 48387134 }],
-    ["aPreciado88", { role: columnIds.developers, id: 60795249 }],
-    ["ashetland", { role: columnIds.designers, id: 45851619 }],
-    ["benelan", { role: columnIds.developers, id: 49704471 }],
-    ["chezHarper", { role: columnIds.designers, id: 71157966 }],
-    ["DintaMel", { role: columnIds.productEngineers, id: 92955697 }],
-    ["DitwanP", { role: columnIds.productEngineers, id: 53683093 }],
-    ["driskull", { role: columnIds.developers, id: 45944985 }],
-    ["Elijbet", { role: columnIds.developers, id: 55852207 }],
-    ["eriklharper", { role: columnIds.developers, id: 49699973 }],
-    ["geospatialem", { role: columnIds.productEngineers, id: 45853373 }],
-    ["isaacbraun", { role: columnIds.productEngineers, id: 76547859 }],
-    ["jcfranco", { role: columnIds.developers, id: 45854945 }],
-    ["macandcheese", { role: columnIds.developers, id: 45854918 }],
-    ["matgalla", { role: columnIds.designers, id: 69473378 }],
-    ["rmstinson", { role: columnIds.designers, id: 47277636 }],
-    ["SkyeSeitz", { role: columnIds.designers, id: 45854937 }],
-    ["Amretasre002762670", { role: columnIds.developers, id: 77031889 }],
+    ["anveshmekala", { role: mondayColumns.developers, id: 48387134 }],
+    ["aPreciado88", { role: mondayColumns.developers, id: 60795249 }],
+    ["ashetland", { role: mondayColumns.designers, id: 45851619 }],
+    ["benelan", { role: mondayColumns.developers, id: 49704471 }],
+    ["chezHarper", { role: mondayColumns.designers, id: 71157966 }],
+    ["DintaMel", { role: mondayColumns.productEngineers, id: 92955697 }],
+    ["DitwanP", { role: mondayColumns.productEngineers, id: 53683093 }],
+    ["driskull", { role: mondayColumns.developers, id: 45944985 }],
+    ["Elijbet", { role: mondayColumns.developers, id: 55852207 }],
+    ["eriklharper", { role: mondayColumns.developers, id: 49699973 }],
+    ["geospatialem", { role: mondayColumns.productEngineers, id: 45853373 }],
+    ["isaacbraun", { role: mondayColumns.productEngineers, id: 76547859 }],
+    ["jcfranco", { role: mondayColumns.developers, id: 45854945 }],
+    ["macandcheese", { role: mondayColumns.developers, id: 45854918 }],
+    ["matgalla", { role: mondayColumns.designers, id: 69473378 }],
+    ["rmstinson", { role: mondayColumns.designers, id: 47277636 }],
+    ["SkyeSeitz", { role: mondayColumns.designers, id: 45854937 }],
+    ["Amretasre002762670", { role: mondayColumns.developers, id: 77031889 }],
     /* eslint-enable @cspell/spellchecker */
   ]);
 
@@ -456,16 +458,19 @@ module.exports = function Monday(issue, core) {
         label.name !== issueWorkflow.installed &&
         label.name !== issueWorkflow.verified,
     );
-    if (role === columnIds.productEngineers && notInstalledOrVerified) {
-      role = columnIds.developers;
+    if (role === mondayColumns.productEngineers && notInstalledOrVerified) {
+      role = mondayColumns.developers;
     }
 
-    if (columnUpdates[role]) {
-      columnUpdates[role] += `, ${info.id}`;
+    if (columnUpdates[role.id]) {
+      columnUpdates[role.id] += `, ${info.id}`;
     } else {
-      columnUpdates[role] = `${info.id}`;
+      columnUpdates[role.id] = `${info.id}`;
     }
-    core.notice(`Added assignee ${person.login} to ${role} column.`, logParams);
+    core.notice(
+      `Added assignee ${person.login} to ${role.title} column.`,
+      logParams,
+    );
   }
 
   /** @typedef {Record<string, string | string[]>} QueryVariables
@@ -572,7 +577,7 @@ module.exports = function Monday(issue, core) {
     /** @type {QueryVariables} */
     const queryVariables = {
       board_id: MONDAY_BOARD,
-      column_id: columnIds.issueNumber,
+      column_id: mondayColumns.issueNumber.id,
       column_values: [String(issueNumber)],
     };
 
@@ -627,7 +632,7 @@ module.exports = function Monday(issue, core) {
     }
 
     const labelValue = `${labelInfo.value}`;
-    const currentValue = columnUpdates[labelInfo.column];
+    const currentValue = columnUpdates[labelInfo.column.id];
     const existingLabels =
       currentValue &&
       typeof currentValue === "object" &&
@@ -680,16 +685,18 @@ module.exports = function Monday(issue, core) {
       return;
     }
 
-    const isDropdown = info.column === columnIds.typeDropdown;
+    const isDropdown = info.column === mondayColumns.typeDropdown;
     if (action === "add") {
       setColumnValue(
         info.column,
         isDropdown ? createDropdownValues(info, "add") : info.value,
+        logParams,
       );
     } else if (info.clearable) {
       setColumnValue(
         info.column,
         isDropdown ? createDropdownValues(info, "remove") : "",
+        logParams,
       );
     }
   }
@@ -740,8 +747,8 @@ module.exports = function Monday(issue, core) {
   async function createTask(syncId = "") {
     const logParams = { title: "Create Task" };
     columnUpdates = {
-      [columnIds.issueNumber]: `${issueNumber}`,
-      [columnIds.link]: {
+      [mondayColumns.issueNumber.id]: `${issueNumber}`,
+      [mondayColumns.link.id]: {
         url: html_url,
         text: `${issueNumber}`,
       },
@@ -769,7 +776,7 @@ module.exports = function Monday(issue, core) {
         `Sync ID ${syncId} provided, updating existing item instead of creating new.`,
         logParams,
       );
-      setColumnValue(columnIds.title, issue.title);
+      setColumnValue(mondayColumns.title, issue.title);
       handleState();
 
       const { error } = await updateMultipleColumns(syncId);
@@ -784,14 +791,14 @@ module.exports = function Monday(issue, core) {
     }
 
     const query = `mutation CreateItem($board_id: ID!, $item_name: String!, $column_values: JSON!) {
-       create_item (
-         board_id: $board_id,
-         item_name: $item_name,
-         column_values: $column_values
-       ) {
-         id
-       }
-     }`;
+      create_item (
+        board_id: $board_id,
+        item_name: $item_name,
+        column_values: $column_values
+      ) {
+        id
+      }
+    }`;
 
     /** @type {QueryVariables} */
     const queryVariables = {
@@ -812,7 +819,7 @@ module.exports = function Monday(issue, core) {
 
   /**
    * Set a specific column value in columnUpdates
-   * @param {string} column
+   * @param {MondayColumn} column
    * @param {ColumnValue} value
    * @param {import('@actions/core').AnnotationProperties} [logParams] - Optional logging parameters
    */
@@ -830,9 +837,9 @@ module.exports = function Monday(issue, core) {
       return;
     }
 
-    columnUpdates[column] = value;
+    columnUpdates[column.id] = value;
     core.notice(
-      `Set column '${column}' to value '${JSON.stringify(value)}'.`,
+      `Set column '${column.title}' to value '${JSON.stringify(value)}'.`,
       logParams,
     );
   }
@@ -843,7 +850,7 @@ module.exports = function Monday(issue, core) {
   function handleMilestone() {
     const logParams = { title: "Handle Milestone" };
     if (!issueMilestone) {
-      setColumnValue(columnIds.date, "");
+      setColumnValue(mondayColumns.date, "", logParams);
       clearLabel(milestone.stalled);
       return;
     }
@@ -852,7 +859,7 @@ module.exports = function Monday(issue, core) {
     const milestoneDate = milestoneTitle.match(milestoneDateRegex)?.[0];
 
     if (milestoneDate) {
-      setColumnValue(columnIds.date, milestoneDate);
+      setColumnValue(mondayColumns.date, milestoneDate, logParams);
       clearLabel(milestone.stalled);
       const { needsTriage, needsMilestone, installed, readyForDev } =
         issueWorkflow;
@@ -866,12 +873,12 @@ module.exports = function Monday(issue, core) {
           !includesLabel(labels, readyForDev),
       });
     } else {
-      setColumnValue(columnIds.date, "");
+      setColumnValue(mondayColumns.date, "", logParams);
 
       if (milestoneTitle === milestone.stalled) {
         addLabel(milestone.stalled);
       } else if (inMilestoneStatus()) {
-        setColumnValue(columnIds.status, milestoneTitle);
+        setColumnValue(mondayColumns.status, milestoneTitle, logParams);
         clearLabel(milestone.stalled);
       }
     }
@@ -890,13 +897,13 @@ module.exports = function Monday(issue, core) {
       core.warning("No Issue state provided.", logParams);
       return;
     }
-    setColumnValue(columnIds.open, stateMap[issue.state], logParams);
+    setColumnValue(mondayColumns.open, stateMap[issue.state], logParams);
 
     if (action === "closed") {
       if (issue.state_reason !== "completed") {
-        setColumnValue(columnIds.status, CLOSED, logParams);
+        setColumnValue(mondayColumns.status, CLOSED, logParams);
       } else if (!includesLabel(issue.labels, issueType.design)) {
-        setColumnValue(columnIds.status, DONE, logParams);
+        setColumnValue(mondayColumns.status, DONE, logParams);
       }
     }
   }
@@ -911,11 +918,13 @@ module.exports = function Monday(issue, core) {
       addAssignee(assignee);
     });
 
-    [columnIds.developers, columnIds.productEngineers].forEach((role) => {
-      if (!(role in columnUpdates)) {
-        setColumnValue(role, "");
-      }
-    });
+    [mondayColumns.developers, mondayColumns.productEngineers].forEach(
+      (role) => {
+        if (!(role.id in columnUpdates)) {
+          setColumnValue(role, "");
+        }
+      },
+    );
   }
 
   /**
@@ -993,16 +1002,16 @@ module.exports = function Monday(issue, core) {
     const shouldSetUnassigned = unassignedCondition ?? defaultCondition;
 
     if (assignee && shouldSetAssigned) {
-      setColumnValue(columnIds.status, ASSIGNED, logParams);
+      setColumnValue(mondayColumns.status, ASSIGNED, logParams);
     } else if (!assignee && shouldSetUnassigned) {
-      setColumnValue(columnIds.status, UNASSIGNED, logParams);
+      setColumnValue(mondayColumns.status, UNASSIGNED, logParams);
     } else {
       core.notice("Status not changed based on assignment.", logParams);
     }
   }
 
   return {
-    columnIds,
+    mondayColumns,
     getId,
     commit,
     createTask,
