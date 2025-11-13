@@ -923,13 +923,11 @@ module.exports = function Monday(issue, core) {
       addAssignee(assignee);
     });
 
-    [mondayColumns.developers, mondayColumns.productEngineers].forEach(
-      (role) => {
-        if (!(role.id in columnUpdates)) {
-          setColumnValue(role, "");
-        }
-      },
-    );
+    [mondayColumns.developers, mondayColumns.productEngineers]
+      .filter((role) => !(role.id in columnUpdates))
+      .forEach((role) => {
+        setColumnValue(role, "");
+      });
   }
 
   /**

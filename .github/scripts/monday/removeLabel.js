@@ -16,7 +16,7 @@ module.exports = async ({ context, core }) => {
       context.payload
     );
   const { labels: issueLabels } = issue;
-  const [labelName] = assertRequired([label?.name]);
+  const [labelName] = assertRequired([label?.name], core, "No label found in payload.");
 
   if (labelName === spike && includesLabel(issueLabels, spikeComplete)) {
     core.warning("Issue is marked as a spike complete. Skipping label removal.");

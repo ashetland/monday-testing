@@ -22,20 +22,20 @@ const { assertRequired } = require("../support/utils");
  */
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context, core }) => {
-  const [issueNumber] = assertRequired([context.payload.inputs.issue_number]);
+  const /** @type {SyncActionChangesInputs} */ {
+    issue_number: issue_number_input,
+    milestone_updated,
+    assignee_updated,
+    state_updated,
+    label_name,
+    label_action,
+  } = context.payload.inputs;
 
+  const [issue_number] = assertRequired([issue_number_input], core, "Required issue number not provided.");
   const { data: issue } = await github.rest.issues.get({
     ...context.repo,
-    issue_number: issueNumber,
+    issue_number,
   });
-
-  const /** @type {SyncActionChangesInputs} */ {
-      milestone_updated,
-      assignee_updated,
-      state_updated,
-      label_name,
-      label_action,
-    } = context.payload.inputs;
 
   const monday = Monday(issue, core);
 
