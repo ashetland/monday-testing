@@ -991,21 +991,21 @@ module.exports = function Monday(issue, core) {
       return label;
     }
 
-    const name = label.replace("ArcGIS", "").trim();
+    const labelName = label.replace(/ArcGIS|for ArcGIS/g, "").trim();
     /** @type {MondayLabel} */
     const labelInfo = {
       column: mondayColumns.team,
-      value: name,
+      value: labelName,
       clearable: true,
     };
 
-    labelMap.set(name, labelInfo);
+    labelMap.set(labelName, labelInfo);
     createLabelsIfMissing = true;
 
     core.notice(`Created label "${labelInfo.value}" in label map.`, {
       title: "Create Team Label",
     });
-    return name;
+    return labelName;
   }
 
   /**
