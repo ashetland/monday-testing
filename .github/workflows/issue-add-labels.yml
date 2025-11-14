@@ -11,12 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # - name: Add Esri Product Label
-      #   uses: actions/github-script@v8
-      #   with:
-      #     script: |
-      #       const action = require('${{ github.workspace }}/.github/scripts/addEsriProductLabel.js')
-      #       await action({github, context, core})
+      - name: Add Esri Product Label
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const action = require('${{ github.workspace }}/.github/scripts/addEsriProductLabel.js')
+            await action({github, context, core})
       - name: Add Calcite Package Label
         uses: actions/github-script@v8
         with:
