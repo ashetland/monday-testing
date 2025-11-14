@@ -650,8 +650,9 @@ module.exports = function Monday(issue, core) {
         : [];
 
     if (existingLabels.length === 0 && labels?.length) {
-      for (const { name } of labels) {
-        const info = labelMap.get(name);
+      for (const { name, color } of labels) {
+        const labelName = createTeamLabelIfNeeded(name, color);
+        const info = labelMap.get(labelName);
         if (info?.column.id === labelInfo.column.id && info.value) {
           existingLabels.push(`${info.value}`);
         }
