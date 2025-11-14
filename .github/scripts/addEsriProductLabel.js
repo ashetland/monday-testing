@@ -27,6 +27,7 @@ module.exports = async ({ github, context }) => {
   );
 
   const productRegexMatch = body.match(productRegex);
+  console.log(`Esri team regex match: ${productRegexMatch}`, JSON.stringify(body));
 
   // If issue includes "Esri team" line then create label, otherwise log message.
   if (productRegexMatch) {
