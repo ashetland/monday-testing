@@ -20,7 +20,7 @@ module.exports = async ({ github, context }) => {
     action === "edited"
       ? // the way GitHub parses the issue body into plaintext
         // requires this exact format for edits
-        "(?<=### Esri team\r\n\r\n).+"
+        "(?<=### Esri team\n\n).+"
       : // otherwise it depends on the submitter's OS
         "(?<=### Esri team[\r\n|\r|\n]{2}).+$",
     "m",
