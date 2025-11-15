@@ -20,7 +20,7 @@ module.exports = async ({ github, context, core }) => {
 
   const productRegex = /### Esri team[\r|\n]+(.+)$/m;
   const productRegexMatch = body.match(productRegex);
-  const product = (productRegexMatch?.[0] || "").trim();
+  const product = (productRegexMatch?.[1] || "").trim();
 
   // If issue includes "Esri team" line then create label, otherwise log message.
   if (product === "") {
