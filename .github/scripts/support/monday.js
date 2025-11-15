@@ -991,7 +991,7 @@ module.exports = function Monday(issue, core) {
       return label;
     }
 
-    const labelName = label.replace(/ArcGIS|for ArcGIS/g, "").trim();
+    const labelName = label.replace(/(for )?ArcGIS/g, "").trim();
     /** @type {MondayLabel} */
     const labelInfo = {
       column: mondayColumns.team,
