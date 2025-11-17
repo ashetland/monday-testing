@@ -21,6 +21,7 @@ module.exports = async ({ github, context, core }) => {
   const productRegex = /### Esri team[\r|\n]+(.+)$/m;
   const productRegexMatch = body.match(productRegex);
   const product = (productRegexMatch?.[1] || "").trim();
+  const color = "006B75";
 
   // If issue includes "Esri team" line then create label, otherwise log message.
   if (product === "") {
@@ -31,7 +32,7 @@ module.exports = async ({ github, context, core }) => {
         github,
         context,
         label: product,
-        color: "006B75",
+        color,
         description: `Issues logged by ${product} team members.`,
       });
 
@@ -51,6 +52,7 @@ module.exports = async ({ github, context, core }) => {
           issue_number: issue_number.toString(),
           event_type: "SyncActionChanges",
           label_name: product,
+          label_color: color,
           label_action: "added",
         },
       });
