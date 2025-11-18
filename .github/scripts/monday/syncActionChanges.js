@@ -44,8 +44,8 @@ module.exports = async ({ github, context, core }) => {
     issue_number,
   });
 
-  core.notice(`Payload inputs: ${JSON.stringify(context.payload.inputs)}`);
-  core.notice(`Truthyness: ${milestone_updated ? "truthy" : "falsy"}`);
+  core.warning(`Payload inputs: ${JSON.stringify(context.payload.inputs)}`);
+  core.warning(`Truthyness: ${milestone_updated} - ${milestone_updated ? "truthy" : "falsy"}`);
 
   const monday = Monday(issue, core);
 
