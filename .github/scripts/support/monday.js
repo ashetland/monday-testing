@@ -85,7 +85,7 @@ module.exports = function Monday(issue, core) {
       title: "Issue Type",
       type: "dropdown",
     },
-    team: { id: "dropdown_mkxpnbj6", title: "Esri Team", type: "dropdown" },
+    product: { id: "dropdown_mkxpnbj6", title: "Esri Team", type: "dropdown" },
     designEstimate: { id: "color_mkqr3y8a", title: "Design Estimate" },
     devEstimate: { id: "numeric_mksvm3v7", title: "Dev Estimate" },
     designIssue: { id: "color_mkrdhk8", title: "Design Issue" },
