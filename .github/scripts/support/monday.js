@@ -998,21 +998,20 @@ module.exports = function Monday(issue, core) {
       return label;
     }
 
-    const labelName = label.replace(/(for )?ArcGIS/g, "").trim();
     /** @type {MondayLabel} */
     const labelInfo = {
       column: mondayColumns.product,
-      value: labelName,
+      value: label.replace(/(for )?ArcGIS/g, "").trim(),
       clearable: true,
     };
 
-    labelMap.set(labelName, labelInfo);
+    labelMap.set(label, labelInfo);
     createLabelsIfMissing = true;
 
     core.notice(`Created label "${labelInfo.value}" in label map.`, {
       title: "Create Esri Product Label",
     });
-    return labelName;
+    return label;
   }
 
   /**
