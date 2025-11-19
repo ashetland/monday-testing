@@ -657,8 +657,8 @@ module.exports = function Monday(issue, core) {
 
     if (existingLabels.length === 0 && labels?.length) {
       for (const { name, color } of labels) {
-        const labelName = createProductLabelIfNeeded(name, color);
-        const info = labelMap.get(labelName);
+        createProductLabelIfNeeded(name, color);
+        const info = labelMap.get(name);
         if (info?.column.id === labelInfo.column.id && info.value) {
           existingLabels.push(`${info.value}`);
         }
@@ -973,7 +973,8 @@ module.exports = function Monday(issue, core) {
       return;
     }
 
-    updateLabel(createProductLabelIfNeeded(label, color), "add");
+    createProductLabelIfNeeded(label, color);
+    updateLabel(label, "add");
   }
 
   /**
@@ -983,19 +984,20 @@ module.exports = function Monday(issue, core) {
    * @returns {void}
    */
   function clearLabel(label, color = "") {
-    updateLabel(createProductLabelIfNeeded(label, color), "remove");
+    createProductLabelIfNeeded(label, color);
+    updateLabel(label, "remove");
   }
 
   /**
-   * If the label qualifies, create a Esri Product label in `labelMap` and set `createLabelsIfMissing` to `true`
-   * @param {string} label - The label name
-   * @param {string | undefined} color - The color of the label
-   * @returns {string} - The new key for the label in `labelMap`, or the original label name if not created
-   */
+    * If the label qualifies, create a Esri Product label in `labelMap` and set `createLabelsIfMissing` to `true`
+    * @param {string} label - The label name
+    * @param {string | undefined} color - The color of the label
+    * @returns {void}
+    */
   function createProductLabelIfNeeded(label, color) {
     if (labelMap.has(label) || color !== productColor) {
       core.notice(`Returning existing label "${label}".`);
-      return label;
+      return;
     }
 
     /** @type {MondayLabel} */
@@ -1011,7 +1013,6 @@ module.exports = function Monday(issue, core) {
     core.notice(`Created label "${labelInfo.value}" in label map.`, {
       title: "Create Esri Product Label",
     });
-    return label;
   }
 
   /**
