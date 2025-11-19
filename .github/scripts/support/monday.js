@@ -994,6 +994,7 @@ module.exports = function Monday(issue, core) {
    */
   function createProductLabelIfNeeded(label, color) {
     if (labelMap.has(label) || color !== productColor) {
+      core.notice(`Returning existing label "${label}".`);
       return label;
     }
 
