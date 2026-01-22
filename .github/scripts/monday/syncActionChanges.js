@@ -1,6 +1,6 @@
 // @ts-check
 const Monday = require("../support/monday");
-const { assertRequired } = require("../support/utils");
+const { assertRequired, createUpdateBodyCallback } = require("../support/utils");
 
 /**
  * @typedef {object} SyncActionChangesInputs
@@ -34,17 +34,13 @@ module.exports = async ({ github, context, core }) => {
     label_action,
   } = context.payload.inputs;
 
-  const [issue_number] = assertRequired(
-    [issue_number_input],
-    core,
-    "Required issue number not provided.",
-  );
+  const [issue_number] = assertRequired([issue_number_input], core, "Required issue number not provided.");
   const { data: issue } = await github.rest.issues.get({
     ...context.repo,
     issue_number,
   });
 
-  const monday = Monday(issue, core);
+  const monday = Monday({ issue, core, updateIssueBody: createUpdateBodyCallback({ github, context, core })});
 
   if (milestone_updated === "true") {
     monday.handleMilestone();

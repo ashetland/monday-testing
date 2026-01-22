@@ -10,7 +10,7 @@ const {
     designEstimate,
     planning,
     handoff,
-    productColor
+    productColor,
   },
   milestone,
   packages,
@@ -30,10 +30,12 @@ function assertMondayEnv(env, core) {
 }
 
 /**
- * @param {import('@octokit/webhooks-types').Issue} issue - The GitHub issue object
- * @param {import('@actions/core')} core
+ * @param {object} params
+ * @param {import('@octokit/webhooks-types').Issue} params.issue - The GitHub issue object
+ * @param {import('@actions/core')} params.core - The core library for logging and reporting workflow status
+ * @param {import('./utils').UpdateBodyCallback} params.updateIssueBody - A callback to update the Issue body with correct context
  */
-module.exports = function Monday(issue, core) {
+module.exports = function Monday({ issue, core, updateIssueBody }) {
   assertMondayEnv(process.env, core);
   const MONDAY_BOARD = "8780429793";
   const { MONDAY_KEY } = process.env;
@@ -519,19 +521,20 @@ module.exports = function Monday(issue, core) {
       }
       return { response: await response.json(), error: null };
     } catch (error) {
-      return { response: null, error: error?.message || String(error) };
+      const message = error instanceof Error ? error.message : String(error);
+      return { response: null, error: message };
     }
   }
 
   /**
    * Creates and runs a query to update columns in a Monday.com item
    * @private
-   * @param {string} id - The ID of the Monday.com item to update
+   * @param {string} mondayId - The ID of the Monday.com item to update
    * @returns {Promise<{ error: null | { message: string, expected?: boolean } }>}
    */
-  async function updateMultipleColumns(id = "") {
-    const mondayId = id || (await getId())?.id;
-    if (!mondayId) {
+  async function updateMultipleColumns(mondayId = "") {
+    const id = mondayId || (await getId())?.mondayId;
+    if (!id) {
       return {
         error: {
           expected: true,
@@ -554,7 +557,7 @@ module.exports = function Monday(issue, core) {
     /** @type {QueryVariables} */
     const queryVariables = {
       board_id: MONDAY_BOARD,
-      item_id: mondayId,
+      item_id: id,
       column_values: JSON.stringify(columnUpdates),
     };
 
@@ -562,7 +565,7 @@ module.exports = function Monday(issue, core) {
     if (error || !response?.data?.change_multiple_column_values) {
       return {
         error: {
-          message: `Failed to update columns for item ID ${mondayId}. ${error || ""}`,
+          message: `Failed to update columns for item ID ${id}. ${error || ""}`,
         },
       };
     }
@@ -720,17 +723,23 @@ module.exports = function Monday(issue, core) {
   /** Public functions */
 
   /**
-   * Find the Monday.com item ID for a issue and its source
-   * ID is parsed from the issue body or fetched based on the issue number
-   * @return {Promise<{ id: string | undefined, source: ("body" | "query")}>} - The Monday.com item ID
+   * Find the Monday.com item ID for a issue and its source.
+   * The ID is parsed from the issue body or queried from the Monday.com API based on the issue number.
+   * Additionally, updates the Issue body sync string if found via query.
+   * @return {Promise<{ mondayId: string | undefined, source: ("body" | "query")}>} - The Monday.com item ID
    */
   async function getId() {
     const bodyId = extractIdFromBody();
     if (bodyId) {
-      return { id: bodyId, source: "body" };
+      return { mondayId: bodyId, source: "body" };
     }
 
-    return { id: await queryForId(), source: "query" };
+    const queryId = await queryForId();
+    if (queryId) {
+      await updateBodyWithId(queryId);
+    }
+
+    return { mondayId: queryId, source: "query" };
   }
 
   /**
@@ -756,11 +765,10 @@ module.exports = function Monday(issue, core) {
   }
 
   /**
-   * Create a new task in Monday.com, or update an existing one if syncId is provided
-   * @param {string} syncId - When provided, updates item in Monday instead of creating new
-   * @returns {Promise<string | undefined>} - The ID of the created Monday.com item
+   * Create a new item in Monday.com, or update an existing one if found
+   * @returns {Promise<void>}
    */
-  async function createTask(syncId = "") {
+  async function createTask() {
     const logParams = { title: "Create Task" };
     columnUpdates = {
       [mondayColumns.issueNumber.id]: `${issueNumber}`,
@@ -787,29 +795,29 @@ module.exports = function Monday(issue, core) {
       handleMilestone();
     }
 
-    if (syncId) {
+    const { mondayId } = await getId();
+    if (mondayId) {
       core.notice(
-        `Sync ID "${syncId}" provided, updating existing item instead of creating new.`,
+        `Monday ID "${mondayId}" provided, updating existing item instead of creating new.`,
         logParams,
       );
       setColumnValue(mondayColumns.title, issue.title);
       handleState();
 
-      const { error } = await updateMultipleColumns(syncId);
+      const { error } = await updateMultipleColumns(mondayId);
 
       if (error) {
         if (error.expected) {
           core.warning(
-            `Expected error syncing item ${syncId}: ${error.message}`,
+            `Expected error syncing item ${mondayId}: ${error.message}`,
             logParams,
           );
         } else {
-          core.setFailed(`Error syncing item ${syncId}: ${error.message}`);
+          core.setFailed(`Error syncing item ${mondayId}: ${error.message}`);
         }
-        return;
       }
 
-      return syncId;
+      return;
     }
 
     const query = `mutation CreateItem($board_id: ID!, $item_name: String!, $column_values: JSON!) {
@@ -833,10 +841,9 @@ module.exports = function Monday(issue, core) {
     const id = response?.data?.create_item?.id;
     if (error || !id) {
       core.setFailed(error || `Failed creating item for issue #${issueNumber}`);
-      return;
     }
 
-    return id;
+    await updateBodyWithId(id);
   }
 
   /**
@@ -989,14 +996,13 @@ module.exports = function Monday(issue, core) {
   }
 
   /**
-    * If the label qualifies, create a Esri Product label in `labelMap` and set `createLabelsIfMissing` to `true`
-    * @param {string} label - The label name
-    * @param {string | undefined} color - The color of the label
-    * @returns {void}
-    */
+   * If the label qualifies, create a Esri Product label in `labelMap` and set `createLabelsIfMissing` to `true`
+   * @param {string} label - The label name
+   * @param {string | undefined} color - The color of the label
+   * @returns {void}
+   */
   function createProductLabelIfNeeded(label, color) {
     if (labelMap.has(label) || color !== productColor) {
-      core.notice(`Returning existing label "${label}".`);
       return;
     }
 
@@ -1018,16 +1024,15 @@ module.exports = function Monday(issue, core) {
   /**
    * Inserts or replaces the Monday sync line in the issue body string
    * @param {string} mondayID - The Monday.com item ID
-   * @returns {string} - The updated issue body
    */
-  function addSyncLine(mondayID) {
+  async function updateBodyWithId(mondayID) {
     const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
     const syncLineRegex = /^\*\*monday\.com sync:\*\* #\d+\n\n?/m;
-    if (body && syncLineRegex.test(body)) {
-      return body.replace(syncLineRegex, syncMarkdown);
-    } else {
-      return syncMarkdown + (body || "");
-    }
+    const updatedBody =
+      body && syncLineRegex.test(body)
+        ? body.replace(syncLineRegex, syncMarkdown)
+        : syncMarkdown + (body || "");
+    await updateIssueBody(issueNumber, updatedBody);
   }
 
   /**
@@ -1070,7 +1075,6 @@ module.exports = function Monday(issue, core) {
 
   return {
     mondayColumns,
-    getId,
     commit,
     createTask,
     setColumnValue,
@@ -1080,7 +1084,6 @@ module.exports = function Monday(issue, core) {
     handleAssignees,
     addLabel,
     clearLabel,
-    addSyncLine,
     inMilestoneStatus,
   };
 };
