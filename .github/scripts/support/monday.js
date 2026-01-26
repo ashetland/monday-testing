@@ -584,7 +584,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
         return errorMessage(retryError);
       }
     }
-    core.info(`Updated columns for Monday item ID ${id}.`);
+    core.info(`Updated columns for Monday item ID ${queryVariables.item_id}.`);
     return { error: null };
   }
 
