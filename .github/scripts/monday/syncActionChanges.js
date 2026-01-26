@@ -40,7 +40,7 @@ module.exports = async ({ github, context, core }) => {
     issue_number,
   });
 
-  const monday = Monday({ issue, core, updateIssueBody: createUpdateBodyCallback({ github, context, core })});
+  const monday = Monday(issue, core, createUpdateBodyCallback({ github, context, core }));
 
   if (milestone_updated === "true") {
     monday.handleMilestone();

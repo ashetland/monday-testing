@@ -10,7 +10,7 @@ module.exports = async ({ github, context, core }) => {
     );
   assertRequired([changes?.title?.from], core, "Title unedited: no previous title found in payload.");
 
-  const monday = Monday({ issue, core, updateIssueBody: createUpdateBodyCallback({ github, context, core })});
+  const monday = Monday(issue, core, createUpdateBodyCallback({ github, context, core }));
   monday.setColumnValue(monday.mondayColumns.title, issue.title, {
     title: "Update Title",
   });

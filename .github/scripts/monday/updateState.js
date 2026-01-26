@@ -8,7 +8,7 @@ module.exports = async ({ github, context, core }) => {
     /** @type {import('@octokit/webhooks-types').IssuesClosedEvent | import('@octokit/webhooks-types').IssuesReopenedEvent}*/ (
       context.payload
     );
-  const monday = Monday({ issue, core, updateIssueBody: createUpdateBodyCallback({ github, context, core })});
+  const monday = Monday(issue, core, createUpdateBodyCallback({ github, context, core }));
   monday.handleState(action);
   await monday.commit();
 };

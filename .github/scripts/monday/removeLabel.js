@@ -28,7 +28,7 @@ module.exports = async ({ github, context, core }) => {
     return;
   }
 
-  const monday = Monday({ issue, core, updateIssueBody: createUpdateBodyCallback({ github, context, core })});
+  const monday = Monday(issue, core, createUpdateBodyCallback({ github, context, core }));
   monday.setAssignedStatus();
   monday.clearLabel(labelName, labelColor);
   await monday.commit();

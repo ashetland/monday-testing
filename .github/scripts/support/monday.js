@@ -30,12 +30,11 @@ function assertMondayEnv(env, core) {
 }
 
 /**
- * @param {object} params
- * @param {import('@octokit/webhooks-types').Issue} params.issue - The GitHub issue object
- * @param {import('@actions/core')} params.core - The core library for logging and reporting workflow status
- * @param {import('./utils').UpdateBodyCallback} params.updateIssueBody - A callback to update the Issue body with correct context
+ * @param {import('@octokit/webhooks-types').Issue} issue - The GitHub issue object
+ * @param {import('@actions/core')} core - The core library for logging and reporting workflow status
+ * @param {import('./utils').UpdateBodyCallback} updateIssueBody - A callback to update the Issue body with correct context
  */
-module.exports = function Monday({ issue, core, updateIssueBody }) {
+module.exports = function Monday(issue, core, updateIssueBody) {
   assertMondayEnv(process.env, core);
   const MONDAY_BOARD = "8780429793";
   const { MONDAY_KEY } = process.env;
@@ -529,11 +528,11 @@ module.exports = function Monday({ issue, core, updateIssueBody }) {
   /**
    * Creates and runs a query to update columns in a Monday.com item
    * @private
-   * @param {string} mondayId - The ID of the Monday.com item to update
+   * @param {string} syncId - The ID of the Monday.com item to update
    * @returns {Promise<{ error: null | { message: string, expected?: boolean } }>}
    */
-  async function updateMultipleColumns(mondayId = "") {
-    const id = mondayId || (await getId())?.mondayId;
+  async function updateMultipleColumns(syncId = "") {
+    const id = syncId || (await getId())?.id;
     if (!id) {
       return {
         error: {
@@ -561,14 +560,30 @@ module.exports = function Monday({ issue, core, updateIssueBody }) {
       column_values: JSON.stringify(columnUpdates),
     };
 
+    /** @type {(error: string | null) => { error: { message: string } }} */
+    const errorMessage = (error) => ({
+      error: {
+        message: `Failed to update columns for item ID ${id}. ${error || ""}`,
+      },
+    });
+
     const { response, error } = await runQuery(query, queryVariables);
     if (error || !response?.data?.change_multiple_column_values) {
-      return {
-        error: {
-          message: `Failed to update columns for item ID ${id}. ${error || ""}`,
-        },
-      };
+      // Query for ID and retry once if it is different than the current ID
+      const queriedId = await queryForId();
+      if (!queriedId || queriedId === id) {
+        core.info(`No different Monday item ID found for Issue #${issueNumber}.`);
+        return errorMessage(error);
+      }
+
+      queryVariables.item_id = queriedId;
+      const { response: retryResponse, error: retryError } = await runQuery(query, queryVariables);
+      if (retryError || !retryResponse?.data?.change_multiple_column_values) {
+        core.info(`Retry to update Monday item ID ${queriedId} also failed.`);
+        return errorMessage(retryError);
+      }
     }
+    core.info(`Updated columns for Monday item ID ${id}.`);
     return { error: null };
   }
 
@@ -621,6 +636,8 @@ module.exports = function Monday({ issue, core, updateIssueBody }) {
     }
 
     const [{ id }] = items;
+    await updateBodyWithId(id);
+    core.warning(`Updated Issue #${issueNumber} body with Monday.com item ID ${id}.`, { title: "Query for ID" });
     core.info(`Found existing Monday task for Issue #${issueNumber}: ${id}.`);
     return id;
   }
@@ -725,21 +742,15 @@ module.exports = function Monday({ issue, core, updateIssueBody }) {
   /**
    * Find the Monday.com item ID for a issue and its source.
    * The ID is parsed from the issue body or queried from the Monday.com API based on the issue number.
-   * Additionally, updates the Issue body sync string if found via query.
-   * @return {Promise<{ mondayId: string | undefined, source: ("body" | "query")}>} - The Monday.com item ID
+   * @return {Promise<{ id: string | undefined, source: ("body" | "query")}>} - The Monday.com item ID
    */
   async function getId() {
     const bodyId = extractIdFromBody();
     if (bodyId) {
-      return { mondayId: bodyId, source: "body" };
+      return { id: bodyId, source: "body" };
     }
 
-    const queryId = await queryForId();
-    if (queryId) {
-      await updateBodyWithId(queryId);
-    }
-
-    return { mondayId: queryId, source: "query" };
+    return { id: await queryForId(), source: "query" };
   }
 
   /**
@@ -795,25 +806,25 @@ module.exports = function Monday({ issue, core, updateIssueBody }) {
       handleMilestone();
     }
 
-    const { mondayId } = await getId();
-    if (mondayId) {
+    const { id: syncId } = await getId();
+    if (syncId) {
       core.notice(
-        `Monday ID "${mondayId}" provided, updating existing item instead of creating new.`,
+        `Sync ID "${syncId}" provided, updating existing item instead of creating new.`,
         logParams,
       );
       setColumnValue(mondayColumns.title, issue.title);
       handleState();
 
-      const { error } = await updateMultipleColumns(mondayId);
+      const { error } = await updateMultipleColumns(syncId);
 
       if (error) {
         if (error.expected) {
           core.warning(
-            `Expected error syncing item ${mondayId}: ${error.message}`,
+            `Expected error syncing item ${syncId}: ${error.message}`,
             logParams,
           );
         } else {
-          core.setFailed(`Error syncing item ${mondayId}: ${error.message}`);
+          core.setFailed(`Error syncing item ${syncId}: ${error.message}`);
         }
       }
 
@@ -838,12 +849,13 @@ module.exports = function Monday({ issue, core, updateIssueBody }) {
     };
 
     const { response, error } = await runQuery(query, queryVariables);
-    const id = response?.data?.create_item?.id;
-    if (error || !id) {
+    const createdId = response?.data?.create_item?.id;
+    if (error || !createdId) {
       core.setFailed(error || `Failed creating item for issue #${issueNumber}`);
     }
 
-    await updateBodyWithId(id);
+    core.warning(`Updated Body with new Monday.com item ID ${createdId}.`, logParams);
+    await updateBodyWithId(createdId);
   }
 
   /**

@@ -9,7 +9,7 @@ module.exports = async ({ github, context, core }) => {
   );
   const [label] = assertRequired([labelPayload], core, "No label found in payload.");
 
-  const monday = Monday({ issue, core, updateIssueBody: createUpdateBodyCallback({ github, context, core })});
+  const monday = Monday(issue, core, createUpdateBodyCallback({ github, context, core }));
   monday.addLabel(label.name, label.color);
   await monday.commit();
 };
