@@ -1040,7 +1040,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
    */
   async function updateBodyWithId(mondayID) {
     const syncMarkdown = `**monday.com sync:** #${mondayID}\n\n`;
-    const syncLineRegex = /^\*\*monday\.com sync:\*\* #\d+\n\n?/m;
+    const syncLineRegex = /^\*\*monday\.com sync:\*\* #\d*\n\n?/m;
     const updatedBody =
       body && syncLineRegex.test(body)
         ? body.replace(syncLineRegex, syncMarkdown)
