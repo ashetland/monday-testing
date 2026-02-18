@@ -915,11 +915,15 @@ module.exports = function Monday(issue, core, updateIssueBody) {
       return;
     }
 
-    if (column.type === "comma" && value !== "" && columnUpdates[column.id]) {
-      value = `${columnUpdates[column.id]}, ${value}`;
-    } else {
-      columnUpdates[column.id] = column.type === "comma" ? `${value}` : value;
-    }
+    const existingValue = columnUpdates[column.id];
+    const newValue =
+      column.type === "comma" && value !== ""
+        ? existingValue
+          ? `${existingValue}, ${value}`
+          : `${value}`
+        : value;
+
+    columnUpdates[column.id] = newValue;
     core.notice(
       value === ""
         ? `Cleared "${column.title}" column.`
