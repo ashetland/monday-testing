@@ -918,7 +918,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
     if (column.type === "comma" && value !== "" && columnUpdates[column.id]) {
       value = `${columnUpdates[column.id]}, ${value}`;
     } else {
-      columnUpdates[column.id] = value;
+      columnUpdates[column.id] = column.type === "comma" ? `${value}` : value;
     }
     core.notice(
       value === ""
