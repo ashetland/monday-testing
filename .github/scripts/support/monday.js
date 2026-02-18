@@ -585,6 +585,8 @@ module.exports = function Monday(issue, core, updateIssueBody) {
       column_values: JSON.stringify(columnUpdates),
     };
 
+    console.warn(queryVariables);
+
     const { response, error } = await runQuery(query, queryVariables);
     if (error || !response?.data?.change_multiple_column_values) {
       const baseMessage = `Failed to update columns for ID ${id}.`;
