@@ -1,4 +1,3 @@
-
 // @ts-check
 const {
   labels: {
@@ -1016,6 +1015,10 @@ module.exports = function Monday(issue, core, updateIssueBody) {
       .forEach((role) => {
         setColumnValue(role, "");
       });
+
+    if (!assignees.length) {
+      setColumnValue(mondayColumns.allAssignees, "");
+    }
   }
 
   /**
