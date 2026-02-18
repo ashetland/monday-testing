@@ -566,6 +566,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
     });
 
     const { response, error } = await runQuery(query, queryVariables);
+    console.log(JSON.stringify(response), JSON.stringify(error));
     if (error || !response?.data?.change_multiple_column_values) {
       core.info(`Initial update for Monday item ID ${id} failed.`);
       // Query for ID and retry once if it is different than the current ID
