@@ -566,21 +566,22 @@ module.exports = function Monday(issue, core, updateIssueBody) {
     });
 
     const { response, error } = await runQuery(query, queryVariables);
-    console.log(JSON.stringify(response), JSON.stringify(error));
     if (error || !response?.data?.change_multiple_column_values) {
-      core.info(`Initial update for Monday item ID ${id} failed.`);
+      const errorMessage = error || JSON.stringify(response?.errors) || "Unknown error";
+      core.info(`Initial update for Monday item ID ${id} failed. Error: ${errorMessage}`);
       // Query for ID and retry once if it is different than the current ID
       const queriedId = await queryForId();
       if (!queriedId || queriedId === id) {
         core.info(`No different Monday item ID found for Issue #${issueNumber}.`);
-        return errorMessage(error);
+        return errorMessage(errorMessage);
       }
 
       queryVariables.item_id = queriedId;
       const { response: retryResponse, error: retryError } = await runQuery(query, queryVariables);
       if (retryError || !retryResponse?.data?.change_multiple_column_values) {
+        const retryErrorMessage = retryError || JSON.stringify(retryResponse?.errors) || "Unknown error";
         core.info(`Retry to update Monday item ID ${queriedId} also failed.`);
-        return errorMessage(retryError);
+        return errorMessage(retryErrorMessage);
       }
     }
     core.info(`Updated columns for Monday item ID ${queryVariables.item_id}.`);
