@@ -1010,12 +1010,6 @@ module.exports = function Monday(issue, core, updateIssueBody) {
       addAssignee(assignee);
     });
 
-    [mondayColumns.developers, mondayColumns.productEngineers]
-      .filter((role) => !(role.id in columnUpdates))
-      .forEach((role) => {
-        setColumnValue(role, "");
-      });
-
     if (!assignees.length) {
       setColumnValue(mondayColumns.allAssignees, "");
     }
