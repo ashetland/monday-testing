@@ -6,7 +6,7 @@ const {
   packages,
 } = require("./resources");
 const { includesLabel, notInLifecycle } = require("./utils");
-const REPO_CALCITE = "calcite-design-system";
+const REPO_CALCITE = "monday-testing";
 const REPO_DOCS = "calcite-documentation";
 
 /**
