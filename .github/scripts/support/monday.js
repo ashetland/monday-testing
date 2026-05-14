@@ -10,8 +10,6 @@ const REPO_CALCITE = "monday-testing";
 const REPO_DOCS = "calcite-documentation";
 
 
-/** This is an example for a PR **/
-
 /**
  * @param {import('@octokit/webhooks-types').Issue} issue - The GitHub issue object
  * @param {import('@actions/core')} core - The core library for logging and reporting workflow status
