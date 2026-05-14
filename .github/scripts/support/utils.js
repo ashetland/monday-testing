@@ -1,3 +1,4 @@
+
 // @ts-check
 const {
   labels: { issueWorkflow },
@@ -101,7 +102,9 @@ module.exports = {
    */
   assertRequired: (array, core, errorMessage) => {
     if (array.some((item) => item === undefined || item === null)) {
-      core.warning(errorMessage || `One or more required items are not defined, exiting.`, { title: "Assert Required" });
+      core.warning(errorMessage || `One or more required items are not defined, exiting.`, {
+        title: "Assert Required",
+      });
       process.exit(0);
     }
 
@@ -112,7 +115,7 @@ module.exports = {
    * @param {Pick<import('github-script').AsyncFunctionArguments, "github" | "context" | "core">} params
    * @returns {UpdateBodyCallback}
    */
-  createUpdateBodyCallback: ({ github, context, core }) => {
+  createBodyUpdater: ({ github, context, core }) => {
     return async (issueNumber, updatedBody) => {
       try {
         await github.rest.issues.update({
@@ -126,5 +129,5 @@ module.exports = {
         return;
       }
     };
-  }
+  },
 };
