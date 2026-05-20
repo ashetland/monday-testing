@@ -4,18 +4,17 @@ const { createBodyUpdater } = require("../support/utils");
 
 /** @param {import('github-script').AsyncFunctionArguments} AsyncFunctionArguments */
 module.exports = async ({ github, context, core }) => {
-  const { issue } =
-    /** @type {import('@octokit/webhooks-types').IssuesOpenedEvent | import('@octokit/webhooks-types').IssuesLabeledEvent}*/ (
+  const { pull_request } =
+    /** @type {import('@octokit/webhooks-types').PullRequestClosedEvent}*/ (
       context.payload
     );
-  // If there is a related issue, exit
   
   const relatedRegex = /\*\*Related Issue:\*\* #\d+/;
-  if (issue.body && relatedRegex.test(issue.body)) {
+  if (pull_request.body && relatedRegex.test(pull_request.body)) {
     core.info("Issue has a related issue, skipping Monday task creation.");
     return;
   }
   
-  const monday = Monday(issue, core, createBodyUpdater({ github, context, core }));
+  const monday = Monday(pull_request, core, createBodyUpdater({ github, context, core }));
   await monday.createTask();
 };
