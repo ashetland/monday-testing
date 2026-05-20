@@ -9,9 +9,8 @@ const { includesLabel, notInLifecycle } = require("./utils");
 const REPO_CALCITE = "monday-testing";
 const REPO_DOCS = "calcite-documentation";
 
-
 /**
- * @param {import('@octokit/webhooks-types').Issue} issue - The GitHub issue object
+ * @param {import('@octokit/webhooks-types').Issue | import('@octokit/webhooks-types').PullRequestClosedEvent["pull_request"]} issue - The GitHub issue object
  * @param {import('@actions/core')} core - The core library for logging and reporting workflow status
  * @param {import('./utils').UpdateBodyCallback} updateIssueBody - A callback to update the Issue body with correct context
  */
@@ -875,7 +874,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
       handleMilestone();
     }
 
-    if (issue.pull_request !== undefined) {
+    if ("merged" in issue) {
       handleState();
     }
 
@@ -1013,7 +1012,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
     setColumnValue(mondayColumns.open, stateMap[issue.state], logParams);
 
     if (action === "closed") {
-      if (issue.state_reason !== "completed") {
+      if ("state_reason" in issue && issue.state_reason !== "completed") {
         setColumnValue(mondayColumns.status, CLOSED, logParams);
       } else if (includesLabel(issue.labels, issueType.design)) {
         setColumnValue(mondayColumns.status, ADDING_TO_KIT, logParams);
