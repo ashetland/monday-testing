@@ -643,7 +643,7 @@ module.exports = function Monday(issue, core, updateIssueBody) {
       column_values: JSON.stringify(columnUpdates),
     };
 
-    core.info(queryVariables);
+    core.notice(queryVariables);
 
     const { response, error } = await runQuery(query, queryVariables);
     if (error || !response?.data?.change_multiple_column_values) {
